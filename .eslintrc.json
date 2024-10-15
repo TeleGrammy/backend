@@ -8,6 +8,6 @@
   "rules": {
     "prettier/prettier": "off",
 
-    "no-console": "error"
+    "no-unused-vars": "off"
   }
 }
