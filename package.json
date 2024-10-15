@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "The backend section of telegrammy",
   "main": "server.js",
+  "engines": {
+    "node": ">=8.3.0"
+  },
   "scripts": {
     "start": "nodemon server.js",
     "lint": "eslint ."
@@ -17,6 +20,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.7",
+    "body-parser": "^1.20.3",
     "dotenv": "^16.4.5",
     "express": "^4.21.1"
   },
@@ -28,6 +33,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-import": "^2.31.0",
     "globals": "^15.11.0"
   }
 }
