@@ -4,23 +4,24 @@ const validator = require("validator");
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: [true, "please enter a username"],
-    unique: [true, "the user name already used"]
+    required: [true, "Username is required. Please enter a username."],
+    unique: [true, "This username already exists. Please choose a different one."]
   },
   email: {
     type: String,
-    required: [true, "please enter your email address"],
-    unique: [true, "your email address is not correct"],
+    required: [true, "Email address is required. Please enter your email address."],
+    unique: [true, "This email address is already taken. Please use a different email."],
     lowercase: true,
-    validate: [validator.isEmail, "Please provide a valid email"]
+    validate: [validator.isEmail, "Please provide a valid email address."]
   },
   password: {
     type: String,
-    required: [true, "please enter a password"]
+    required: [true, "Password is required. Please enter a password."],
+    minlength: [8, "Password must be at least 8 characters long"],
   },
   phone: {
     type: String,
-    unique: true
+    unique: [true, "This phone number is already registered. Please use a different number."]
   },
   registrationDate: {
     type: Date,
