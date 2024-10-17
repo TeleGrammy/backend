@@ -31,9 +31,15 @@ const pendignUserSchema =  new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    verficationCode:{
+    verificationCode:{
       type:String
-    }
+    },
+    codeExpiresAt: {
+      type: Date,
+      required: true,
+      default: new Date(Date.now() + 10 * 60 * 1000)
+    },
+
   });
 
 const User = mongoose.model("PendingUsers", pendignUserSchema);

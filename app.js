@@ -6,6 +6,7 @@ require("dotenv").config({
 const globalErrorHandler = require("./src/middlewares/globalErrorHandling");
 
 const registrationRoute = require("./src/routes/authentication/registration");
+
 const app = express();
 
 app.use(bodyParser.json());
