@@ -1,15 +1,15 @@
 /**
- * Utility functions for handling asynchronous operations in an Express application.
+ * Utility functions for handling asynchronous operations in an express application.
  *
  * @namespace Utils.AsyncUtils
  */
 
 /**
- * Wraps an asynchronous function to catch any errors and propagate them to the globalErrorHandler middleware.
+ * Wraps an asynchronous function to catch any errors and propagate them to the globalErrorHandling middleware.
  *
  * @method catchAsync
- * @param {function}    - asyncFunction - The asynchronous function to wrap.
  * @memberof Utils.AsyncUtils
+ * @param {function}    - asyncFunction - The asynchronous function to wrap.
  * @returns {function}  - wrappedFunction - A function that can be called with Express request, response, and next parameters.
  * @throws {Error}      - Propagates any errors encountered in the asynchronous function to the global error handler middleware.
  */
