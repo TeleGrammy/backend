@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const {seeds} = require("./src/utils/seeds");
 const app = require("./app");
 
 mongoose
@@ -11,6 +11,8 @@ mongoose
         `Server is running on http://${process.env.HOSTNAME}:${process.env.PORT}`
       );
     });
+    // uncomment the following line to run the database seeds
+    // seeds();
   })
   .catch(error => {
     console.error(error);
