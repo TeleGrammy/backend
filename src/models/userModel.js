@@ -33,9 +33,36 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["active", "inactive", "banned"],
     default: "inactive"
+  },
+  pendingEmail: {
+    type: String,
+    validate: [validator.isEmail, "Please provide a valid new email address"],
+    default: undefined
+  },
+  pendingEmailCofirmationCode: {
+    type: String,
+    default: undefined
+  },
+  pendingEmailCofirmationCodeExpiresAt: {
+    type: Date,
+    default: undefined
   }
 });
+userSchema.methods.setNewEmailInfo = function(newEmail, confirmationCode) {
+  this.pendingEmail = newEmail;
+  this.pendingEmailCofirmationCode = confirmationCode;
+  this.pendingEmailCofirmationCodeExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+};
+userSchema.methods.unSetNewEmailInfo = function() {
+  this.pendingEmail = undefined;
+  this.pendingEmailCofirmationCode = undefined;
+  this.pendingEmailCofirmationCodeExpiresAt = undefined;
+};
 
+userSchema.methods.updateUserEmail = function() {
+  this.email = this.pendingEmail;
+  this.unSetNewEmailInfo();
+};
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

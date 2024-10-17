@@ -19,9 +19,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "mongoose": "^8.7.1",
+    "uuid": "^10.0.0",
     "validator": "^13.12.0"
   },
   "devDependencies": {
@@ -35,6 +37,7 @@
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react": "^7.12.4",
     "globals": "^15.11.0",
+    "morgan": "^1.10.0",
     "prettier": "^1.19.1"
   }
 }
