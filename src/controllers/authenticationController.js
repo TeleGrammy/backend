@@ -43,7 +43,9 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: "success",
-    message: "Sent Email successfully. (Valid for 1 hour)",
+    data: {
+      message: "Sent Email successfully. (Valid for 1 hour)",
+    },
   });
 });
 
@@ -118,6 +120,8 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: "success",
-    message: "Resend Email successfully. (Valid for 1 hour)",
+    data: {
+      message: "Resend Email successfully. (Valid for 1 hour)",
+    },
   });
 });
