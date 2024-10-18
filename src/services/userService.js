@@ -15,11 +15,9 @@ const User = require("../models/user");
  * @returns {Promise<User|null>} A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
-  const user = await User.findOne({
+  return await User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
-
-  return user;
 };
 
 /**

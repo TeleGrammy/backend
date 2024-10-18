@@ -61,6 +61,22 @@ const userSchema = new mongoose.Schema({
     enum: ["active", "inactive", "banned"],
     default: "inactive",
   },
+
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+
+  accessToken: {
+    type: String,
+    default: null,
+  },
+
+  refreshToken: {
+    type: String,
+    default: null,
+  },
 });
 
 applySoftDeleteMiddleWare(userSchema);

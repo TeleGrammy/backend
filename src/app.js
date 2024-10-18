@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const passport = require("passport");
 require("dotenv").config({
   path: ".env",
 });
 
-const authenticationRoute = require("./routes/authentication/authentication");
+const googleStrategy = require("./middlewares/strategies/googleStrategy");
+const authenticationRouter = require("./routes/authentication/authentication");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
@@ -15,9 +17,10 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(passport.initialize());
+
+app.use("/api/v1/auth", authenticationRouter);
 
 app.use(globalErrorHandler);
-
-app.use("/api/v1/auth", authenticationRoute);
 
 module.exports = app;

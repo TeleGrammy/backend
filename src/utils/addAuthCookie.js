@@ -16,7 +16,7 @@ const addAuthCookie = (token, res) => {
     Date.now() + process.env.EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000
   );
 
-  res.cookie("token", token, {
+  res.cookie(process.env.COOKIE_NAME, token, {
     expires: cookieExpirationDate,
     httpOnly: true,
   });
