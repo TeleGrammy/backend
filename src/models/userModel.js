@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  screenName: {
+    type: String,
+    default: "User"
+  },
   picture: {type: String},
   bio: {type: String},
   lastLoginDate: {type: Date},

@@ -1,7 +1,31 @@
 const User = require("./../models/userModel");
 const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
+const {filterObject} = require("../utils/utilitiesFunc");
+const multer = require("multer");
 
+// Multer settings for file uploads
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error("Invalid file format"), false);
+    }
+    cb(null, true);
+  }
+});
 exports.updateUserEmail = async (req, res) => {
   const {email} = req.body;
   try {
@@ -100,14 +124,20 @@ exports.confirmNewEmail = async (req, res, next) => {
     });
   }
 };
-exports.updateUserName = async (req, res) => {
-  const {username} = req.body;
+
+exports.updateUserInformation = async (req, res) => {
+  const filteredBody = filterObject(
+    req.body,
+    "username",
+    "phone",
+    "bio",
+    "screenName"
+  );
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {username},
-      {new: true, runValidators: true}
-    );
+    const user = await User.findByIdAndUpdate(req.params.id, filteredBody, {
+      new: true,
+      runValidators: true
+    });
 
     if (!user) {
       const err = new Error("User not found");
@@ -119,10 +149,11 @@ exports.updateUserName = async (req, res) => {
       data: {user}
     });
   } catch (err) {
-    // TODO: make a global error handlers
+    console.log(err);
     if (err.codeName === "DuplicateKey") {
       err.statusCode = 400;
-      err.message = "Username already used";
+      if (err.keyPattern.username) err.message = "username already used.";
+      if (err.keyPattern.phone) err.message = "phone already used.";
     }
     res.status(err.statusCode || 500).json({
       status: err.statusCode ? "failed" : "error",
@@ -131,43 +162,13 @@ exports.updateUserName = async (req, res) => {
   }
 };
 
-exports.updateUserPhone = async (req, res) => {
-  const {phone} = req.body;
+exports.deleteUserBio = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      {phone},
+      {bio: ""},
       {new: true, runValidators: true}
     );
-    if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
-    }
-    res.status(200).json({
-      status: "success",
-      data: {user}
-    });
-  } catch (err) {
-    if (err.codeName === "DuplicateKey") {
-      err.statusCode = 400;
-      err.message = "Phone already used";
-    }
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
-  }
-};
-exports.updateUserBio = async (req, res) => {
-  const {bio} = req.body;
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {bio},
-      {new: true, runValidators: true}
-    );
-    await user.save();
     if (!user) {
       const err = new Error("User not found");
       err.statusCode = 404;
@@ -184,3 +185,7 @@ exports.updateUserBio = async (req, res) => {
     });
   }
 };
+
+exports.uploadUserPhoto = upload.single("picture");
+
+exports.updateUserPicture = async (req, res) => {};
