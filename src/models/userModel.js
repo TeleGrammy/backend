@@ -30,7 +30,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "User"
   },
-  picture: {type: String},
+  picture: {
+    type: String,
+    default: "default.jpg"
+  },
   bio: {type: String},
   lastLoginDate: {type: Date},
   status: {
@@ -66,6 +69,22 @@ userSchema.methods.unSetNewEmailInfo = function() {
 userSchema.methods.updateUserEmail = function() {
   this.email = this.pendingEmail;
   this.unSetNewEmailInfo();
+};
+
+userSchema.methods.verifyConfirmationCode = function(confirmationCode) {
+  if (this.pendingEmailCofirmationCodeExpiresAt < Date.now()) {
+    this.unSetNewEmailInfo();
+    const err = new Error(
+      "Confirmation code expired please try to change your mail  later"
+    );
+    err.statusCode = 401;
+    throw err;
+  }
+  if (this.pendingEmailCofirmationCode !== confirmationCode) {
+    const err = new Error("Invalid confirmation code");
+    err.statusCode = 401;
+    throw err;
+  }
 };
 const User = mongoose.model("User", userSchema);
 

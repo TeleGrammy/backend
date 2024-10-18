@@ -2,30 +2,7 @@ const User = require("./../models/userModel");
 const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {filterObject} = require("../utils/utilitiesFunc");
-const multer = require("multer");
 
-// Multer settings for file uploads
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5 // 5MB
-  },
-  fileFilter: (req, file, cb) => {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(new Error("Invalid file format"), false);
-    }
-    cb(null, true);
-  }
-});
 exports.updateUserEmail = async (req, res) => {
   const {email} = req.body;
   try {
@@ -93,22 +70,8 @@ exports.confirmNewEmail = async (req, res, next) => {
       err.statusCode = 404;
       throw err;
     }
-    console.log("here");
-    if (user.pendingEmailCofirmationCodeExpiresAt < Date.now()) {
-      user.unSetNewEmailInfo();
-      const err = new Error(
-        "Confirmation code expired please try to change your mail  later"
-      );
-      err.statusCode = 401;
-      throw err;
-    }
-    console.log("here2");
 
-    if (user.pendingEmailCofirmationCode !== confirmationCode) {
-      const err = new Error("Invalid confirmation code");
-      err.statusCode = 401;
-      throw err;
-    }
+    user.verifyConfirmationCode(confirmationCode);
 
     user.updateUserEmail();
     await user.save();
@@ -186,6 +149,56 @@ exports.deleteUserBio = async (req, res) => {
   }
 };
 
-exports.uploadUserPhoto = upload.single("picture");
+exports.updateUserPicture = async (req, res) => {
+  const photo = req.file;
+  if (!photo) {
+    const err = new Error("No image uploaded.");
+    err.statusCode = 400;
+    throw err;
+  }
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {picture: photo.location},
+      {new: true, runValidators: true}
+    );
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      throw err;
+    }
+    res.status(200).json({
+      status: "success",
+      data: {user}
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      status: err.statusCode ? "failed" : "error",
+      message: err.message
+    });
+  }
+};
 
-exports.updateUserPicture = async (req, res) => {};
+exports.deleteUserPicture = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {picture: "default.jpg"},
+      {new: true, runValidators: true}
+    );
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      throw err;
+    }
+    res.status(200).json({
+      status: "success",
+      data: {user}
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      status: err.statusCode ? "failed" : "error",
+      message: err.message
+    });
+  }
+};

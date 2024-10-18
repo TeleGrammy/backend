@@ -1,11 +1,12 @@
 const express = require("express");
 const userController = require("./../controllers/userController");
+const {uploadUserPicture} = require("../middlewares/multer");
 
 const router = express.Router();
 
 router.patch(
-  "/picture",
-  userController.uploadUserPhoto,
+  "/picture/:id",
+  uploadUserPicture,
   userController.updateUserPicture
 );
 
@@ -13,7 +14,7 @@ router.patch("/email/:id", userController.updateUserEmail);
 router.patch("/email/new-code/:id", userController.requestNewConfirmationCode);
 router.post("/email/confirm/:id", userController.confirmNewEmail);
 
-// to update the useer bio or the screen name
+// to update the user (bio , username , screen name or phone)
 router.patch("/information/:id", userController.updateUserInformation);
 router.delete("/bio/:id", userController.deleteUserBio);
 
