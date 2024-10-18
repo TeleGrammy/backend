@@ -10,9 +10,9 @@ const User = require("../models/user");
  * @memberof Service.Users
  * @method getUserByUUID
  * @async
- * @param {String} UUID - User's email, username, or phone.
+ * @param {String} [UUID]               - User's email, username, or phone.
  * @param {Object} [selectionFilter={}] - The fields needed to select from the user object. Defaults to an empty object.
- * @returns {Promise<User|null>} A promise that resolves to the user object if found, otherwise returns null.
+ * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
   return await User.findOne({
@@ -25,7 +25,7 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
  * @memberof Service.Users
  * @method getUserBasicInfoByUUID
  * @async
- * @param {String} UUID - User's email, username, or phone.
+ * @param {String} [UUID]        - User's email, username, or phone.
  * @returns {Promise<User|null>} A promise that resolves to basic user information if found, otherwise returns null.
  */
 const getUserBasicInfoByUUID = async (UUID) => {
@@ -44,20 +44,89 @@ const getUserBasicInfoByUUID = async (UUID) => {
 /**
  * Retrieves the user's password.
  * @memberof Service.Users
- * @method getUserPassword
+ * @method getUserPasswordById
  * @async
- * @param {String} id - User's Id.
+ * @param {String} [id]          - User's Id.
  * @returns {Promise<User|null>} A promise that resolves to the user's hashed password if found,, otherwise returns null.
  */
 
-const getUserPassword = async (id) => {
+const getUserPasswordById = async (id) => {
   const user = await User.findById(id).select("password");
 
   return user ? user.password : null;
 };
 
+/**
+ *  Retrieves the user's id by his UUID.
+ * @memberof Service.Users
+ * @method getUserId
+ * @async
+ * @param {String}              UUID - User's email, username, or phone.
+ * @returns {Promise<User|null>} A promise that resolves to the user's id if found,, otherwise returns null.
+ */
+
+const getUserId = async (UUID) => {
+  const user = await getUserByUUID(UUID);
+
+  return user ? user.id : null;
+};
+
+/**
+ *  Retrieves the user by his id.
+ * @memberof Service.Users
+ * @method getUserByEmail
+ * @async
+ * @param {String} [email]       - User's email.
+ * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
+ */
+
+const getUserByEmail = async (email) => {
+  return await User.findOne({email});
+};
+
+/**
+ *  Creates the user giving the data he/she needs.
+ * @memberof Service.Users
+ * @method createUser
+ * @async
+ * @param {Object} [userData]    - User's data.
+ * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
+ */
+
+const createUser = async (userData) => {
+  const {
+    username,
+    email,
+    phone,
+    password,
+    picture,
+    id,
+    accessToken,
+    refreshToken,
+    isGoogleUser,
+    isGitHubUser,
+    isFaceBookUser,
+  } = userData;
+
+  return await User.create({
+    username,
+    email,
+    phone,
+    password,
+    picture,
+    accessToken,
+    refreshToken,
+    ...(isGoogleUser ? {googleId: id} : {}),
+    ...(isGitHubUser ? {gitHubId: id} : {}),
+    ...(isFaceBookUser ? {faceBookId: id} : {}),
+  });
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
-  getUserPassword,
+  getUserByEmail,
+  getUserPasswordById,
+  getUserId,
+  createUser,
 };

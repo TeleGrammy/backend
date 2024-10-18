@@ -68,6 +68,25 @@ const userSchema = new mongoose.Schema({
     sparse: true,
   },
 
+  faceBookId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+
+  gitHubId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  jwtToken: {
+    type: [
+      {
+        type: String,
+        required: [true, "The user has to be configured with a JWT token."],
+      },
+    ],
+  },
   accessToken: {
     type: String,
     default: null,
@@ -75,6 +94,16 @@ const userSchema = new mongoose.Schema({
 
   refreshToken: {
     type: String,
+    default: null,
+  },
+
+  accessTokenExpiresAt: {
+    type: Date,
+    default: null,
+  },
+
+  refreshTokenExpiresAt: {
+    type: Date,
     default: null,
   },
 });

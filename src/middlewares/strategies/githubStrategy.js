@@ -13,10 +13,14 @@ passport.use(
         id: profile.id,
         name: profile.displayName,
         email: profile.emails[0].value,
+        phone: profile.phone || null,
+        profilePic:
+          profile.photos && profile.photos.length > 0
+            ? profile.photos[0].value
+            : null,
         accessToken,
         refreshToken,
       };
-      console.log(user);
 
       return done(null, user);
     }
