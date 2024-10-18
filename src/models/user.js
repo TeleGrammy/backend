@@ -5,14 +5,23 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],
-    unique: [true, "This username already exists. Please choose a different one."]
+    unique: [
+      true,
+      "This username already exists. Please choose a different one.",
+    ],
   },
   email: {
     type: String,
-    required: [true, "Email address is required. Please enter your email address."],
-    unique: [true, "This email address is already taken. Please use a different email."],
+    required: [
+      true,
+      "Email address is required. Please enter your email address.",
+    ],
+    unique: [
+      true,
+      "This email address is already taken. Please use a different email.",
+    ],
     lowercase: true,
-    validate: [validator.isEmail, "Please provide a valid email address."]
+    validate: [validator.isEmail, "Please provide a valid email address."],
   },
   password: {
     type: String,
@@ -21,11 +30,14 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    unique: [true, "This phone number is already registered. Please use a different number."]
+    unique: [
+      true,
+      "This phone number is already registered. Please use a different number.",
+    ],
   },
   registrationDate: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   picture: {type: String},
   bio: {type: String},
@@ -33,8 +45,8 @@ const userSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["active", "inactive", "banned"],
-    default: "inactive"
-  }
+    default: "inactive",
+  },
 });
 
 const User = mongoose.model("User", userSchema);

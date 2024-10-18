@@ -92,3 +92,5 @@ dist
 
 # VS Code directories
 .vscode/
+
+test.js

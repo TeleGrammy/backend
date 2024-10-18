@@ -1,4 +1,4 @@
-const globalErrorHandler = (err, req, res, next) => {
+const globalErrorHandler = (err, req, res) => {
   const error = new Error(err.message);
   error.name = err.name;
   error.stack = err.stack;

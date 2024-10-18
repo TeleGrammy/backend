@@ -67,12 +67,10 @@ exports.postRegistration = async (req, res) => {
     await newUser.save();
     await sendConfirmationEmail(email, username, verificationCode);
 
-    return res
-      .status(201)
-      .json({
-        message:
-          "Registration successful. Please check your email for the verification code.",
-      });
+    return res.status(201).json({
+      message:
+        "Registration successful. Please check your email for the verification code.",
+    });
   } catch (error) {
     if (error.code === 11000) {
       const field = Object.keys(error.keyValue)[0];
@@ -84,7 +82,6 @@ exports.postRegistration = async (req, res) => {
     }
     if (error.name === "ValidationError") {
       const field = Object.keys(error.keyValue)[0];
-      const duplicateValue = error.keyValue[field];
       return res
         .status(409)
         .json({field, message: error.errors[field].message});
@@ -140,7 +137,6 @@ exports.postVerfiy = async (req, res) => {
     }
     if (error.name === "ValidationError") {
       const field = Object.keys(error.keyValue)[0];
-      const duplicateValue = error.keyValue[field];
       return res
         .status(409)
         .json({field, message: error.errors[field].message});
@@ -173,7 +169,7 @@ exports.resendVerification = async (req, res) => {
     await sendConfirmationEmail(
       pendingUser.email,
       pendingUser.username,
-      newVerificationCode,
+      newVerificationCode
     );
 
     return res
