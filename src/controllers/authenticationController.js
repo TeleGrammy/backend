@@ -87,12 +87,16 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
   const user = await userServices.getUserByEmail(email);
+  if (!user) return next(new AppError("We couldn’t find your Email.", 404));
+
   const {passwordResetTokenExpiresAt} = user;
 
   if (!passwordResetTokenExpiresAt || passwordResetTokenExpiresAt < Date.now())
     return next(
-      "The password reset token is invalid. Please use Forget Password option again.",
-      400
+      new AppError(
+        "The password reset token is invalid. Please use Forget Password option again.",
+        400
+      )
     );
 
   const timeSinceLastRequest = Date.now() - user.lastPasswordResetRequestAt;
