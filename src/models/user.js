@@ -79,14 +79,12 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
-  jwtToken: {
-    type: [
-      {
-        type: String,
-        required: [true, "The user has to be configured with a JWT token."],
-      },
-    ],
+
+  jwtRefreshToken: {
+    type: String,
+    default: null,
   },
+
   accessToken: {
     type: String,
     default: null,

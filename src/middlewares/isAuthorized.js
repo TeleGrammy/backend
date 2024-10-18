@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
+
 const AppError = require("../errors/appError");
+
 const catchAsync = require("../utils/catchAsync");
+
 const generateToken = require("../utils/generateToken");
 const addAuthCookie = require("../utils/addAuthCookie");
 const userService = require("../services/userService");
@@ -24,7 +27,10 @@ module.exports = catchAsync(async (req, res, next) => {
 
       let decodedRefreshToken;
       try {
-        decodedRefreshToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        decodedRefreshToken = await jwt.verify(
+          refreshToken,
+          process.env.JWT_SECRET
+        );
       } catch (err) {
         return next(
           new AppError("Invalid refresh token, please log in again", 401)
@@ -47,7 +53,16 @@ module.exports = catchAsync(async (req, res, next) => {
         process.env.COOKIE_ACCESS_NAME
       );
 
+      const newRefreshToken = generateToken({
+        name: user.username,
+        email: user.email,
+        phone: user.phone,
+      }); // To avoid token replay attacks
+
       addAuthCookie(newAccessToken, res, true);
+      addAuthCookie(newRefreshToken, res, false);
+
+      await userService.updateRefreshToken(user._id, newRefreshToken);
 
       req.user = decodedRefreshToken;
       return next();
