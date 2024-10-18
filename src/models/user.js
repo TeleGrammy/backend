@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -18,6 +20,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "please enter a password"],
   },
+  passwordConfirm: {
+    type: String,
+    required: [true, "Password Confirm is required"],
+    validate: {
+      validator(el) {
+        return el === this.password;
+      },
+      message: "Password and passwordConfirm are different.",
+    },
+  },
   phone: {
     type: String,
     unique: true,
@@ -34,7 +46,41 @@ const userSchema = new mongoose.Schema({
     enum: ["active", "inactive", "banned"],
     default: "inactive",
   },
+  passwordModifiedAt: {
+    type: Date,
+    default: null,
+  },
+  passwordResetToken: String,
+  passwordResetTokenExpiresAt: Date,
+  lastPasswordResetRequestAt: Date,
 });
+
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordModifiedAt = Date.now();
+  return next();
+});
+
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    const saltRounds = 12;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    this.passwordConfirm = undefined;
+  }
+  next();
+});
+
+userSchema.methods.createResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(6).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetTokenExpiresAt = Date.now() + 60 * 60 * 1000;
+  return resetToken;
+};
 
 const User = mongoose.model("User", userSchema);
 
