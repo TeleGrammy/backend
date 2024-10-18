@@ -5,16 +5,16 @@ const catchAsync = require("../../utils/catchAsync");
 const addAuthCookie = require("../../utils/addAuthCookie");
 const generateToken = require("../../utils/generateToken");
 
-const signInWithGoogle = (req, res, next) => {
-  passport.authenticate("google", {
-    scope: ["email", "profile"],
+const signInWithGitHub = (req, res, next) => {
+  passport.authenticate("github", {
+    scope: ["user:email", "user"],
     accessType: "offline",
   })(req, res, next);
 };
 
-const googleCallBack = catchAsync(async (req, res, next) => {
+const gitHubCallBack = catchAsync(async (req, res, next) => {
   passport.authenticate(
-    "google",
+    "github",
     {failureRedirect: "/login"},
     async (err, user) => {
       if (err || !user) {
@@ -28,19 +28,19 @@ const googleCallBack = catchAsync(async (req, res, next) => {
       });
 
       addAuthCookie(token, res);
-      
+
       res.status(200).json({
         data: {
           token,
           user: {name: user.name},
         },
-        status: "Logged in with Google successfully",
+        status: "Logged in with GitHub successfully",
       });
     }
   )(req, res);
 });
 
 module.exports = {
-  signInWithGoogle,
-  googleCallBack,
+  signInWithGitHub,
+  gitHubCallBack,
 };

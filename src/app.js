@@ -6,7 +6,7 @@ require("dotenv").config({
   path: ".env",
 });
 
-const googleStrategy = require("./middlewares/strategies/googleStrategy");
+const strategies = require("./middlewares/strategies/index");
 const authenticationRouter = require("./routes/authentication/authentication");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");

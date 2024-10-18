@@ -1,13 +1,20 @@
 const router = require("express").Router();
 
-const {login} = require("../../controllers/auth/index");
-const {
-  signInWithGoogle,
-  googleCallBack,
-} = require("../../controllers/auth/googleAuthController");
+const {login} = require("../../controllers/auth/index"),
+  {
+    signInWithGoogle,
+    googleCallBack,
+  } = require("../../controllers/auth/googleAuthController"),
+  {
+    signInWithGitHub,
+    gitHubCallBack,
+  } = require("../../controllers/auth/githubAuthController");
 
 router.get("/google", signInWithGoogle);
 router.get("/google/secrets", googleCallBack);
+router.get("/gitHub", signInWithGitHub);
+router.get("/gitHub/secrets", gitHubCallBack);
 
 router.post("/login", login);
+
 module.exports = router;
