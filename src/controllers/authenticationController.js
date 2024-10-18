@@ -82,3 +82,38 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.resendResetToken = catchAsync(async (req, res, next) => {
+  const {email} = req.body;
+
+  const user = await userServices.getUserByEmail(email);
+  const {passwordResetTokenExpiresAt} = user;
+
+  if (!passwordResetTokenExpiresAt || passwordResetTokenExpiresAt < Date.now())
+    return next(
+      "The password reset token is invalid. Please use Forget Password option again.",
+      400
+    );
+
+  const timeSinceLastRequest = Date.now() - user.lastPasswordResetRequestAt;
+  const resendCoolDown = 5 * 60 * 1000;
+
+  if (timeSinceLastRequest < resendCoolDown) {
+    return next(
+      new AppError(
+        `You need to wait ${resendCoolDown / 60000} minutes from the last sent reset password email before resending. Please try again later.`,
+        400
+      )
+    );
+  }
+
+  await sendPasswordResetEmail(req, user);
+
+  user.lastPasswordResetRequestAt = Date.now();
+  await user.save({validateBeforeSave: false});
+
+  return res.status(200).json({
+    status: "success",
+    message: "Resend Email successfully. (Valid for 1 hour)",
+  });
+});
