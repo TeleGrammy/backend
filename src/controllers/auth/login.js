@@ -11,6 +11,7 @@ const addAuthCookie = require("../../utils/addAuthCookie");
 const login = catchAsync(async (req, res, next) => {
   const {UUID, password} = req.body;
 
+  console.log(UUID, password);
   const user = await userService.getUserBasicInfoByUUID(UUID);
   if (!user) {
     return next(new AppError("No user has been found with that UUID", 404));

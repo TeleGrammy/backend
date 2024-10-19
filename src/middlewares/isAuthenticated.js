@@ -77,5 +77,6 @@ module.exports = catchAsync(async (req, res, next) => {
   }
 
   req.user = decodedToken;
+
   next();
 });

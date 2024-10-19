@@ -13,7 +13,9 @@ passport.use(
         id: profile.id,
         name: profile.displayName,
         email: profile.emails[0].value,
-        phone: profile.phone || "01001001001",
+        phone: String(
+          Math.random() * (99999999999 - 10000000001) + 10000000000
+        ),
         profilePic:
           profile.photos && profile.photos.length > 0
             ? profile.photos[0].value
