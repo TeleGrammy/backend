@@ -17,5 +17,6 @@ router.get("/gitHub", signInWithGitHub);
 router.get("/gitHub/secrets", gitHubCallBack);
 
 router.post("/login", login);
+router.post("/logout", logout);
 
 module.exports = router;
