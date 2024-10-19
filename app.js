@@ -1,9 +1,13 @@
 const express = require("express");
 const userProfileRoutes = require("./src/routes/userProfileRoutes");
+
 const morgan = require("morgan");
 require("dotenv").config({
   path: ".env"
 });
+
+// Import the cron job script to automatically delete expired stories
+require("./src/middlewares/cronJobs");
 
 const app = express();
 if (process.env.NODE_ENV === "development") {

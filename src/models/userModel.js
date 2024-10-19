@@ -38,8 +38,12 @@ const userSchema = new mongoose.Schema({
   lastLoginDate: {type: Date},
   status: {
     type: String,
-    enum: ["active", "inactive", "banned"],
+    enum: ["online", "offline", "inactive", "banned"],
     default: "inactive"
+  },
+  lastSeen: {
+    type: Date,
+    default: Date.now()
   },
   pendingEmail: {
     type: String,

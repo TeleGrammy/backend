@@ -87,6 +87,35 @@ exports.confirmNewEmail = async (req, res, next) => {
   }
 };
 
+exports.getUserProfileInformation = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const signedUrl = await generateSignedUrl(user.picture, 15 * 60); // URL valid for 15 minutes
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        screenName: user.screenName,
+        email: user.email,
+        bio: user.bio,
+        pictureUrl: signedUrl
+        // TODO complete the data after finishing the remaining fields required
+      }
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      status: err.statusCode ? "failed" : "error",
+      message: err.message
+    });
+  }
+};
+
 exports.updateUserInformation = async (req, res) => {
   const filteredBody = filterObject(
     req.body,
@@ -95,6 +124,7 @@ exports.updateUserInformation = async (req, res) => {
     "bio",
     "screenName"
   );
+
   try {
     const user = await User.findByIdAndUpdate(req.params.id, filteredBody, {
       new: true,
@@ -205,7 +235,7 @@ exports.deleteUserPicture = async (req, res) => {
   }
 };
 
-exports.getUserProfileInformation = async (req, res) => {
+exports.getUserActivity = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -213,18 +243,44 @@ exports.getUserProfileInformation = async (req, res) => {
       err.statusCode = 404;
       throw err;
     }
-
-    const signedUrl = await generateSignedUrl(user.picture, 15 * 60); // URL valid for 15 minutes
-
+    const data = {
+      status: user.status,
+      lastSeen: user.lastSeen
+    };
     res.status(200).json({
       status: "success",
-      data: {
-        screenName: user.screenName,
-        email: user.email,
-        bio: user.bio,
-        pictureUrl: signedUrl
-        // TODO complete the data after finishing the remaining fields required
-      }
+      data
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      status: err.statusCode ? "failed" : "error",
+      message: err.message
+    });
+  }
+};
+
+exports.updateUserActivity = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: req.body.status,
+        lastSeen: new Date()
+      },
+      {new: true, runValidators: true}
+    );
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      throw err;
+    }
+    const data = {
+      status: user.status,
+      lastSeen: user.lastSeen
+    };
+    res.status(200).json({
+      status: "success",
+      data
     });
   } catch (err) {
     res.status(err.statusCode || 500).json({

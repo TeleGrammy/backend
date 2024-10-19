@@ -45,6 +45,7 @@ const upload = multer({
   }
 });
 exports.uploadUserPicture = upload.single("picture");
+exports.uploadStory = upload.single("story");
 
 exports.generateSignedUrl = async (key, expireTime = null) => {
   const command = new GetObjectCommand({
@@ -59,7 +60,6 @@ exports.generateSignedUrl = async (key, expireTime = null) => {
   return url;
 };
 
-// Utility function to check if a file exists in S3
 const isFileAvailable = async key => {
   try {
     await s3.send(
@@ -74,7 +74,6 @@ const isFileAvailable = async key => {
   }
 };
 
-// Utility function to delete a file from S3
 exports.deleteFile = async key => {
   try {
     const deleteParams = {
