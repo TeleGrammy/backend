@@ -4,11 +4,11 @@ RUN useradd --create-home --shell /bin/bash telegrammy
 
 WORKDIR /usr/src/app
 
-COPY package*.json .  # Ensure package.json is copied first
+COPY package*.json . 
 
-RUN npm ci --only=production  # Now npm install will have access to package.json
+RUN npm ci --only=production  
 
-COPY . .  # Copy the rest of your application code
+COPY . .  
 
 RUN chown -R telegrammy:telegrammy /usr/src/app
 
