@@ -4,8 +4,8 @@ const globalErrorHandler = (err, req, res, next) => {
   error.stack = err.stack;
   Object.assign(error, {...err});
 
-  error.statusCode = error.statusCode || 500;
-  error.status = error.statusCode.toString().startsWith("4") ? "fail" : "error";
+  error.statusCode = Number.isInteger(err.statusCode) ? err.statusCode : 500;
+  error.status = String(error.statusCode).startsWith("4") ? "fail" : "error";
 
   if (error.isOperational) {
     res.status(error.statusCode).json({

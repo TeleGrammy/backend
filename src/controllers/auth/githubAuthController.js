@@ -22,6 +22,7 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
     {failureRedirect: "/login"},
     async (err, user) => {
       if (err || !user) {
+        console.log(err);
         return next(new AppError("Authentication failed", 401));
       }
 
@@ -52,7 +53,7 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
       const accessToken = generateToken(
         {
           id: existingUser.id,
-          name: existingUser.name,
+          name: existingUser.username,
           email: existingUser.email,
         },
         process.env.COOKIE_ACCESS_NAME
@@ -61,7 +62,7 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
       const refreshToken = generateToken(
         {
           id: existingUser.id,
-          name: existingUser.name,
+          name: existingUser.username,
           email: existingUser.email,
         },
         process.env.COOKIE_REFRESH_NAME
@@ -70,14 +71,7 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
       addAuthCookie(accessToken, res, true);
       addAuthCookie(refreshToken, res, false);
 
-      res.status(200).json({
-        data: {
-          user: {name: existingUser.name},
-          refreshToken,
-          accessToken,
-        },
-        status: "Logged in with Google successfully",
-      });
+      res.redirect("/api/v1/user/");
     }
   )(req, res);
 });

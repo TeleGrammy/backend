@@ -1,6 +1,9 @@
 const bcrypt = require("bcryptjs");
+
 const AppError = require("../../errors/appError");
+
 const userService = require("../../services/userService");
+
 const catchAsync = require("../../utils/catchAsync");
 const generateToken = require("../../utils/generateToken");
 const addAuthCookie = require("../../utils/addAuthCookie");

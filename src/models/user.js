@@ -34,10 +34,7 @@ const userSchema = new mongoose.Schema({
 
   phone: {
     type: String,
-    unique: [
-      true,
-      "This phone number is already registered. Please use a different number.",
-    ],
+    default: null,
   },
 
   registrationDate: {

@@ -14,7 +14,7 @@ passport.use(
         id: profile.id,
         name: profile.displayName,
         email: profile.emails[0].value,
-        phone: profile.phone || null,
+        phone: profile.phone || "01001001001",
         profilePic:
           profile.photos && profile.photos.length > 0
             ? profile.photos[0].value

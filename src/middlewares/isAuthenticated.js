@@ -46,7 +46,7 @@ module.exports = catchAsync(async (req, res, next) => {
 
       const newAccessToken = generateToken(
         {
-          name: user.username,
+          name: user.name,
           email: user.email,
           phone: user.phone,
         },
@@ -54,7 +54,7 @@ module.exports = catchAsync(async (req, res, next) => {
       );
 
       const newRefreshToken = generateToken({
-        name: user.username,
+        name: user.name,
         email: user.email,
         phone: user.phone,
       }); // To avoid token replay attacks
@@ -71,6 +71,7 @@ module.exports = catchAsync(async (req, res, next) => {
   }
 
   const user = await userService.getUserBasicInfoByUUID(decodedToken.name);
+
   if (!user) {
     return next(new AppError("Unauthorized access", 401));
   }

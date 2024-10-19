@@ -10,8 +10,8 @@ const AppError = require("../errors/appError");
 /**
  * @method generateToken
  * @memberof Utils.TokenUtils
- * @param {Object}      userTokenedData - The information of the user for whom the token will be generated.
- * @param {String}      tokenName - The name of the token to be generated.
+ * @param {Object}      [userTokenedData] - The information of the user for whom the token will be generated.
+ * @param {String}      [tokenName] - The name of the token to be generated.
  * @returns {String}    The generated JWT containing the user's id
  */
 
@@ -34,6 +34,7 @@ const generateToken = (userTokenedData, tokenName) => {
     options = {
       expiresIn: process.env.JWT_REFRESH_EXPIRES_IN_DAYS,
       issuer: "myapp",
+      audience: "myapp-users",
     };
   } else {
     throw new AppError("Unknown token name is passed", 500);

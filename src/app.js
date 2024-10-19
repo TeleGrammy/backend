@@ -6,19 +6,29 @@ require("dotenv").config({
   path: ".env",
 });
 
+const isAuth = require("./middlewares/isAuthenticated");
+
 const strategies = require("./middlewares/strategies/index");
+
 const authenticationRouter = require("./routes/authentication/authentication");
+const userRouter = require("./routes/user/user");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(passport.initialize());
 
+app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);
 
 app.use(globalErrorHandler);
