@@ -2,6 +2,7 @@ const User = require("./../models/userModel");
 const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {filterObject} = require("../utils/utilitiesFunc");
+const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 
 exports.updateUserEmail = async (req, res) => {
   const {email} = req.body;
@@ -24,8 +25,6 @@ exports.updateUserEmail = async (req, res) => {
       message: "please confirm your new email"
     });
   } catch (err) {
-    console.log(err);
-
     res.status(err.statusCode || 500).json({
       status: err.statusCode ? "failed" : "error",
       message: err.message
@@ -112,7 +111,6 @@ exports.updateUserInformation = async (req, res) => {
       data: {user}
     });
   } catch (err) {
-    console.log(err);
     if (err.codeName === "DuplicateKey") {
       err.statusCode = 400;
       if (err.keyPattern.username) err.message = "username already used.";
@@ -159,7 +157,7 @@ exports.updateUserPicture = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      {picture: photo.location},
+      {picture: photo.key},
       {new: true, runValidators: true}
     );
     if (!user) {
@@ -167,6 +165,34 @@ exports.updateUserPicture = async (req, res) => {
       err.statusCode = 404;
       throw err;
     }
+    const signedUrl = await generateSignedUrl(photo.key, 15 * 60); // URL valid for 15 minutes
+    await user.save();
+    res.status(200).json({
+      status: "success",
+      data: {user, signedUrl}
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      status: err.statusCode ? "failed" : "error",
+      message: err.message
+    });
+  }
+};
+
+exports.deleteUserPicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    await deleteFile(user.picture);
+
+    user.picture = "default.jpg";
+    await user.save();
+
     res.status(200).json({
       status: "success",
       data: {user}
@@ -179,21 +205,26 @@ exports.updateUserPicture = async (req, res) => {
   }
 };
 
-exports.deleteUserPicture = async (req, res) => {
+exports.getUserProfileInformation = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {picture: "default.jpg"},
-      {new: true, runValidators: true}
-    );
+    const user = await User.findById(req.params.id);
     if (!user) {
       const err = new Error("User not found");
       err.statusCode = 404;
       throw err;
     }
+
+    const signedUrl = await generateSignedUrl(user.picture, 15 * 60); // URL valid for 15 minutes
+
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {
+        screenName: user.screenName,
+        email: user.email,
+        bio: user.bio,
+        pictureUrl: signedUrl
+        // TODO complete the data after finishing the remaining fields required
+      }
     });
   } catch (err) {
     res.status(err.statusCode || 500).json({
