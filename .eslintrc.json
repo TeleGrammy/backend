@@ -7,6 +7,7 @@
   "plugins": ["prettier"],
   "rules": {
     "no-console": "warn",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "req|res|next"}]
+    "no-unused-vars": ["error", {"argsIgnorePattern": "req|res|next|err"}],
+    "no-underscore-dangle": "off"
   }
 }

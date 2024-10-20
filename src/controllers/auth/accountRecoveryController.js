@@ -1,10 +1,10 @@
 const crypto = require("crypto");
-const userServices = require("../services/userServices");
-const mails = require("../utils/mails");
-const sendEmail = require("../utils/sendEmail");
-const AppError = require("../errors/appError");
-const catchAsync = require("../utils/catchAsync");
-const createJWT = require("../utils/createJWT");
+const userServices = require("../../services/userService");
+const mails = require("../../utils/mails");
+const sendEmail = require("../../utils/sendEmail");
+const AppError = require("../../errors/appError");
+const catchAsync = require("../../utils/catchAsync");
+const createJWT = require("../../utils/createJWT");
 
 const sendPasswordResetEmail = (req, user) => {
   const resetToken = user.createResetPasswordToken();
@@ -73,7 +73,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetTokenExpiresAt = undefined;
 
   await user.save();
-  // eslint-disable-next-line no-underscore-dangle
   const jwt = createJWT(user._id);
   res.cookie("JWT", jwt, {httpOnly: true, secure: true, sameSite: "strict"});
 
