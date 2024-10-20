@@ -33,5 +33,6 @@ router
   .post(uploadStory, storyController.createStory)
   .get(storyController.getStories)
   .delete(storyController.deleteStory);
-
+// get story by id of the story
+router.get("/story//:id", storyController.getStory);
 module.exports = router;

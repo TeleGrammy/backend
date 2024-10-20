@@ -1,45 +1,37 @@
 const Story = require("./../models/storyModel");
 const User = require("./../models/userModel");
-const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
+const {AppError, handleError} = require("../errors/appError");
 
 exports.createStory = async (req, res) => {
-  const {content} = req.body;
-  const mediaKey = req.file ? req.file.key : null;
   try {
+    const {content} = req.body;
+    const mediaKey = req.file ? req.file.key : null;
     if (!content && !mediaKey) {
-      const err = new Error("No content or media provided.");
-      err.statusCode = 400;
-      throw err;
+      throw new AppError("No content or media provided.", 400);
     }
     const user = await User.findById(req.params.id);
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
-    let signedUrl = null;
-    if (mediaKey) signedUrl = await generateSignedUrl(mediaKey, 24 * 60 * 60); // URL valid for 1 day
 
     const story = await Story.create({
       user: user._id,
       content: content,
-      media: signedUrl,
       mediaKey
     });
 
-    story.mediaKey = undefined;
     res.status(201).json({
       status: "success",
       data: story
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
+// TODO : add the update method if it exists
+
+// TODO : check if the user requsting stories of another user is possible to get them
 exports.getStories = async (req, res) => {
   try {
     const stories = await Story.find({
@@ -51,35 +43,39 @@ exports.getStories = async (req, res) => {
       data: stories
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
+exports.getStory = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id);
+    if (!story) {
+      throw new AppError("Story not found", 404);
+    }
+    res.json({
+      status: "success",
+      data: story
+    });
+  } catch (err) {
+    handleError(err, req, res);
+  }
+};
+
+// TODO : should be handled in authorization
 exports.deleteStory = async (req, res) => {
   try {
-    const story = await Story.findByIdAndDelete(req.body.id).select(
-      "+mediaKey"
-    );
+    const story = await Story.findByIdAndDelete(req.body.id);
 
-    // should be handled in authorization
     if (!story) {
-      const err = new Error("Story not found or not authorized to delete.");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("Story not found or not authorized to delete", 404);
     }
 
-    if (story.mediaKey) await deleteFile(story.mediaKey);
     res.status(200).json({
       status: "success",
       message: "Story deleted successfully"
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };

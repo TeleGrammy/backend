@@ -27,7 +27,15 @@ const storage = multerS3({
     cb(null, {fieldName: file.fieldname});
   },
   key: (req, file, cb) => {
-    const fileName = `media/${Date.now().toString()}-${file.originalname}`;
+    let folder = "";
+    if (file.fieldname === "picture") {
+      folder = "userProfilesPictures";
+    } else if (file.fieldname === "story") {
+      folder = "stories";
+    }
+    const fileName = `media/${folder}/${Date.now().toString()}-${
+      file.originalname
+    }`;
     cb(null, fileName);
   }
 });
