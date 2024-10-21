@@ -69,11 +69,12 @@ userSchema.methods.setNewEmailInfo = async function(
   newEmail,
   confirmationCode
 ) {
-  if (!this.pendingEmail)
+  if (!newEmail) {
     throw new AppError(
       "Please make sure that you have provided a valid new email",
       404
     );
+  }
   this.pendingEmail = newEmail;
   this.pendingEmailCofirmationCode = confirmationCode;
   this.pendingEmailCofirmationCodeExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
@@ -87,13 +88,17 @@ userSchema.methods.unSetNewEmailInfo = async function() {
 };
 
 userSchema.methods.updateUserEmail = async function() {
+  if (!this.pendingEmail)
+    throw new AppError(
+      "Please make sure that you have provided a valid new email",
+      404
+    );
   this.email = this.pendingEmail;
-  this.unSetNewEmailInfo();
-  await this.save();
+  await this.unSetNewEmailInfo();
 };
 
 userSchema.methods.verifyConfirmationCode = function(confirmationCode) {
-  if (!this.pendingEmailCofirmationCode) {
+  if (!this.pendingEmail) {
     throw new AppError(
       "Please make sure that you have provided a valid new email",
       404
@@ -129,11 +134,12 @@ userSchema.methods.deleteUserPicture = async function() {
     this.picture = "default.jpg";
     this.pictureKey = null;
     await this.save();
-    console.log(this);
   }
 };
 userSchema.post(/^find/, async function(doc, next) {
-  if (!doc) next();
+  if (!doc) {
+    throw new AppError("User not found", 404);
+  }
 
   if (!doc.length) {
     await doc.generateSignedUrl();

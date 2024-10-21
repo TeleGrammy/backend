@@ -2,16 +2,13 @@ const User = require("./../models/userModel");
 const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {filterObject} = require("../utils/utilitiesFunc");
-const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 const {AppError, handleError} = require("../errors/appError");
 
 exports.updateUserEmail = async (req, res) => {
   const {email} = req.body;
   try {
     const user = await User.findOne({_id: req.params.id});
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
+
     // Update pendingEmail and create confirmation code
     const confirmationCode = generateConfirmationCode();
     await user.setNewEmailInfo(email, confirmationCode);
@@ -28,17 +25,18 @@ exports.updateUserEmail = async (req, res) => {
 };
 
 exports.requestNewConfirmationCode = async (req, res) => {
-  const {email} = req.body;
   try {
     const user = await User.findOne({_id: req.params.id});
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
+
     // Update pendingEmail and create confirmation code
     const confirmationCode = generateConfirmationCode();
     await user.setNewEmailInfo(user.pendingEmail, confirmationCode);
 
-    await Email.sendConfirmationEmail(email, user.username, confirmationCode);
+    await Email.sendConfirmationEmail(
+      user.pendingEmail,
+      user.username,
+      confirmationCode
+    );
 
     res.status(202).json({
       status: "pending",
@@ -53,13 +51,10 @@ exports.confirmNewEmail = async (req, res, next) => {
   const {confirmationCode} = req.body;
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
 
     await user.verifyConfirmationCode(confirmationCode);
 
-    user.updateUserEmail();
+    await user.updateUserEmail();
 
     res.status(200).json({
       status: "success",
@@ -73,9 +68,6 @@ exports.confirmNewEmail = async (req, res, next) => {
 exports.getUserProfileInformation = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
 
     res.status(200).json({
       status: "success",
@@ -102,9 +94,6 @@ exports.updateUserProfileInformation = async (req, res) => {
       runValidators: true
     });
 
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
     res.status(200).json({
       status: "success",
       data: {user}
@@ -121,9 +110,7 @@ exports.deleteUserBio = async (req, res) => {
       {bio: ""},
       {new: true, runValidators: true}
     );
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
+
     res.status(200).json({
       status: "success",
       data: {user}
@@ -140,9 +127,7 @@ exports.updateUserPicture = async (req, res) => {
   }
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
+
     await user.updatePictureKey(photo.key);
 
     res.status(200).json({
@@ -157,11 +142,7 @@ exports.updateUserPicture = async (req, res) => {
 exports.deleteUserPicture = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("+pictureKey");
-    if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
-    }
+
     await user.deleteUserPicture();
 
     user.pictureKey = undefined;
@@ -177,11 +158,7 @@ exports.deleteUserPicture = async (req, res) => {
 exports.getUserActivity = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
-    }
+
     const data = {
       status: user.status,
       lastSeen: user.lastSeen
@@ -191,10 +168,7 @@ exports.getUserActivity = async (req, res) => {
       data
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
@@ -203,16 +177,12 @@ exports.updateUserActivity = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.params.id,
       {
-        status: req.body.status,
+        status: req.body.status || "online",
         lastSeen: new Date()
       },
       {new: true, runValidators: true}
     );
-    if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
-    }
+
     const data = {
       status: user.status,
       lastSeen: user.lastSeen
@@ -222,9 +192,6 @@ exports.updateUserActivity = async (req, res) => {
       data
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };

@@ -11,7 +11,7 @@ router.patch("/:id", userController.updateUserProfileInformation);
 
 // the status also should be changed when using the web socket
 router
-  .route("/status")
+  .route("/status/:id")
   .get(userController.getUserActivity)
   .patch(userController.updateUserActivity);
 

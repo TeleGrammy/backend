@@ -13,7 +13,6 @@ class AppError extends Error {
 exports.AppError = AppError;
 
 const handleCastError = err => {
-  if (err.path === "_id") err.path = "id";
   err.message = `Invalid ${err.path}: ${err.value}.`;
   err.status = "fail";
   err.statusCode = 400;
