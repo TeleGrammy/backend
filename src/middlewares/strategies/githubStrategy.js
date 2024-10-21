@@ -9,10 +9,11 @@ passport.use(
       callbackURL: process.env.GITHUB_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
+      console.log(profile);
       const user = {
         id: profile.id,
         name: profile.displayName,
-        email: profile.emails[0].value,
+        email: profile._json.email,
         phone: String(
           Math.random() * (99999999999 - 10000000001) + 10000000000
         ),
