@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require("express-session")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
@@ -6,9 +7,6 @@ require("dotenv").config({
   path: ".env",
 });
 
-const isAuth = require("./middlewares/isAuthenticated");
-
-const strategies = require("./middlewares/strategies/index");
 
 const authenticationRouter = require("./routes/authentication/authentication");
 const userRouter = require("./routes/user/user");
@@ -23,10 +21,16 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(
+  session({secret: "supersecretkey", resave: false, saveUninitialized: true})
+);
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);

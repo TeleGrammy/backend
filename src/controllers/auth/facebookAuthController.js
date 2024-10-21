@@ -1,28 +1,41 @@
 const passport = require("passport");
-const bcrypt = require("bcryptjs");
-
-const AppError = require("../../errors/appError");
-
+const FacebookStrategy = require("passport-facebook").Strategy;
 const userService = require("../../services/userService");
-
-const catchAsync = require("../../utils/catchAsync");
-const addAuthCookie = require("../../utils/addAuthCookie");
+const AppError = require("../../errors/appError");
+const bcrypt = require("bcryptjs");
 const generateToken = require("../../utils/generateToken");
+const addAuthCookie = require("../../utils/addAuthCookie");
 
-const signInWithGoogle = (req, res, next) => {
-  passport.authenticate("google", {
-    scope: ["email", "profile"],
-    accessType: "offline",
-  })(req, res, next);
-};
+// Passport's serialization setup
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
 
-const googleCallBack = catchAsync(async (req, res, next) => {
-  passport.authenticate(
-    "google",
-    {failureRedirect: "/login"},
-    // eslint-disable-next-line consistent-return
-    async (err, user) => {
-      if (err || !user) {
+passport.deserializeUser(function (obj, done) {
+  done(null, obj);
+});
+
+// Facebook strategy setup
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.APP_ID,
+      clientSecret: process.env.APP_SECRET,
+      callbackURL: "http://localhost:8080/api/v1/auth/facebook/callback",
+      profileFields: ["id", "name", "profileUrl", "displayName", "email"],
+    },
+    async function (accessTokenFab, refreshTokenFab, profile, done) {
+      // Here, you can save the user profile info in your database
+
+      console.log("Access Token:");
+      console.log(accessTokenFab);
+      console.log("Refresh: ");
+      console.log(refreshTokenFab);
+      console.log("Profile:");
+      console.log(profile);
+      const id = profile.id;
+      const email = `${id}@facebook.com`;
+      if (!accessTokenFab || !profile) {
         return next(new AppError("Authentication failed", 401));
       }
 
@@ -77,11 +90,23 @@ const googleCallBack = catchAsync(async (req, res, next) => {
       addAuthCookie(refreshToken, res, false);
 
       res.redirect("/api/v1/user");
+
+
+      return done(null, profile);
     }
-  )(req, res);
+  )
+);
+
+const facebookLogin = passport.authenticate("facebook", {
+  scope: ["public_profile"],
+});
+
+const facebookCallback = passport.authenticate("facebook", {
+  successRedirect: "/api/v1/user/",
+  failureRedirect: "/",
 });
 
 module.exports = {
-  signInWithGoogle,
-  googleCallBack,
+  facebookLogin,
+  facebookCallback,
 };
