@@ -1,0 +1,10 @@
+node_modules/
+.eslintrc.json
+.gitignore
+README.md
+.prettierrc
+.Dockerignore
+Dockerfile
+.env
+.git/
+.idea/
