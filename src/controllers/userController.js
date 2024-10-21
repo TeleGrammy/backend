@@ -3,6 +3,9 @@ const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {filterObject} = require("../utils/utilitiesFunc");
 const {AppError, handleError} = require("../errors/appError");
+// require("dotenv").config({
+//   path: ".env"
+// });
 
 exports.updateUserEmail = async (req, res) => {
   const {email} = req.body;
@@ -12,8 +15,12 @@ exports.updateUserEmail = async (req, res) => {
     // Update pendingEmail and create confirmation code
     const confirmationCode = generateConfirmationCode();
     await user.setNewEmailInfo(email, confirmationCode);
-
-    await Email.sendConfirmationEmail(email, user.username, confirmationCode);
+    await Email.sendConfirmationEmail(
+      email,
+      user.username,
+      confirmationCode,
+      process.env.SNDGRID_TEMPLATEID_UPDATING_EMAIL
+    );
 
     res.status(202).json({
       status: "pending",
@@ -35,7 +42,8 @@ exports.requestNewConfirmationCode = async (req, res) => {
     await Email.sendConfirmationEmail(
       user.pendingEmail,
       user.username,
-      confirmationCode
+      confirmationCode,
+      process.env.SNDGRID_TEMPLATEID_UPDATING_EMAIL
     );
 
     res.status(202).json({
