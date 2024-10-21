@@ -17,7 +17,6 @@ const handleCastError = err => {
   err.message = `Invalid ${err.path}: ${err.value}.`;
   err.status = "fail";
   err.statusCode = 400;
-  // throw new AppError(message, 400);
 };
 exports.handleError = (appError, req, res) => {
   console.log(appError);

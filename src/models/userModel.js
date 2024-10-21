@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const {AppError} = require("../errors/appError");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -59,35 +60,49 @@ const userSchema = new mongoose.Schema({
     default: undefined
   }
 });
-userSchema.methods.setNewEmailInfo = function(newEmail, confirmationCode) {
+userSchema.methods.setNewEmailInfo = async function(
+  newEmail,
+  confirmationCode
+) {
+  if (!this.pendingEmail)
+    throw new AppError(
+      "Please make sure that you have provided a valid new email",
+      404
+    );
   this.pendingEmail = newEmail;
   this.pendingEmailCofirmationCode = confirmationCode;
   this.pendingEmailCofirmationCodeExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+  await this.save();
 };
-userSchema.methods.unSetNewEmailInfo = function() {
+userSchema.methods.unSetNewEmailInfo = async function() {
   this.pendingEmail = undefined;
   this.pendingEmailCofirmationCode = undefined;
   this.pendingEmailCofirmationCodeExpiresAt = undefined;
+  await this.save();
 };
 
-userSchema.methods.updateUserEmail = function() {
+userSchema.methods.updateUserEmail = async function() {
   this.email = this.pendingEmail;
   this.unSetNewEmailInfo();
+  await this.save();
 };
 
 userSchema.methods.verifyConfirmationCode = function(confirmationCode) {
+  if (!this.pendingEmailCofirmationCode) {
+    throw new AppError(
+      "Please make sure that you have provided a valid new email",
+      404
+    );
+  }
   if (this.pendingEmailCofirmationCodeExpiresAt < Date.now()) {
     this.unSetNewEmailInfo();
-    const err = new Error(
-      "Confirmation code expired please try to change your mail  later"
+    throw new AppError(
+      "Confirmation code expired please try to change your mail later",
+      401
     );
-    err.statusCode = 401;
-    throw err;
   }
   if (this.pendingEmailCofirmationCode !== confirmationCode) {
-    const err = new Error("Invalid confirmation code");
-    err.statusCode = 401;
-    throw err;
+    throw new AppError("Invalid confirmation code", 401);
   }
 };
 const User = mongoose.model("User", userSchema);

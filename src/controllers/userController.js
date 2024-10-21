@@ -3,20 +3,18 @@ const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {filterObject} = require("../utils/utilitiesFunc");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
+const {AppError, handleError} = require("../errors/appError");
 
 exports.updateUserEmail = async (req, res) => {
   const {email} = req.body;
   try {
     const user = await User.findOne({_id: req.params.id});
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
     // Update pendingEmail and create confirmation code
     const confirmationCode = generateConfirmationCode();
-    user.setNewEmailInfo(email, confirmationCode);
-    await user.save();
+    await user.setNewEmailInfo(email, confirmationCode);
 
     await Email.sendConfirmationEmail(email, user.username, confirmationCode);
 
@@ -25,10 +23,7 @@ exports.updateUserEmail = async (req, res) => {
       message: "please confirm your new email"
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
@@ -37,14 +32,11 @@ exports.requestNewConfirmationCode = async (req, res) => {
   try {
     const user = await User.findOne({_id: req.params.id});
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
     // Update pendingEmail and create confirmation code
     const confirmationCode = generateConfirmationCode();
-    user.setNewEmailInfo(user.pendingEmail, confirmationCode);
-    await user.save();
+    await user.setNewEmailInfo(user.pendingEmail, confirmationCode);
 
     await Email.sendConfirmationEmail(email, user.username, confirmationCode);
 
@@ -53,10 +45,7 @@ exports.requestNewConfirmationCode = async (req, res) => {
       message: "please confirm your new email"
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
@@ -65,25 +54,19 @@ exports.confirmNewEmail = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
 
-    user.verifyConfirmationCode(confirmationCode);
+    await user.verifyConfirmationCode(confirmationCode);
 
     user.updateUserEmail();
-    await user.save();
 
     res.status(200).json({
       status: "success",
       data: {user}
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
