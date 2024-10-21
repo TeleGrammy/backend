@@ -1,3 +1,6 @@
+const AppError = require("../../errors/appError");
+
+const {findOneAndUpdate} = require("../../services/userService");
 
 const logout = async (req, res, next) => {
   try {
@@ -5,10 +8,17 @@ const logout = async (req, res, next) => {
       httpOnly: true,
       secure: true,
     });
+
     res.clearCookie(process.env.COOKIE_REFRESH_NAME, {
       httpOnly: true,
       secure: true,
     });
+
+    await findOneAndUpdate(
+      {email: req.user.email},
+      {status: "inactive"},
+      {new: true}
+    );
 
     res.status(200).json({
       status: "success",

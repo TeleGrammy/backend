@@ -1,5 +1,4 @@
 const passport = require("passport");
-const bcrypt = require("bcryptjs");
 
 const AppError = require("../../errors/appError");
 
@@ -32,13 +31,12 @@ const googleCallBack = catchAsync(async (req, res, next) => {
       refreshTokenExpiration.setMonth(refreshTokenExpiration.getMonth() + 6);
 
       if (!existingUser) {
-        const hashedPassword = await bcrypt.hash("google", 12);
-
         existingUser = await userService.createUser({
           username: user.name,
           phone: user.phone,
           email: user.email,
-          password: hashedPassword,
+          password: "google_user",
+          passwordConfirm: "google_user",
           id: user.id,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
@@ -52,31 +50,30 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         existingUser.refreshToken = user.refreshToken;
         existingUser.accessTokenExpiresAt = new Date(Date.now() + 3600 * 100);
         existingUser.refreshTokenExpiresAt = refreshTokenExpiration;
-        await existingUser.save();
+        await existingUser.save({validateBeforeSave: false});
       }
 
+      const userTokenedData = {
+        id: existingUser.id,
+        name: existingUser.username,
+        email: existingUser.email,
+        loggedOutFromAllDevicesAt: existingUser.loggedOutFromAllDevicesAt,
+      };
+
       const accessToken = generateToken(
-        {
-          id: existingUser.id,
-          name: existingUser.username,
-          email: existingUser.email,
-        },
+        userTokenedData,
         process.env.COOKIE_ACCESS_NAME
       );
 
       const refreshToken = generateToken(
-        {
-          id: existingUser.id,
-          name: existingUser.username,
-          email: existingUser.email,
-        },
+        userTokenedData,
         process.env.COOKIE_REFRESH_NAME
       );
 
       addAuthCookie(accessToken, res, true);
       addAuthCookie(refreshToken, res, false);
 
-      res.redirect("/api/v1/user");
+      return res.redirect("/api/v1/user");
     }
   )(req, res);
 });

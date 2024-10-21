@@ -6,13 +6,13 @@ mongoose
   .connect(process.env.DB_HOST)
   .then(() => {
     console.log("Database Connection successed");
-    console.log(process.env.HOSTNAME);
+    console.log(process.env.HOST_NAME);
     app.listen(
       process.env.PORT || 3000,
-      process.env.HOSTNAME || "localhost",
+      process.env.HOST_NAME || "localhost",
       () => {
         console.log(
-          `Server is running on http://${process.env.HOSTNAME}:${process.env.PORT}`
+          `Server is running on http://${process.env.HOST_NAME}:${process.env.PORT}`
         );
       }
     );
@@ -20,3 +20,4 @@ mongoose
   .catch((error) => {
     console.error(error);
   });
+

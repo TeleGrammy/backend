@@ -3,10 +3,13 @@ const session = require("express-session")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
+const {swaggerUi, specs} = require("../swaggerConfig");
+
 require("dotenv").config({
-  path: ".env",
+  path: "../env",
 });
 
+require("./middlewares/strategies/index");
 
 const authenticationRouter = require("./routes/authentication/authentication");
 const userRouter = require("./routes/user/user");
@@ -34,6 +37,7 @@ app.use(passport.session());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(globalErrorHandler);
 

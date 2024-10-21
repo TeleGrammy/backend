@@ -11,7 +11,6 @@ const addAuthCookie = require("../../utils/addAuthCookie");
 const login = catchAsync(async (req, res, next) => {
   const {UUID, password} = req.body;
 
-  console.log(UUID, password);
   const user = await userService.getUserBasicInfoByUUID(UUID);
   if (!user) {
     return next(new AppError("No user has been found with that UUID", 404));
@@ -28,6 +27,7 @@ const login = catchAsync(async (req, res, next) => {
     name: user.username,
     email: user.email,
     phone: user.phone,
+    loggedOutFromAllDevicesAt: user.loggedOutFromAllDevicesAt,
   };
 
   const accessToken = generateToken(
@@ -40,12 +40,17 @@ const login = catchAsync(async (req, res, next) => {
   );
 
   addAuthCookie(accessToken, res, true);
-
   addAuthCookie(refreshToken, res, false);
+
+  const updatedUser = await userService.findOneAndUpdate(
+    {email: user.email},
+    {status: "active"},
+    {new: true}
+  );
 
   return res.status(200).json({
     data: {
-      user,
+      updatedUser,
       accessToken,
       refreshToken,
     },

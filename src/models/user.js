@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 
 const userSchema = new mongoose.Schema({
@@ -31,9 +33,23 @@ const userSchema = new mongoose.Schema({
     required: [true, "Password is required. Please enter a password."],
     minlength: [8, "Password must be at least 8 characters long"],
   },
+  passwordConfirm: {
+    type: String,
+    required: [true, "Password Confirm is required"],
+    validate: {
+      validator(el) {
+        return el === this.password;
+      },
+      message: "Password and passwordConfirm are different.",
+    },
+  },
 
   phone: {
     type: String,
+    unique: [
+      true,
+      "This phone number is already registered. Please use a different number.",
+    ],
     default: null,
   },
 
@@ -58,7 +74,6 @@ const userSchema = new mongoose.Schema({
     enum: ["active", "inactive", "banned"],
     default: "inactive",
   },
-
   googleId: {
     type: String,
     unique: true,
@@ -101,9 +116,56 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  passwordModifiedAt: {
+    type: Date,
+    default: null,
+  },
+  passwordResetToken: String,
+  passwordResetTokenExpiresAt: Date,
+  lastPasswordResetRequestAt: Date,
+  loggedOutFromAllDevicesAt: {type: Date, default: null},
 });
 
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordModifiedAt = Date.now();
+  return next();
+});
+
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    const saltRounds = 12;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    this.passwordConfirm = undefined;
+  }
+  next();
+});
+
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  if (update.password) {
+    const saltRounds = 12;
+    update.password = await bcrypt.hash(update.password, saltRounds);
+    update.passwordConfirm = undefined;
+    update.passwordModifiedAt = Date.now();
+  }
+  next();
+});
+
+userSchema.methods.createResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(6).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetTokenExpiresAt = Date.now() + 60 * 60 * 1000;
+  return resetToken;
+};
+
 applySoftDeleteMiddleWare(userSchema);
+
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

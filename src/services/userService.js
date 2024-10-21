@@ -15,7 +15,7 @@ const User = require("../models/user");
  * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
-  return await User.findOne({
+  return User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -38,7 +38,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     registrationDate: 1,
   };
 
-  return await getUserByUUID(UUID, userBasicInfo);
+  return getUserByUUID(UUID, userBasicInfo);
 };
 
 /**
@@ -81,7 +81,7 @@ const getUserId = async (UUID) => {
  */
 
 const getUserByEmail = async (email) => {
-  return await User.findOne({email});
+  return User.findOne({email});
 };
 
 /**
@@ -99,6 +99,7 @@ const createUser = async (userData) => {
     email,
     phone,
     password,
+    passwordConfirm,
     picture,
     id,
     accessToken,
@@ -108,11 +109,12 @@ const createUser = async (userData) => {
     isFaceBookUser,
   } = userData;
 
-  return await User.create({
+  return User.create({
     username,
     email,
     phone,
     password,
+    passwordConfirm,
     picture,
     accessToken,
     refreshToken,
@@ -133,10 +135,15 @@ const createUser = async (userData) => {
  */
 
 const updateRefreshToken = async (id, newRefreshToken) => {
-  return await User.update(
-    {jwtRefreshToken: newRefreshToken},
-    {where: {_id: id}}
-  );
+  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
+};
+
+const findOne = (filter) => {
+  return User.findOne(filter);
+};
+
+const findOneAndUpdate = (filter, updateData, options) => {
+  return User.findOneAndUpdate(filter, updateData, options);
 };
 
 module.exports = {
@@ -147,4 +154,6 @@ module.exports = {
   getUserId,
   createUser,
   updateRefreshToken,
+  findOne,
+  findOneAndUpdate,
 };
