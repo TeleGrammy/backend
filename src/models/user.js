@@ -137,6 +137,16 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  if (update.password) {
+    const saltRounds = 12;
+    update.password = await bcrypt.hash(update.password, saltRounds);
+    update.passwordConfirm = undefined;
+  }
+  next();
+});
+
 userSchema.methods.createResetPasswordToken = function () {
   const resetToken = crypto.randomBytes(6).toString("hex");
   this.passwordResetToken = crypto

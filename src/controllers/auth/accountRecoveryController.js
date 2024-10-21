@@ -59,6 +59,11 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetToken: hashedToken,
   });
 
+  if (!password || !passwordConfirm)
+    return next(
+      new AppError("Password and PasswordConfirm are required fields.", 400)
+    );
+
   if (!user) {
     return next(new AppError("The reset token is invalid.", 400));
   }
@@ -67,12 +72,19 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("The reset token is expired.", 400));
   }
 
-  user.password = password;
-  user.passwordConfirm = passwordConfirm;
-  user.passwordResetToken = undefined;
-  user.passwordResetTokenExpiresAt = undefined;
+  await userServices.findOneAndUpdate(
+    {_id: user._id},
+    {
+      password,
+      passwordConfirm,
+      passwordResetToken: undefined,
+      passwordResetTokenExpiresAt: undefined,
+    },
+    {
+      runValidators: true,
+    }
+  );
 
-  await user.save();
   const jwt = createJWT(user._id);
   res.cookie("JWT", jwt, {httpOnly: true, secure: true, sameSite: "strict"});
 

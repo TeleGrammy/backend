@@ -136,6 +136,14 @@ const updateRefreshToken = async (id, newRefreshToken) => {
   return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
 };
 
+const findOne = (filter) => {
+  return User.findOne(filter);
+};
+
+const findOneAndUpdate = (filter, updateData, options) => {
+  return User.findOneAndUpdate(filter, updateData, options);
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -144,4 +152,6 @@ module.exports = {
   getUserId,
   createUser,
   updateRefreshToken,
+  findOne,
+  findOneAndUpdate,
 };
