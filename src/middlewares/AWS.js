@@ -84,6 +84,9 @@ const isFileAvailable = async key => {
 
 exports.deleteFile = async key => {
   try {
+    if (!isFileAvailable(key)) {
+      return;
+    }
     const deleteParams = {
       Bucket: process.env.AWS_BUCKET_NAME,
       Key: key
