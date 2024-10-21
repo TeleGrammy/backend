@@ -3,6 +3,7 @@ const validator = require("validator");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
+const {phoneRegex} = require("../utils/regexFormat");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -46,11 +47,16 @@ const userSchema = new mongoose.Schema({
 
   phone: {
     type: String,
+    validator: {
+      validator(element) {
+        return phoneRegex.test(element);
+      },
+      message: "Invalid phone number format.",
+    },
     unique: [
       true,
       "This phone number is already registered. Please use a different number.",
     ],
-    default: null,
   },
 
   registrationDate: {
