@@ -1,6 +1,5 @@
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-const fs = require("fs");
 require("dotenv").config({
   path: ".env",
 });
@@ -15,7 +14,7 @@ const options = {
     },
     servers: [
       {
-        url: `http://${process.env.HOSTNAME}:${process.env.PORT}`,
+        url: `http://${process.env.HOST_NAME}:${process.env.PORT}`,
         description: "Local server",
       },
     ],
@@ -23,7 +22,6 @@ const options = {
   apis: ["./src/docs/*.js", "./src/routes/*.js"],
 };
 const specs = swaggerJsdoc(options);
-fs.writeFileSync("./swagger-output.json", JSON.stringify(specs, null, 2));
 
 module.exports = {
   swaggerUi,

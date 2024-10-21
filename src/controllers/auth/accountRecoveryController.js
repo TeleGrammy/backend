@@ -1,10 +1,15 @@
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+
 const userServices = require("../../services/userService");
-const mails = require("../../utils/mails");
+
+const mails = require("../../utils/mailTemplate");
 const sendEmail = require("../../utils/sendEmail");
-const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
-const createJWT = require("../../utils/createJWT");
+const generateToken = require("../../utils/generateToken");
+const addAuthCookie = require("../../utils/addAuthCookie");
+
+const AppError = require("../../errors/appError");
 
 const sendPasswordResetEmail = (req, user) => {
   const resetToken = user.createResetPasswordToken();
@@ -32,7 +37,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
   const user = await userServices.getUserByEmail(email);
 
-  if (user === null) {
+  if (!user) {
     return next(new AppError("We couldn’t find your Email.", 404));
   }
 
@@ -87,8 +92,27 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     }
   );
 
-  const jwt = createJWT(user._id);
-  res.cookie("JWT", jwt, {httpOnly: true, secure: true, sameSite: "strict"});
+  const newAccessToken = generateToken(
+    {
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      loggedOutFromAllDevicesAt: Date.now(),
+    },
+    process.env.COOKIE_ACCESS_NAME
+  );
+
+  const newRefreshToken = generateToken(
+    {
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+    },
+    process.env.COOKIE_REFRESH_NAME
+  );
+
+  addAuthCookie(newAccessToken, res, true);
+  addAuthCookie(newRefreshToken, res, false);
 
   return res.status(200).json({
     status: "success",
@@ -115,7 +139,7 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
     );
 
   const timeSinceLastRequest = Date.now() - user.lastPasswordResetRequestAt;
-  const resendCoolDown = 5 * 60 * 1000;
+  const resendCoolDown = 1 * 60 * 1000;
 
   if (timeSinceLastRequest < resendCoolDown) {
     return next(
@@ -135,6 +159,46 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       message: "Resend Email successfully. (Valid for 1 hour)",
+    },
+  });
+});
+
+exports.logOutFromAllDevices = catchAsync(async (req, res, next) => {
+  const accessToken = req.cookies[process.env.COOKIE_ACCESS_NAME];
+  const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+
+  const {email} = decodedToken;
+
+  const updatedUser = await userServices.findOneAndUpdate(
+    {email},
+    {loggedOutFromAllDevicesAt: Date.now()},
+    {new: true}
+  );
+
+  const userTokenedData = {
+    id: accessToken.id,
+    email: accessToken.email,
+    phone: accessToken.phone,
+    loggedOutFromAllDevicesAt: updatedUser.loggedOutFromAllDevicesAt,
+  };
+
+  const newAccessToken = generateToken(
+    userTokenedData,
+    process.env.COOKIE_ACCESS_NAME
+  );
+
+  const newRefreshToken = generateToken(
+    userTokenedData,
+    process.env.COOKIE_ACCESS_NAME
+  );
+
+  addAuthCookie(newAccessToken, res, true);
+  addAuthCookie(newRefreshToken, res, false);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      message: "logged out successfully from all devices",
     },
   });
 });

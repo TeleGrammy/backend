@@ -119,6 +119,7 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetTokenExpiresAt: Date,
   lastPasswordResetRequestAt: Date,
+  loggedOutFromAllDevicesAt: {type: Date, default: null},
 });
 
 userSchema.pre("save", function (next) {

@@ -7,6 +7,7 @@ const catchAsync = require("../utils/catchAsync");
 const generateToken = require("../utils/generateToken");
 const addAuthCookie = require("../utils/addAuthCookie");
 const userService = require("../services/userService");
+const isLoggedOut = require("../utils/isLoggedOut");
 
 module.exports = catchAsync(async (req, res, next) => {
   const accessToken = req.cookies[process.env.COOKIE_ACCESS_NAME];
@@ -31,7 +32,7 @@ module.exports = catchAsync(async (req, res, next) => {
           refreshToken,
           process.env.JWT_SECRET
         );
-      } catch (err) {
+      } catch (error) {
         return next(
           new AppError("Invalid refresh token, please log in again", 401)
         );
@@ -49,6 +50,7 @@ module.exports = catchAsync(async (req, res, next) => {
           name: user.name,
           email: user.email,
           phone: user.phone,
+          loggedOutFromAllDevicesAt: decodedToken.loggedOutFromAllDevicesAt,
         },
         process.env.COOKIE_ACCESS_NAME
       );
@@ -57,6 +59,8 @@ module.exports = catchAsync(async (req, res, next) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        loggedOutFromAllDevicesAt:
+          decodedRefreshToken.loggedOutFromAllDevicesAt,
       }); // To avoid token replay attacks
 
       addAuthCookie(newAccessToken, res, true);
@@ -76,7 +80,19 @@ module.exports = catchAsync(async (req, res, next) => {
     return next(new AppError("Unauthorized access", 401));
   }
 
-  req.user = decodedToken;
+  if (await isLoggedOut(decodedToken)) {
+    res.clearCookie(process.env.COOKIE_ACCESS_NAME, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.clearCookie(process.env.COOKIE_REFRESH_NAME, {
+      httpOnly: true,
+      secure: true,
+    });
 
+    return next(new AppError("Unauthorized access", 401));
+  }
+
+  req.user = decodedToken;
   return next();
 });

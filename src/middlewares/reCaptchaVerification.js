@@ -24,7 +24,9 @@ const reCaptchaVerification = async (req, res, next) => {
       }
     );
 
-    if (response.success === true) return next();
+    if (response.success === true) {
+      return next();
+    }
 
     const error = new Error("Failed captcha verification");
     error.statusCode = 400;

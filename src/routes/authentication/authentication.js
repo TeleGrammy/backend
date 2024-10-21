@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const isAuthenticated = require("../../middlewares/isAuthenticated");
 
 const {
   login,
@@ -33,6 +34,12 @@ router.post(
   accountRecovery.resendResetToken
 );
 
+router.post("/logout-from-all-devices", accountRecovery.logOutFromAllDevices);
+
 router.patch("/reset-password/:token", accountRecovery.resetPassword);
+
+router.get("/test", isAuthenticated, (req, res, next) => {
+  res.status(200).json({name: "that is ok"});
+});
 
 module.exports = router;
