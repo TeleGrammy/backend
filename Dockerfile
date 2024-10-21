@@ -4,11 +4,11 @@ RUN useradd --create-home --shell /bin/bash telegrammy
 
 WORKDIR /usr/src/app
 
-COPY package*.json . 
+COPY package*.json .
 
-RUN npm ci --only=production  
+RUN npm ci --only=production
 
-COPY . .  
+COPY . .
 
 RUN chown -R telegrammy:telegrammy /usr/src/app
 
@@ -16,6 +16,6 @@ USER telegrammy
 
 ENV NODE_ENV=production
 
-EXPOSE 3000
+EXPOSE 8080
 
-CMD ["npm","run","start:prod"]
+CMD ["node","src/index.js"]
