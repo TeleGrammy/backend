@@ -5,7 +5,7 @@ const passport = require("passport");
 const {swaggerUi, specs} = require("../swaggerConfig");
 
 require("dotenv").config({
-  path: ".env",
+  path: "../env",
 });
 
 require("./middlewares/strategies/index");

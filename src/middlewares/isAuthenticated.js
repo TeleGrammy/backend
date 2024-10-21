@@ -90,7 +90,9 @@ module.exports = catchAsync(async (req, res, next) => {
       secure: true,
     });
 
-    return next(new AppError("Unauthorized access", 401));
+    return next(
+      new AppError("Unauthorized access, all devices are logged out", 401)
+    );
   }
 
   req.user = decodedToken;

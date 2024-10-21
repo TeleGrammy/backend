@@ -43,9 +43,15 @@ const login = catchAsync(async (req, res, next) => {
 
   addAuthCookie(refreshToken, res, false);
 
+  const updatedUser = await userService.findOneAndUpdate(
+    {email: user.email},
+    {status: "active"},
+    {new: true}
+  );
+
   return res.status(200).json({
     data: {
-      user,
+      updatedUser,
       accessToken,
       refreshToken,
     },
