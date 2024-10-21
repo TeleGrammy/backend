@@ -143,6 +143,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
     update.passwordConfirm = undefined;
+    update.passwordModifiedAt = Date.now();
   }
   next();
 });

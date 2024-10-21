@@ -77,8 +77,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     {
       password,
       passwordConfirm,
-      passwordResetToken: undefined,
-      passwordResetTokenExpiresAt: undefined,
+      $unset: {
+        passwordResetToken: "",
+        passwordResetTokenExpiresAt: "",
+      },
     },
     {
       runValidators: true,
