@@ -1,4 +1,6 @@
 const router = require("express").Router();
+const rateLimit = require("express-rate-limit");
+
 const isAuthenticated = require("../../middlewares/isAuthenticated");
 
 const {
@@ -14,6 +16,8 @@ const {
   signInWithGitHub,
   gitHubCallBack,
 } = require("../../controllers/auth/githubAuthController");
+
+const registrationController = require("../../controllers/auth/registration");
 
 const resendPasswordTokenLimiter = require("../../middlewares/resendPasswordTokenLimiter");
 
@@ -41,5 +45,21 @@ router.post(
 );
 
 router.patch("/reset-password/:token", accountRecovery.resetPassword);
+
+router.post("/register", registrationController.postRegistration);
+
+router.post("/verfiy", registrationController.postVerfiy);
+
+const resendLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 1,
+  message: "Too many resend requests, please try again later",
+});
+
+router.post(
+  "/resend-verification",
+  resendLimiter,
+  registrationController.resendVerification
+);
 
 module.exports = router;

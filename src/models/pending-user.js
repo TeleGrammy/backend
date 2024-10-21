@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
+const {phoneRegex} = require("../utils/regexFormat");
+
 const pendignUserSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -28,8 +30,24 @@ const pendignUserSchema = new mongoose.Schema({
     required: [true, "Password is required. Please enter a password."],
     minlength: [8, "Password must be at least 8 characters long"],
   },
+  passwordConfirm: {
+    type: String,
+    required: [true, "Password Confirm is required"],
+    validate: {
+      validator(el) {
+        return el === this.password;
+      },
+      message: "Password and passwordConfirm are different.",
+    },
+  },
   phone: {
     type: String,
+    validator: {
+      validator(element) {
+        return phoneRegex.test(element);
+      },
+      message: "Invalid phone number format.",
+    },
     unique: [
       true,
       "This phone number is already registered. Please use a different number.",
@@ -53,6 +71,6 @@ const pendignUserSchema = new mongoose.Schema({
   },
 });
 
-const User = mongoose.model("PendingUsers", pendignUserSchema);
+const PendingUser = mongoose.model("PendingUsers", pendignUserSchema);
 
-module.exports = User;
+module.exports = PendingUser;

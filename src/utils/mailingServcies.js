@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const sgMail = require("@sendgrid/mail");
 
-sgMail.setApiKey(`${process.env.SEND_API_KEY}`);
+sgMail.setApiKey(`${process.env.SENDGRID_API_KEY}`);
 
 exports.sendConfirmationEmail = (userEmail, username, confirmationCode) => {
   const msg = {
