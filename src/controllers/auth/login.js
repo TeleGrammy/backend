@@ -40,7 +40,6 @@ const login = catchAsync(async (req, res, next) => {
   );
 
   addAuthCookie(accessToken, res, true);
-
   addAuthCookie(refreshToken, res, false);
 
   const updatedUser = await userService.findOneAndUpdate(

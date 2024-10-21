@@ -20,12 +20,11 @@ passport.use(
             "https://api.github.com/user/emails",
             {
               headers: {
-                Authorization: `token ${accessToken}`, // Use accessToken for authorization
+                Authorization: `token ${accessToken}`,
               },
             }
           );
 
-          // GitHub API returns an array of emails; we pick the primary one
           const primaryEmail = emailResponse.data.find(
             (emailObj) => emailObj.primary && emailObj.verified
           );
@@ -33,14 +32,14 @@ passport.use(
             email = primaryEmail.email;
           }
         } catch (error) {
-          return done(error); // Handle error if the API call fails
+          return done(error);
         }
       }
 
       const user = {
         id: profile.id,
         name: profile.displayName,
-        email, // Now it will have the fetched email if not provided in the profile
+        email,
         phone: String(
           Math.random() * (99999999999 - 10000000001) + 10000000000
         ),
