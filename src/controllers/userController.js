@@ -77,8 +77,6 @@ exports.getUserProfileInformation = async (req, res) => {
       throw new AppError("User not found", 404);
     }
 
-    const signedUrl = await generateSignedUrl(user.picture, 15 * 60); // URL valid for 15 minutes
-
     res.status(200).json({
       status: "success",
       data: {user}
@@ -124,19 +122,14 @@ exports.deleteUserBio = async (req, res) => {
       {new: true, runValidators: true}
     );
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
     res.status(200).json({
       status: "success",
       data: {user}
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
@@ -146,15 +139,12 @@ exports.updateUserPicture = async (req, res) => {
     throw new AppError("No photo uploaded", 400);
   }
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {pictureKey: photo.key},
-      {new: true, runValidators: true}
-    );
+    const user = await User.findById(req.params.id);
     if (!user) {
       throw new AppError("User not found", 404);
     }
-    user.pictureKey = undefined;
+    await user.updatePictureKey(photo.key);
+
     res.status(200).json({
       status: "success",
       data: {user}
@@ -166,7 +156,7 @@ exports.updateUserPicture = async (req, res) => {
 
 exports.deleteUserPicture = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select("+pictureKey");
     if (!user) {
       const err = new Error("User not found");
       err.statusCode = 404;

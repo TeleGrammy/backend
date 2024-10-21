@@ -33,7 +33,8 @@ const userSchema = new mongoose.Schema({
     default: "User"
   },
   pictureKey: {
-    type: String // contain media key of the profile picture
+    type: String, // contain media key of the profile picture
+    select: false
   },
   picture: {
     type: String, // contain media url of the picture
@@ -111,25 +112,24 @@ userSchema.methods.verifyConfirmationCode = function(confirmationCode) {
 };
 
 userSchema.methods.generateSignedUrl = async function() {
-  try {
-    if (this.pictureKey) {
-      this.picture = await generateSignedUrl(this.pictureKey, 15 * 60);
-    }
-  } catch (err) {
-    console.error(`Error generatingurl for picture :`, err);
+  if (this.pictureKey) {
+    this.picture = await generateSignedUrl(this.pictureKey, 15 * 60);
   }
 };
 
+userSchema.methods.updatePictureKey = async function(key) {
+  this.pictureKey = key;
+  await this.generateSignedUrl();
+  await this.save();
+  this.pictureKey = undefined;
+};
 userSchema.methods.deleteUserPicture = async function() {
-  try {
-    if (this.pictureKey) {
-      await deleteFile(this.pictureKey);
-      this.picture = "default.jpg";
-      this.pictureKey = null;
-      await this.save();
-    }
-  } catch (err) {
-    console.error(`Error deleting story ${this._id}:`, err);
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+    this.picture = "default.jpg";
+    this.pictureKey = null;
+    await this.save();
+    console.log(this);
   }
 };
 userSchema.post(/^find/, async function(doc, next) {
@@ -148,13 +148,10 @@ userSchema.post(/^find/, async function(doc, next) {
 });
 
 userSchema.pre(/Delete$/, async function(next) {
-  try {
-    if (this.pictureKey) {
-      await deleteFile(this.pictureKey);
-    }
-  } catch (err) {
-    console.error(`Error deleting story ${this._id}:`, err);
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
   }
+
   next();
 });
 const User = mongoose.model("User", userSchema);
