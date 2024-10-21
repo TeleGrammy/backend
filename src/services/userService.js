@@ -36,6 +36,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     phone: 1,
     status: 1,
     registrationDate: 1,
+    loggedOutFromAllDevicesAt: 1,
   };
 
   return getUserByUUID(UUID, userBasicInfo);

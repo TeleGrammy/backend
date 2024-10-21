@@ -45,22 +45,21 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
         existingUser.accessTokenExpiresAt = new Date(Date.now() + 3600 * 100);
         await existingUser.save({validateBeforeSave: false});
       }
+      const userTokenedData = {
+        id: existingUser.id,
+        name: existingUser.username,
+        email: existingUser.email,
+        phone: existingUser.phone,
+        loggedOutFromAllDevicesAt: existingUser.loggedOutFromAllDevicesAt,
+      };
 
       const accessToken = generateToken(
-        {
-          id: existingUser.id,
-          name: existingUser.username,
-          email: existingUser.email,
-        },
+        userTokenedData,
         process.env.COOKIE_ACCESS_NAME
       );
 
       const refreshToken = generateToken(
-        {
-          id: existingUser.id,
-          name: existingUser.username,
-          email: existingUser.email,
-        },
+        userTokenedData,
         process.env.COOKIE_REFRESH_NAME
       );
 

@@ -56,6 +56,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         id: existingUser.id,
         name: existingUser.username,
         email: existingUser.email,
+        phone: existingUser.phone,
         loggedOutFromAllDevicesAt: existingUser.loggedOutFromAllDevicesAt,
       };
 

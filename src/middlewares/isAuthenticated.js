@@ -45,23 +45,23 @@ module.exports = catchAsync(async (req, res, next) => {
         return next(new AppError("User not found, please log in again", 401));
       }
 
-      const newAccessToken = generateToken(
-        {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          loggedOutFromAllDevicesAt: decodedToken.loggedOutFromAllDevicesAt,
-        },
-        process.env.COOKIE_ACCESS_NAME
-      );
-
-      const newRefreshToken = generateToken({
+      const userTokenedData = {
+        id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,
-        loggedOutFromAllDevicesAt:
-          decodedRefreshToken.loggedOutFromAllDevicesAt,
-      }); // To avoid token replay attacks
+        loggedOutFromAllDevicesAt: decodedToken.loggedOutFromAllDevicesAt,
+      };
+
+      const newAccessToken = generateToken(
+        userTokenedData,
+        process.env.COOKIE_ACCESS_NAME
+      );
+
+      const newRefreshToken = generateToken(
+        userTokenedData,
+        process.env.COOKIE_REFRESH_NAME
+      );
 
       addAuthCookie(newAccessToken, res, true);
       addAuthCookie(newRefreshToken, res, false);
