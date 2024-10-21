@@ -74,38 +74,28 @@ exports.getUserProfileInformation = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
 
     const signedUrl = await generateSignedUrl(user.picture, 15 * 60); // URL valid for 15 minutes
 
     res.status(200).json({
       status: "success",
-      data: {
-        screenName: user.screenName,
-        email: user.email,
-        bio: user.bio,
-        pictureUrl: signedUrl
-        // TODO complete the data after finishing the remaining fields required
-      }
+      data: {user}
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
-exports.updateUserInformation = async (req, res) => {
+exports.updateUserProfileInformation = async (req, res) => {
   const filteredBody = filterObject(
     req.body,
     "username",
     "phone",
     "bio",
-    "screenName"
+    "screenName",
+    "status"
   );
 
   try {
@@ -115,24 +105,14 @@ exports.updateUserInformation = async (req, res) => {
     });
 
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
     res.status(200).json({
       status: "success",
       data: {user}
     });
   } catch (err) {
-    if (err.codeName === "DuplicateKey") {
-      err.statusCode = 400;
-      if (err.keyPattern.username) err.message = "username already used.";
-      if (err.keyPattern.phone) err.message = "phone already used.";
-    }
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
@@ -163,32 +143,24 @@ exports.deleteUserBio = async (req, res) => {
 exports.updateUserPicture = async (req, res) => {
   const photo = req.file;
   if (!photo) {
-    const err = new Error("No image uploaded.");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("No photo uploaded", 400);
   }
   try {
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      {picture: photo.key},
+      {pictureKey: photo.key},
       {new: true, runValidators: true}
     );
     if (!user) {
-      const err = new Error("User not found");
-      err.statusCode = 404;
-      throw err;
+      throw new AppError("User not found", 404);
     }
-    const signedUrl = await generateSignedUrl(photo.key, 15 * 60); // URL valid for 15 minutes
-    await user.save();
+    user.pictureKey = undefined;
     res.status(200).json({
       status: "success",
-      data: {user, signedUrl}
+      data: {user}
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 
@@ -200,21 +172,15 @@ exports.deleteUserPicture = async (req, res) => {
       err.statusCode = 404;
       throw err;
     }
+    await user.deleteUserPicture();
 
-    await deleteFile(user.picture);
-
-    user.picture = "default.jpg";
-    await user.save();
-
+    user.pictureKey = undefined;
     res.status(200).json({
       status: "success",
       data: {user}
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({
-      status: err.statusCode ? "failed" : "error",
-      message: err.message
-    });
+    handleError(err, req, res);
   }
 };
 

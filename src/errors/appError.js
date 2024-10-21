@@ -18,9 +18,15 @@ const handleCastError = err => {
   err.status = "fail";
   err.statusCode = 400;
 };
+
+const handleDuplicateError = err => {
+  err.statusCode = 400;
+  err.message = `${err.keyPattern} already used.`;
+};
 exports.handleError = (appError, req, res) => {
   console.log(appError);
   if (appError.name === "CastError") handleCastError(appError);
+  if (appError.codeName === "DuplicateKey") handleDuplicateError(appError);
   res.status(appError.statusCode || 500).json({
     status: appError.status || "error",
     message: appError.message || "Something went wrong"

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/:id", userController.getUserProfileInformation);
 // to update the user (bio , username , screen name or phone)
-router.patch("/:id", userController.updateUserInformation);
+router.patch("/:id", userController.updateUserProfileInformation);
 
 // the status also should be changed when using the web socket
 router

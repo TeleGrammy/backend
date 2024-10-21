@@ -28,8 +28,8 @@ storySchema.methods.generateSignedUrl = async function() {
     if (this.mediaKey)
       this.media = await generateSignedUrl(this.mediaKey, 15 * 60);
   } catch (err) {
-    console.error(`Error uploading media for story ${doc._id}:`, err);
-    this.media = null; // Set mediaKey to null if upload fails
+    console.error(`Error generating url for story ${doc._id}:`, err);
+    this.media = null;
   }
 };
 
