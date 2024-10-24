@@ -48,7 +48,7 @@ router.patch("/reset-password/:token", accountRecovery.resetPassword);
 
 router.post("/register", registrationController.postRegistration);
 
-router.post("/verfiy", registrationController.postVerfiy);
+router.post("/verify", registrationController.postVerify);
 
 const resendLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
