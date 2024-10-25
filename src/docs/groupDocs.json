@@ -625,8 +625,8 @@
                   },
                   "duration": {
                     "type": "integer",
-                    "enum": [0, 60, 480, 2880, null],
-                    "description": "Duration in minutes for which the notifications should be muted. Use 0 for permanent mute. Use null when you don't want to mute the notification"
+                    "enum": [0, 60, 480, 2880, -1],
+                    "description": "Duration in minutes for which the notifications should be muted. Use 0 for permanent mute. Use -1 when you don't want to mute the notification"
                   }
                 },
                 "required": ["mute"]

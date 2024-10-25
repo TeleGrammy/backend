@@ -460,7 +460,7 @@
  *                    - 60
  *                    - 480
  *                    - 2880
- *                    - null
+ *                    - -1
  *                  description: >-
  *                    Duration in minutes for which the notifications should be
  *                    muted. Use 0 for permanent mute. Use null when you don't
