@@ -147,12 +147,17 @@ const findOneAndUpdate = (filter, updateData, options) => {
   return User.findOneAndUpdate(filter, updateData, options);
 };
 
+const getUserByID = (ID) => {
+  return User.findById(ID);
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
   getUserByEmail,
   getUserPasswordById,
   getUserId,
+  getUserByID,
   createUser,
   updateRefreshToken,
   findOne,
