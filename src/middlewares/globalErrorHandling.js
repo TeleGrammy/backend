@@ -1,11 +1,7 @@
-const globalErrorHandler = (err, req, res, next) => {
-  const error = new Error(err.message);
-  error.name = err.name;
-  error.stack = err.stack;
-  Object.assign(error, {...err});
+const errors = require("../errors/errors");
 
-  error.statusCode = error.statusCode || 500;
-  error.status = error.statusCode.toString().startsWith("4") ? "fail" : "error";
+const globalErrorHandler = (err, req, res, next) => {
+  const error = errors(err);
 
   if (error.isOperational) {
     res.status(error.statusCode).json({
@@ -13,9 +9,8 @@ const globalErrorHandler = (err, req, res, next) => {
       message: error.message,
     });
   } else {
-    res.status(error.statusCode).json({
-      status: error.status,
-      message: error.message,
+    res.status(error.statusCode || 500).json({
+      status: "error",
       error,
     });
   }

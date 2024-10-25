@@ -3,17 +3,20 @@ const rateLimit = require("express-rate-limit");
 
 const registrationController = require("../../controller/authentication/registration");
 
-router.post("/register",registrationController.postRegistration);
+router.post("/register", registrationController.postRegistration);
 
-router.post("/verfiy",registrationController.postVerfiy);
+router.post("/verfiy", registrationController.postVerfiy);
 
 const resendLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 1, 
-    message: 'Too many resend requests, please try again later',
-  });
-  
-router.post('/resend-verification', resendLimiter, registrationController.resendVerification);
+  windowMs: 60 * 1000, // 1 minute
+  max: 1,
+  message: "Too many resend requests, please try again later",
+});
 
-module.exports=router;
+router.post(
+  "/resend-verification",
+  resendLimiter,
+  registrationController.resendVerification
+);
 
+module.exports = router;
