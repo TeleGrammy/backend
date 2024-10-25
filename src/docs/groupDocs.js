@@ -112,10 +112,7 @@
  *                message: The user left the group successfully
  *        '400':
  *          description: Bad request
- */
-
-/**
- * @swagger
+ *
  *    get:
  *      summary: View a list of group members
  *      tags:
