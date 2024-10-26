@@ -763,6 +763,189 @@
           }
         }
       }
+    },
+    "/privacy/settings/profile-visibility": {
+      "patch": {
+        "summary": "Set profile visibility",
+        "description": "Control who can see profile picture, stories, and last seen.",
+        "tags": ["Privacy Settings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profilePicture": { "type": "string", "enum": ["Everyone", "Contacts", "Nobody"] },
+                  "stories": { "type": "string", "enum": ["Everyone", "Contacts", "Nobody"] },
+                  "lastSeen": { "type": "string", "enum": ["Everyone", "Contacts", "Nobody"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile visibility settings updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "success" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "profilePicture": { "type": "string" },
+                        "stories": { "type": "string" },
+                        "lastSeen": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid request data." }
+        }
+      }
+    },
+    "/privacy/settings/blocked-users": {
+      "post": {
+        "summary": "Block a user",
+        "description": "Block a specific user by ID.",
+        "tags": ["Privacy Settings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "userId": { "type": "string" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User blocked successfully.",
+            "content": {
+              "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "example": "success" } } } }
+            }
+          },
+          "404": { "description": "User not found." }
+        }
+      },
+      "delete": {
+        "summary": "Unblock a user",
+        "description": "Unblock a specific user by ID.",
+        "tags": ["Privacy Settings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "userId": { "type": "string" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User unblocked successfully.",
+            "content": {
+              "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "example": "success" } } } }
+            }
+          },
+          "404": { "description": "User not found." }
+        }
+      },
+      "get": {
+        "summary": "Get blocked users",
+        "description": "Retrieve a list of all blocked users.",
+        "tags": ["Privacy Settings"],
+        "responses": {
+          "200": {
+            "description": "List of blocked users retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "success" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": { "userId": { "type": "string" }, "username": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/privacy/settings/read-receipts": {
+      "patch": {
+        "summary": "Enable/Disable read receipts",
+        "description": "Enable or disable read receipts for the user.",
+        "tags": ["Privacy Settings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "enabled": { "type": "boolean" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read receipts setting updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "success" },
+                    "data": { "type": "object", "properties": { "enabled": { "type": "boolean" } } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid request data." }
+        }
+      }
+    },
+    "/privacy/settings/group-control": {
+      "patch": {
+        "summary": "Control group add permissions",
+        "description": "Control who can add the user to groups or channels.",
+        "tags": ["Privacy Settings"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "addToGroups": { "type": "string", "enum": ["Everyone", "Admins"] } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group add permissions updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "success" },
+                    "data": { "type": "object", "properties": { "addToGroups": { "type": "string" } } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid request data." }
+        }
+      }
     }
   }
 }
