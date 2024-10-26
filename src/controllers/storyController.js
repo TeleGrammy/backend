@@ -10,9 +10,6 @@ exports.createStory = async (req, res) => {
       throw new AppError("No content or media provided.", 400);
     }
     const user = await User.findById(req.params.id);
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
 
     const story = await Story.create({
       user: user._id,
