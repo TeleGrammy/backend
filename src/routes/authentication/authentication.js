@@ -17,6 +17,11 @@ const {
   gitHubCallBack,
 } = require("../../controllers/auth/githubAuthController");
 
+const {
+  facebookLogin,
+  facebookCallback,
+} = require("../../controllers/auth/facebookAuthController");
+
 const registrationController = require("../../controllers/auth/registration");
 
 const resendPasswordTokenLimiter = require("../../middlewares/resendPasswordTokenLimiter");
@@ -26,6 +31,9 @@ router.get("/google/secrets", googleCallBack);
 
 router.get("/gitHub", signInWithGitHub);
 router.get("/gitHub/secrets", gitHubCallBack);
+
+router.get("/facebook", facebookLogin);
+router.get("/facebook/callback", facebookCallback);
 
 router.post("/login", login);
 router.post("/logout", isAuthenticated, logout);
@@ -48,11 +56,11 @@ router.patch("/reset-password/:token", accountRecovery.resetPassword);
 
 router.post("/register", registrationController.postRegistration);
 
-router.post("/verfiy", registrationController.postVerfiy);
+router.post("/verify", registrationController.postVerify);
 
 const resendLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 1,
+  max: 3,
   message: "Too many resend requests, please try again later",
 });
 
