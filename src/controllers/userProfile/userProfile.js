@@ -2,91 +2,75 @@ const User = require("../../models/user");
 const Email = require("../../utils/mailingServcies");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
 const {filterObject} = require("../../utils/utilitiesFunc");
-const {AppError, handleError} = require("../../errors/appError");
-// require("dotenv").config({
-//   path: ".env"
-// });
+const AppError = require("../../errors/appError");
+const catchAsync = require("../../utils/catchAsync");
 
-exports.updateUserEmail = async (req, res) => {
+exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const {email} = req.body;
-  try {
-    const user = await User.findOne({_id: req.params.id});
 
-    // Update pendingEmail and create confirmation code
-    const confirmationCode = generateConfirmationCode();
-    await user.setNewEmailInfo(email, confirmationCode);
-    await Email.sendConfirmationEmail(
-      email,
-      user.username,
-      confirmationCode,
-      process.env.SNDGRID_TEMPLATEID_UPDATING_EMAIL
-    );
+  const user = await User.findOne({_id: req.params.id});
 
-    res.status(202).json({
-      status: "pending",
-      message: "please confirm your new email",
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  // Update pendingEmail and create confirmation code
+  const confirmationCode = generateConfirmationCode();
+  await user.setNewEmailInfo(email, confirmationCode);
+  await Email.sendConfirmationEmail(
+    email,
+    user.username,
+    confirmationCode,
+    process.env.SNDGRID_TEMPLATEID_UPDATING_EMAIL
+  );
 
-exports.requestNewConfirmationCode = async (req, res) => {
-  try {
-    const user = await User.findOne({_id: req.params.id});
+  res.status(202).json({
+    status: "pending",
+    message: "please confirm your new email",
+  });
+});
 
-    // Update pendingEmail and create confirmation code
-    const confirmationCode = generateConfirmationCode();
-    await user.setNewEmailInfo(user.pendingEmail, confirmationCode);
+exports.requestNewConfirmationCode = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({_id: req.params.id});
 
-    await Email.sendConfirmationEmail(
-      user.pendingEmail,
-      user.username,
-      confirmationCode,
-      process.env.SNDGRID_TEMPLATEID_UPDATING_EMAIL
-    );
+  // Update pendingEmail and create confirmation code
+  const confirmationCode = generateConfirmationCode();
+  await user.setNewEmailInfo(user.pendingEmail, confirmationCode);
 
-    res.status(202).json({
-      status: "pending",
-      message: "please confirm your new email",
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  await Email.sendConfirmationEmail(
+    user.pendingEmail,
+    user.username,
+    confirmationCode,
+    process.env.SNDGRID_TEMPLATEID_UPDATING_EMAIL
+  );
 
-exports.confirmNewEmail = async (req, res, next) => {
+  res.status(202).json({
+    status: "pending",
+    message: "please confirm your new email",
+  });
+});
+
+exports.confirmNewEmail = catchAsync(async (req, res, next) => {
   const {confirmationCode} = req.body;
-  try {
-    const user = await User.findById(req.params.id);
 
-    await user.verifyConfirmationCode(confirmationCode);
+  const user = await User.findById(req.params.id);
 
-    await user.updateUserEmail();
+  await user.verifyConfirmationCode(confirmationCode);
 
-    res.status(200).json({
-      status: "success",
-      data: {user},
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  await user.updateUserEmail();
 
-exports.getUserProfileInformation = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+  res.status(200).json({
+    status: "success",
+    data: {user},
+  });
+});
 
-    res.status(200).json({
-      status: "success",
-      data: {user},
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+exports.getUserProfileInformation = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
 
-exports.updateUserProfileInformation = async (req, res) => {
+  res.status(200).json({
+    status: "success",
+    data: {user},
+  });
+});
+
+exports.updateUserProfileInformation = catchAsync(async (req, res, next) => {
   const filteredBody = filterObject(
     req.body,
     "username",
@@ -96,110 +80,87 @@ exports.updateUserProfileInformation = async (req, res) => {
     "status"
   );
 
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, filteredBody, {
-      new: true,
-      runValidators: true,
-    });
+  const user = await User.findByIdAndUpdate(req.params.id, filteredBody, {
+    new: true,
+    runValidators: true,
+  });
 
-    res.status(200).json({
-      status: "success",
-      data: {user},
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  res.status(200).json({
+    status: "success",
+    data: {user},
+  });
+});
 
-exports.deleteUserBio = async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {bio: ""},
-      {new: true, runValidators: true}
-    );
+exports.deleteUserBio = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    {bio: ""},
+    {new: true, runValidators: true}
+  );
 
-    res.status(200).json({
-      status: "success",
-      data: {user},
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  res.status(200).json({
+    status: "success",
+    data: {user},
+  });
+});
 
-exports.updateUserPicture = async (req, res) => {
+exports.updateUserPicture = catchAsync(async (req, res, next) => {
   const photo = req.file;
   if (!photo) {
-    throw new AppError("No photo uploaded", 400);
+    next(new AppError("No photo uploaded", 400));
   }
-  try {
-    const user = await User.findById(req.params.id);
 
-    await user.updatePictureKey(photo.key);
+  const user = await User.findById(req.params.id);
 
-    res.status(200).json({
-      status: "success",
-      data: {user},
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  await user.updatePictureKey(photo.key);
 
-exports.deleteUserPicture = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("+pictureKey");
+  res.status(200).json({
+    status: "success",
+    data: {user},
+  });
+});
 
-    await user.deleteUserPicture();
+exports.deleteUserPicture = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id).select("+pictureKey");
 
-    user.pictureKey = undefined;
-    res.status(200).json({
-      status: "success",
-      data: {user},
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+  await user.deleteUserPicture();
 
-exports.getUserActivity = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+  user.pictureKey = undefined;
+  res.status(200).json({
+    status: "success",
+    data: {user},
+  });
+});
 
-    const data = {
-      status: user.status,
-      lastSeen: user.lastSeen,
-    };
-    res.status(200).json({
-      status: "success",
-      data,
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+exports.getUserActivity = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
 
-exports.updateUserActivity = async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: req.body.status || "online",
-        lastSeen: new Date(),
-      },
-      {new: true, runValidators: true}
-    );
+  const data = {
+    status: user.status,
+    lastSeen: user.lastSeen,
+  };
+  res.status(200).json({
+    status: "success",
+    data,
+  });
+});
 
-    const data = {
-      status: user.status,
-      lastSeen: user.lastSeen,
-    };
-    res.status(200).json({
-      status: "success",
-      data,
-    });
-  } catch (err) {
-    handleError(err, req, res);
-  }
-};
+exports.updateUserActivity = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: req.body.status || "online",
+      lastSeen: new Date(),
+    },
+    {new: true, runValidators: true}
+  );
+
+  const data = {
+    status: user.status,
+    lastSeen: user.lastSeen,
+  };
+  res.status(200).json({
+    status: "success",
+    data,
+  });
+});

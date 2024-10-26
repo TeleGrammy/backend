@@ -8,7 +8,7 @@ const cronJobs = require("./middlewares/cronJobs");
 const morgan = require("morgan");
 
 require("dotenv").config({
-  path: "../env"
+  path: "../env",
 });
 
 require("./middlewares/strategies/index");
@@ -26,7 +26,7 @@ cronJobs();
 app.use(
   cors({
     origin: "*",
-    credentials: true
+    credentials: true,
   })
 );
 

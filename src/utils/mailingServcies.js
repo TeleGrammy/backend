@@ -10,7 +10,6 @@ exports.sendConfirmationEmail = (
   confirmationCode,
   templateId
 ) => {
-  console.log(templateId);
   const msg = {
     to: userEmail,
     from: "telegrammy.sw@gmail.com",
@@ -18,8 +17,8 @@ exports.sendConfirmationEmail = (
     templateId,
     dynamic_template_data: {
       name: username,
-      code: confirmationCode
-    }
+      code: confirmationCode,
+    },
   };
 
   return sgMail.send(msg);
