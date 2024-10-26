@@ -1,99 +1,76 @@
 const passport = require("passport");
-const FacebookStrategy = require("passport-facebook").Strategy;
+
+const AppError = require("../../errors/appError");
+
 const userService = require("../../services/userService");
-const generateToken = require("../../utils/generateToken");
-const addAuthCookie = require("../../utils/addAuthCookie");
 
-passport.serializeUser((user, done) => {
-  console.log("SER: ", user);
-  done(null, user.id);
-});
-passport.deserializeUser((id, done) => {
-  console.log("DESER: ", id);
-  return done(null, id);
-});
+const catchAsync = require("../../utils/catchAsync");
+const manageSessionForUser = require("../../utils/sessionManagement");
 
-// Facebook strategy setup
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_APP_ID,
-      clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: "http://localhost:8080/api/v1/auth/facebook/callback",
-      profileFields: ["id", "name", "displayName", "email"],
-    },
-    async function (accessTokenFab, refreshTokenFab, profile, done) {
-      const userData = profile._json;
-      const {id, name, email} = userData;
+const signInWithFaceBook = (req, res, next) => {
+  passport.authenticate("facebook", {
+    scope: ["public_profile", "email"],
+    accessType: "offline",
+  })(req, res, next);
+};
 
-      let existingUser = await userService.getUserByEmail(email);
+const faceBookCallBack = catchAsync(async (req, res, next) => {
+  passport.authenticate(
+    "facebook",
+    {failureRedirect: "/login"},
+    async (err, user) => {
+      if (err || !user) {
+        return next(new AppError("Authentication failed", 401));
+      }
+
+      let existingUser = await userService.getUserByEmail(user.email);
 
       const refreshTokenExpiration = new Date();
       refreshTokenExpiration.setMonth(refreshTokenExpiration.getMonth() + 6);
 
       if (!existingUser) {
         existingUser = await userService.createUser({
-          username: name,
-          email,
+          username: user.name,
+          phone: user.phone,
+          email: user.email,
           password: "facebook_user",
           passwordConfirm: "facebook_user",
-          id,
-          accessToken: accessTokenFab,
-          refreshToken: refreshTokenFab,
+          id: user.id,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          status: "active",
+          picture: user.profilePicture || "",
           accessTokenExpiresAt: new Date(Date.now() + 3600 * 100),
           refreshTokenExpiresAt: refreshTokenExpiration,
           isFaceBookUser: true,
         });
       } else {
-        existingUser.accessToken = accessTokenFab;
-        existingUser.refreshToken = refreshTokenFab;
+        existingUser.accessToken = user.accessToken;
+        existingUser.refreshToken = user.refreshToken;
         existingUser.accessTokenExpiresAt = new Date(Date.now() + 3600 * 100);
         existingUser.refreshTokenExpiresAt = refreshTokenExpiration;
+        existingUser.status = "active";
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const accessToken = generateToken(
-        {
-          id: existingUser.id,
-          name: existingUser.username,
-          email: existingUser.email,
-        },
-        process.env.COOKIE_ACCESS_NAME
+      const {updatedUser, accessToken} = await manageSessionForUser(
+        req,
+        res,
+        existingUser
       );
 
-      const refreshToken = generateToken(
-        {
-          id: existingUser.id,
-          name: existingUser.username,
-          email: existingUser.email,
+      return res.status(200).json({
+        data: {
+          updatedUser,
+          accessToken,
         },
-        process.env.COOKIE_REFRESH_NAME
-      );
-
-      return done(null, {user: existingUser, accessToken, refreshToken});
+        status: "Logged in successfully with FaceBook",
+      });
     }
-  )
-);
-
-const facebookLogin = passport.authenticate("facebook", {
-  scope: ["public_profile", "email"],
+  )(req, res);
 });
 
-const facebookCallback = (req, res, next) => {
-  passport.authenticate("facebook", {session: false}, (err, result) => {
-    const {user, accessToken, refreshToken} = result;
-    if (err || !user) {
-      return res.status(401).json({error: "Authentication failed"});
-    }
-
-    addAuthCookie(accessToken, res, true);
-    addAuthCookie(refreshToken, res, false);
-
-    return res.redirect("/api/v1/user");
-  })(req, res, next);
-};
-
 module.exports = {
-  facebookLogin,
-  facebookCallback,
+  signInWithFaceBook,
+  faceBookCallBack,
 };

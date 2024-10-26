@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const requestIp = require("request-ip");
 const passport = require("passport");
 const {swaggerUi, specs} = require("../swaggerConfig");
 
@@ -17,6 +18,9 @@ const userRouter = require("./routes/user/user");
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
 const app = express();
+
+app.set("trust-proxy", true);
+app.set(requestIp.mw());
 
 app.use(
   cors({

@@ -1,5 +1,7 @@
 const User = require("../models/user");
 
+const AppError = require("../errors/appError");
+
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -34,6 +36,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     username: 1,
     email: 1,
     phone: 1,
+    sessions: 1,
     status: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
@@ -125,30 +128,16 @@ const createUser = async (userData) => {
   });
 };
 
-/**
- *  Retrieves the user by his id.
- * @memberof Service.Users
- * @method updateRefreshToken
- * @async
- * @param {String} [id]       - User's id.
- * @param {String} [newRefreshToken] - Storing a new refresh token (while invalidating the old one) helps to prevent replay attacks and also offers the ability to sign out all users who had access to the old refresh token.
- * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
- */
-
-const updateRefreshToken = async (id, newRefreshToken) => {
-  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
+const findOne = async (filter) => {
+  return await User.findOne(filter);
 };
 
-const findOne = (filter) => {
-  return User.findOne(filter);
+const findOneAndUpdate = async (filter, updateData, options) => {
+  return await User.findOneAndUpdate(filter, updateData, options);
 };
 
-const findOneAndUpdate = (filter, updateData, options) => {
-  return User.findOneAndUpdate(filter, updateData, options);
-};
-
-const getUserByID = (ID) => {
-  return User.findById(ID);
+const getUserByID = async (ID) => {
+  return await User.findById(ID);
 };
 
 module.exports = {
@@ -159,7 +148,6 @@ module.exports = {
   getUserId,
   getUserByID,
   createUser,
-  updateRefreshToken,
   findOne,
   findOneAndUpdate,
 };
