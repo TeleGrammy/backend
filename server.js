@@ -14,6 +14,6 @@ mongoose
     // uncomment the following line to run the database seeds
     // seeds();
   })
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
   });
