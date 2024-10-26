@@ -1,5 +1,5 @@
 const cron = require("node-cron");
-const Story = require("../models/storyModel");
+const Story = require("../models/story");
 const {deleteFile} = require("./AWS");
 
 const scheduleCronJobs = () => {

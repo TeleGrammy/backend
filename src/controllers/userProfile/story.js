@@ -1,6 +1,6 @@
-const Story = require("./../models/storyModel");
-const User = require("./../models/user");
-const {AppError, handleError} = require("../errors/appError");
+const Story = require("../../models/story");
+const User = require("../../models/user");
+const {AppError, handleError} = require("../../errors/appError");
 
 exports.createStory = async (req, res) => {
   try {

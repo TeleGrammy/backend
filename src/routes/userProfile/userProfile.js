@@ -1,32 +1,36 @@
 const express = require("express");
-const userController = require("../../controllers/userController");
+const userProfileController = require("../../controllers/userProfile/userProfile");
+const storyController = require("../../controllers/userProfile/story");
+
 const {uploadUserPicture, uploadStory} = require("../../middlewares/AWS");
-const storyController = require("../../controllers/storyController");
 
 const router = express.Router();
 
-router.get("/:id", userController.getUserProfileInformation);
+router.get("/:id", userProfileController.getUserProfileInformation);
 // to update the user (bio , username , screen name or phone)
-router.patch("/:id", userController.updateUserProfileInformation);
+router.patch("/:id", userProfileController.updateUserProfileInformation);
 
 // the status also should be changed when using the web socket
 router
   .route("/status/:id")
-  .get(userController.getUserActivity)
-  .patch(userController.updateUserActivity);
+  .get(userProfileController.getUserActivity)
+  .patch(userProfileController.updateUserActivity);
 
 router.patch(
   "/picture/:id",
   uploadUserPicture,
-  userController.updateUserPicture
+  userProfileController.updateUserPicture
 );
-router.delete("/picture/:id", userController.deleteUserPicture);
+router.delete("/picture/:id", userProfileController.deleteUserPicture);
 
-router.patch("/email/:id", userController.updateUserEmail);
-router.patch("/email/new-code/:id", userController.requestNewConfirmationCode);
-router.post("/email/confirm/:id", userController.confirmNewEmail);
+router.patch("/email/:id", userProfileController.updateUserEmail);
+router.patch(
+  "/email/new-code/:id",
+  userProfileController.requestNewConfirmationCode
+);
+router.post("/email/confirm/:id", userProfileController.confirmNewEmail);
 
-router.delete("/bio/:id", userController.deleteUserBio);
+router.delete("/bio/:id", userProfileController.deleteUserBio);
 
 router
   .route("/story/:id")

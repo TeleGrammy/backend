@@ -1,8 +1,8 @@
-const User = require("./../models/user");
-const Email = require("../utils/mailingServcies");
-const {generateConfirmationCode} = require("../utils/codeGenerator");
-const {filterObject} = require("../utils/utilitiesFunc");
-const {AppError, handleError} = require("../errors/appError");
+const User = require("../../models/user");
+const Email = require("../../utils/mailingServcies");
+const {generateConfirmationCode} = require("../../utils/codeGenerator");
+const {filterObject} = require("../../utils/utilitiesFunc");
+const {AppError, handleError} = require("../../errors/appError");
 // require("dotenv").config({
 //   path: ".env"
 // });

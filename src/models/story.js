@@ -5,25 +5,25 @@ const storySchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   content: {
-    type: String
+    type: String,
   },
   media: {
     type: String, // URL to the media file,
-    default: undefined
+    default: undefined,
   },
   mediaKey: {
-    type: String
+    type: String,
   },
   expiresAt: {
     type: Date,
-    default: Date.now() + 24 * 60 * 60 * 1000 // 24 hour
-  }
+    default: Date.now() + 24 * 60 * 60 * 1000, // 24 hour
+  },
 });
 
-storySchema.methods.generateSignedUrl = async function() {
+storySchema.methods.generateSignedUrl = async function () {
   try {
     if (this.mediaKey)
       this.media = await generateSignedUrl(this.mediaKey, 15 * 60);
@@ -33,7 +33,7 @@ storySchema.methods.generateSignedUrl = async function() {
   }
 };
 
-storySchema.pre(/Delete$/, async function(next) {
+storySchema.pre(/Delete$/, async function (next) {
   try {
     if (this.mediaKey) await deleteFile(this.mediaKey);
   } catch (err) {
@@ -41,13 +41,13 @@ storySchema.pre(/Delete$/, async function(next) {
   }
   next();
 });
-storySchema.post("save", async function(doc, next) {
+storySchema.post("save", async function (doc, next) {
   await this.generateSignedUrl();
   next();
 });
 
 // this middleware is responsible for creating signed URLs to the retreived stories from the database
-storySchema.post(/^find/, async function(docs, next) {
+storySchema.post(/^find/, async function (docs, next) {
   if (!docs) next();
 
   if (!docs.length) {
@@ -55,7 +55,7 @@ storySchema.post(/^find/, async function(docs, next) {
     docs.mediaKey = undefined;
   } else {
     await Promise.all(
-      docs.map(async doc => {
+      docs.map(async (doc) => {
         await doc.generateSignedUrl();
         doc.mediaKey = undefined;
       })
