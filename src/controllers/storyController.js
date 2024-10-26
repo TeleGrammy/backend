@@ -1,5 +1,5 @@
 const Story = require("./../models/storyModel");
-const User = require("./../models/userModel");
+const User = require("./../models/user");
 const {AppError, handleError} = require("../errors/appError");
 
 exports.createStory = async (req, res) => {
@@ -14,12 +14,12 @@ exports.createStory = async (req, res) => {
     const story = await Story.create({
       user: user._id,
       content: content,
-      mediaKey
+      mediaKey,
     });
 
     res.status(201).json({
       status: "success",
-      data: story
+      data: story,
     });
   } catch (err) {
     handleError(err, req, res);
@@ -33,11 +33,11 @@ exports.getStories = async (req, res) => {
   try {
     const stories = await Story.find({
       user: req.params.id,
-      expiresAt: {$gte: Date.now()}
+      expiresAt: {$gte: Date.now()},
     });
     res.json({
       status: "success",
-      data: stories
+      data: stories,
     });
   } catch (err) {
     handleError(err, req, res);
@@ -52,7 +52,7 @@ exports.getStory = async (req, res) => {
     }
     res.json({
       status: "success",
-      data: story
+      data: story,
     });
   } catch (err) {
     handleError(err, req, res);
@@ -70,7 +70,7 @@ exports.deleteStory = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      message: "Story deleted successfully"
+      message: "Story deleted successfully",
     });
   } catch (err) {
     handleError(err, req, res);

@@ -1,4 +1,4 @@
-const User = require("./../models/userModel");
+const User = require("./../models/user");
 const Email = require("../utils/mailingServcies");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {filterObject} = require("../utils/utilitiesFunc");
@@ -24,7 +24,7 @@ exports.updateUserEmail = async (req, res) => {
 
     res.status(202).json({
       status: "pending",
-      message: "please confirm your new email"
+      message: "please confirm your new email",
     });
   } catch (err) {
     handleError(err, req, res);
@@ -48,7 +48,7 @@ exports.requestNewConfirmationCode = async (req, res) => {
 
     res.status(202).json({
       status: "pending",
-      message: "please confirm your new email"
+      message: "please confirm your new email",
     });
   } catch (err) {
     handleError(err, req, res);
@@ -66,7 +66,7 @@ exports.confirmNewEmail = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {user},
     });
   } catch (err) {
     handleError(err, req, res);
@@ -79,7 +79,7 @@ exports.getUserProfileInformation = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {user},
     });
   } catch (err) {
     handleError(err, req, res);
@@ -99,12 +99,12 @@ exports.updateUserProfileInformation = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, filteredBody, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
 
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {user},
     });
   } catch (err) {
     handleError(err, req, res);
@@ -121,7 +121,7 @@ exports.deleteUserBio = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {user},
     });
   } catch (err) {
     handleError(err, req, res);
@@ -140,7 +140,7 @@ exports.updateUserPicture = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {user},
     });
   } catch (err) {
     handleError(err, req, res);
@@ -156,7 +156,7 @@ exports.deleteUserPicture = async (req, res) => {
     user.pictureKey = undefined;
     res.status(200).json({
       status: "success",
-      data: {user}
+      data: {user},
     });
   } catch (err) {
     handleError(err, req, res);
@@ -169,11 +169,11 @@ exports.getUserActivity = async (req, res) => {
 
     const data = {
       status: user.status,
-      lastSeen: user.lastSeen
+      lastSeen: user.lastSeen,
     };
     res.status(200).json({
       status: "success",
-      data
+      data,
     });
   } catch (err) {
     handleError(err, req, res);
@@ -186,18 +186,18 @@ exports.updateUserActivity = async (req, res) => {
       req.params.id,
       {
         status: req.body.status || "online",
-        lastSeen: new Date()
+        lastSeen: new Date(),
       },
       {new: true, runValidators: true}
     );
 
     const data = {
       status: user.status,
-      lastSeen: user.lastSeen
+      lastSeen: user.lastSeen,
     };
     res.status(200).json({
       status: "success",
-      data
+      data,
     });
   } catch (err) {
     handleError(err, req, res);

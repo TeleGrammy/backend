@@ -23,9 +23,9 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-ses": "^3.670.0",
-    "@sendgrid/mail": "^8.1.3",
     "@aws-sdk/lib-storage": "^3.674.0",
     "@aws-sdk/s3-request-presigner": "^3.674.0",
+    "@sendgrid/mail": "^8.1.3",
     "aws-sdk": "^2.1691.0",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
@@ -37,6 +37,9 @@
     "express-rate-limit": "^7.4.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.1",
+    "multer": "^1.4.5-lts.1",
+    "multer-s3": "^3.0.1",
+    "node-cron": "^3.0.3",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
@@ -45,9 +48,6 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "telegrammy": "file:",
-    "multer": "^1.4.5-lts.1",
-    "multer-s3": "^3.0.1",
-    "node-cron": "^3.0.3",
     "uuid": "^10.0.0",
     "validator": "^13.12.0"
   },
@@ -61,9 +61,9 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.11.0",
+    "morgan": "^1.10.0",
     "ndb": "^1.1.5",
     "nodemon": "^3.1.7",
-    "morgan": "^1.10.0",
     "prettier": "^3.3.3"
   }
 }
