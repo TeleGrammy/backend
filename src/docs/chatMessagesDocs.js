@@ -46,6 +46,8 @@
  *                              type: string
  *                            status:
  *                              type: string
+ *                        unreadCount:
+ *                          type: number
  *                        picture:
  *                          type: string
  *                        isMuted:
@@ -385,4 +387,25 @@
  *          description: notification subscribed/unsubscribe operation success!
  *        '400':
  *          description: Bad request.
+ */
+/**
+ * @swagger
+ *  /conversations/{conversationId}/read:
+ *    patch:
+ *      summary: Mark all messages in a conversation as read
+ *      description: Marks all messages in the specified conversation as read for the currently authenticated user.
+ *      tags:
+ *        - Conversations
+ *      parameters:
+ *        - in: path
+ *          name: conversationId
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: Unique identifier for the conversation.
+ *      responses:
+ *        '200':
+ *          description: Successfully marked all messages as read in the conversation.
+ *        '400':
+ *          description: Bad request. Invalid conversation ID or parameters.
  */
