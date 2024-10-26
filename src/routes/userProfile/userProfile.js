@@ -1,42 +1,49 @@
 const express = require("express");
 const userProfileController = require("../../controllers/userProfile/userProfile");
 const storyController = require("../../controllers/userProfile/story");
+const isAuth = require("../../middlewares/isAuthenticated");
 
 const {uploadUserPicture, uploadStory} = require("../../middlewares/AWS");
 
 const router = express.Router();
 
-router.get("/:id", userProfileController.getUserProfileInformation);
-// to update the user (bio , username , screen name or phone)
-router.patch("/:id", userProfileController.updateUserProfileInformation);
-
-// the status also should be changed when using the web socket
+// to get or update the user profile information.  update only these parameters(bio , username , screen name or phone)
 router
-  .route("/status/:id")
-  .get(userProfileController.getUserActivity)
-  .patch(userProfileController.updateUserActivity);
+  .route("/")
+  .get(isAuth, userProfileController.getUserProfileInformation)
+  .patch(isAuth, userProfileController.updateUserProfileInformation);
+
+// TODO: the status also should be changed when using the web socket
+router
+  .route("/status/")
+  .get(isAuth, userProfileController.getUserActivity)
+  .patch(isAuth, userProfileController.updateUserActivity);
 
 router.patch(
-  "/picture/:id",
+  "/picture/",
+  isAuth,
   uploadUserPicture,
   userProfileController.updateUserPicture
 );
-router.delete("/picture/:id", userProfileController.deleteUserPicture);
+router.delete("/picture/", isAuth, userProfileController.deleteUserPicture);
 
-router.patch("/email/:id", userProfileController.updateUserEmail);
+router.patch("/email/", isAuth, userProfileController.updateUserEmail);
 router.patch(
-  "/email/new-code/:id",
+  "/email/new-code/",
+  isAuth,
   userProfileController.requestNewConfirmationCode
 );
-router.post("/email/confirm/:id", userProfileController.confirmNewEmail);
+router.post("/email/confirm/", isAuth, userProfileController.confirmNewEmail);
 
-router.delete("/bio/:id", userProfileController.deleteUserBio);
+router.delete("/bio/", isAuth, userProfileController.deleteUserBio);
 
 router
-  .route("/story/:id")
-  .post(uploadStory, storyController.createStory)
-  .get(storyController.getStories)
-  .delete(storyController.deleteStory);
+  .route("/story/")
+  .post(isAuth, uploadStory, storyController.createStory)
+  .get(isAuth, storyController.getMyStories)
+  .delete(isAuth, storyController.deleteStory);
+
+router.get("/story/:id", isAuth, storyController.getUserStories);
 // get story by id of the story
-router.get("/story//:id", storyController.getStory);
+router.get("/story//:id", isAuth, storyController.getStory);
 module.exports = router;

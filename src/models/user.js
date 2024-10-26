@@ -88,12 +88,16 @@ const userSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["online", "offline", "inactive", "banned"],
+    enum: ["active", "inactive", "banned"],
     default: "inactive",
   },
   lastSeen: {
     type: Date,
     default: Date.now(),
+  },
+  contacts: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "User",
   },
   pendingEmail: {
     type: String,
@@ -161,7 +165,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.post(/^find/, async function (doc, next) {
-  if (!doc) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
     throw new AppError("User not found", 404);
   }
 

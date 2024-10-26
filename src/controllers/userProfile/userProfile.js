@@ -8,7 +8,7 @@ const catchAsync = require("../../utils/catchAsync");
 exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
-  const user = await User.findOne({_id: req.params.id});
+  const user = await User.findOne({_id: req.user.id});
 
   // Update pendingEmail and create confirmation code
   const confirmationCode = generateConfirmationCode();
@@ -27,7 +27,7 @@ exports.updateUserEmail = catchAsync(async (req, res, next) => {
 });
 
 exports.requestNewConfirmationCode = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({_id: req.params.id});
+  const user = await User.findOne({_id: req.user.id});
 
   // Update pendingEmail and create confirmation code
   const confirmationCode = generateConfirmationCode();
@@ -49,7 +49,7 @@ exports.requestNewConfirmationCode = catchAsync(async (req, res, next) => {
 exports.confirmNewEmail = catchAsync(async (req, res, next) => {
   const {confirmationCode} = req.body;
 
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.user.id);
 
   await user.verifyConfirmationCode(confirmationCode);
 
@@ -62,7 +62,7 @@ exports.confirmNewEmail = catchAsync(async (req, res, next) => {
 });
 
 exports.getUserProfileInformation = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.user.id);
 
   res.status(200).json({
     status: "success",
@@ -80,7 +80,7 @@ exports.updateUserProfileInformation = catchAsync(async (req, res, next) => {
     "status"
   );
 
-  const user = await User.findByIdAndUpdate(req.params.id, filteredBody, {
+  const user = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,
   });
@@ -93,7 +93,7 @@ exports.updateUserProfileInformation = catchAsync(async (req, res, next) => {
 
 exports.deleteUserBio = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(
-    req.params.id,
+    req.user.id,
     {bio: ""},
     {new: true, runValidators: true}
   );
@@ -110,7 +110,7 @@ exports.updateUserPicture = catchAsync(async (req, res, next) => {
     next(new AppError("No photo uploaded", 400));
   }
 
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.user.id);
 
   await user.updatePictureKey(photo.key);
 
@@ -121,7 +121,7 @@ exports.updateUserPicture = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteUserPicture = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.id).select("+pictureKey");
+  const user = await User.findById(req.user.id).select("+pictureKey");
 
   await user.deleteUserPicture();
 
@@ -133,7 +133,7 @@ exports.deleteUserPicture = catchAsync(async (req, res, next) => {
 });
 
 exports.getUserActivity = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.user.id);
 
   const data = {
     status: user.status,
@@ -147,9 +147,9 @@ exports.getUserActivity = catchAsync(async (req, res, next) => {
 
 exports.updateUserActivity = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(
-    req.params.id,
+    req.user.id,
     {
-      status: req.body.status || "online",
+      status: req.body.status || "active",
       lastSeen: new Date(),
     },
     {new: true, runValidators: true}

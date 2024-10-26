@@ -48,7 +48,7 @@ storySchema.post("save", async function (doc, next) {
 
 // this middleware is responsible for creating signed URLs to the retreived stories from the database
 storySchema.post(/^find/, async function (docs, next) {
-  if (!docs) next();
+  if (!docs || (Array.isArray(docs) && docs.length === 0)) next();
 
   if (!docs.length) {
     await docs.generateSignedUrl();

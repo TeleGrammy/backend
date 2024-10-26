@@ -21,7 +21,12 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
     phone,
     verificationCode,
   });
-  await sendConfirmationEmail(email, username, verificationCode);
+  await sendConfirmationEmail(
+    email,
+    username,
+    verificationCode,
+    process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
+  );
 
   await newUser.save();
 
@@ -98,3 +103,4 @@ exports.resendVerification = async (req, res) => {
     .status(200)
     .json({message: "Verification code resent successfully"});
 };
+
