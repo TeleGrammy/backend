@@ -26,6 +26,8 @@ const registrationController = require("../../controllers/auth/registration");
 
 const resendPasswordTokenLimiter = require("../../middlewares/resendPasswordTokenLimiter");
 
+const captchaController = require("../../controllers/auth/reCaptchaVerification");
+
 router.get("/google", signInWithGoogle);
 router.get("/google/secrets", googleCallBack);
 
@@ -70,4 +72,5 @@ router.post(
   registrationController.resendVerification
 );
 
+router.post("/verify-captcha", captchaController);
 module.exports = router;

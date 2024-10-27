@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5cf591c4-ce73-488e-b67c-c55f1b6df697" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/utils/regexFormat.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controller/authentication/registration.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/auth/registration.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/pending-user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/pending-user.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/user.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/authentication/registration.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/authentication/registration.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/middlewares/reCaptchaVerification.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/authentication/authentication.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/authentication/authentication.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,9 +26,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2nlGGl4FAsY2FFq6do3gQ2BweZ9" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -41,7 +38,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "module/registration",
+    "git-widget-placeholder": "feature/verify-captcha",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -65,6 +62,7 @@
       <option name="presentableId" value="Default" />
       <updated>1729540158122</updated>
       <workItem from="1729540160341" duration="2783000" />
+      <workItem from="1730069401024" duration="18000" />
     </task>
     <servers />
   </component>
