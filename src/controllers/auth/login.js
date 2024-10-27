@@ -5,8 +5,15 @@ const AppError = require("../../errors/appError");
 const userService = require("../../services/userService");
 
 const catchAsync = require("../../utils/catchAsync");
-const generateToken = require("../../utils/generateToken");
-const addAuthCookie = require("../../utils/addAuthCookie");
+const manageSessionForUser = require("../../utils/sessionManagement");
+
+/**
+ * Logs a user in by validating credentials, managing sessions, and generating tokens.
+ * @async
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} next - Express next middleware function.
+ */
 
 const login = catchAsync(async (req, res, next) => {
   const {UUID, password} = req.body;
@@ -17,42 +24,17 @@ const login = catchAsync(async (req, res, next) => {
   }
 
   const storedPassword = await userService.getUserPasswordById(user._id);
-  const areEqual = await bcrypt.compare(password, storedPassword);
-  if (!areEqual) {
+  const isPasswordValid = await bcrypt.compare(password, storedPassword);
+  if (!isPasswordValid) {
     return next(new AppError("Wrong password entered", 401));
   }
 
-  const userTokenedData = {
-    id: user._id,
-    name: user.username,
-    email: user.email,
-    phone: user.phone,
-    loggedOutFromAllDevicesAt: user.loggedOutFromAllDevicesAt,
-  };
-
-  const accessToken = generateToken(
-    userTokenedData,
-    process.env.COOKIE_ACCESS_NAME
-  );
-  const refreshToken = generateToken(
-    userTokenedData,
-    process.env.COOKIE_REFRESH_NAME
-  );
-
-  addAuthCookie(accessToken, res, true);
-  addAuthCookie(refreshToken, res, false);
-
-  const updatedUser = await userService.findOneAndUpdate(
-    {email: user.email},
-    {status: "active"},
-    {new: true}
-  );
+  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
 
   return res.status(200).json({
     data: {
       updatedUser,
       accessToken,
-      refreshToken,
     },
     status: "Logged in successfully",
   });
