@@ -18,8 +18,8 @@ const {
 } = require("../../controllers/auth/githubAuthController");
 
 const {
-  facebookLogin,
-  facebookCallback,
+  signInWithFaceBook,
+  faceBookCallBack,
 } = require("../../controllers/auth/facebookAuthController");
 
 const registrationController = require("../../controllers/auth/registration");
@@ -32,8 +32,8 @@ router.get("/google/secrets", googleCallBack);
 router.get("/gitHub", signInWithGitHub);
 router.get("/gitHub/secrets", gitHubCallBack);
 
-router.get("/facebook", facebookLogin);
-router.get("/facebook/callback", facebookCallback);
+router.get("/facebook", signInWithFaceBook);
+router.get("/facebook/callback", faceBookCallBack);
 
 router.post("/login", login);
 router.post("/logout", isAuthenticated, logout);

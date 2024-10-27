@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const rateLimit = require("express-rate-limit");
 
-const registrationController = require("../../controller/authentication/registration");
+const registrationController = require("../../controllers/auth/registration");
 
 router.post("/register", registrationController.postRegistration);
 

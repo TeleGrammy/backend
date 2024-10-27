@@ -31,7 +31,7 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.postVerfiy = async (req, res) => {
+exports.postVerify = async (req, res) => {
   const {email, verificationCode} = req.body;
 
   if (!email) {
