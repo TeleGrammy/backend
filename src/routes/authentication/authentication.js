@@ -60,7 +60,7 @@ router.post("/verify", registrationController.postVerify);
 
 const resendLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 1,
+  max: 3,
   message: "Too many resend requests, please try again later",
 });
 
