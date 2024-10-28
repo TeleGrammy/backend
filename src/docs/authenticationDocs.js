@@ -5,7 +5,7 @@
  *      summary: Register a new user
  *      description: A novel user registers to the application.
  *      tags:
- *        - Authentication
+ *        - User Registration
  *      requestBody:
  *        required: true
  *        content:
@@ -53,7 +53,7 @@
  *        Verifying the user by clicking on the verification link sent to their
  *        email.
  *      tags:
- *        - Authentication
+ *        - User Registration
  *      requestBody:
  *        required: true
  *        content:
@@ -86,7 +86,7 @@
  *      summary: Resend verification link
  *      description: Resend the verification link to the user's email.
  *      tags:
- *        - Authentication
+ *        - User Registration
  *      requestBody:
  *        required: true
  *        content:
@@ -114,7 +114,7 @@
  *      summary: User login
  *      description: Logging the user into the system.
  *      tags:
- *        - Authentication
+ *        - User Login
  *      requestBody:
  *        required: true
  *        content:
@@ -145,11 +145,11 @@
  *      summary: User logout
  *      description: Logging the user out of the system.
  *      tags:
- *        - Authentication
+ *        - User Logout
  *      responses:
  *        '200':
  *          description: User logged out successfully.
- * */
+ */
 
 /**
  * @swagger
@@ -158,7 +158,7 @@
  *      summary: Logout from all devices
  *      description: Logging the user out from all devices.
  *      tags:
- *        - Authentication
+ *        - User Logout
  *      responses:
  *        '200':
  *          description: User logged out from all devices successfully.
@@ -166,24 +166,25 @@
 
 /**
  * @swagger
- *  /google:
+ *  /auth/google:
  *    post:
  *      summary: Sign in with Google
  *      description: Register or log in with the user's Google account.
  *      tags:
- *        - Authentication
+ *        - User Login
  *      responses:
  *        '200':
  *          description: User authenticated with Google.
  */
 
 /**
- *  /github:
+ * @swagger
+ *  /auth/github:
  *    post:
  *      summary: Sign in with GitHub
  *      description: Register or log in with the user's GitHub account.
  *      tags:
- *        - Authentication
+ *        - User Login
  *      responses:
  *        '200':
  *          description: User authenticated with GitHub.
@@ -191,12 +192,12 @@
 
 /**
  * @swagger
- *  /facebook:
+ *  /auth/facebook:
  *    post:
  *      summary: Sign in with Facebook
  *      description: Register or log in with the user's Facebook account.
  *      tags:
- *        - Authentication
+ *        - User Login
  *      responses:
  *        '200':
  *          description: User authenticated with Facebook.
@@ -204,12 +205,14 @@
 
 /**
  * @swagger
- *  /forget-password:
+ *  /auth/forget-password:
  *    post:
  *      summary: Forget password
- *      description: Request to set a new password.
+ *      description: >-
+ *        Forget the password. Request to set a new password through sending a
+ *        reset token the email.
  *      tags:
- *        - Authentication
+ *        - Forget-reset password
  *      requestBody:
  *        required: true
  *        content:
@@ -220,7 +223,6 @@
  *                email:
  *                  type: string
  *                  format: email
- *                  example: test@example.com
  *      responses:
  *        '200':
  *          description: Password reset link sent successfully.
@@ -229,12 +231,13 @@
  */
 
 /**
- *  /reset-password/resend:
+ * @swagger
+ *  /auth/reset-password/resend:
  *    post:
  *      summary: Resend reset token
  *      description: Resend a new reset token for resetting the user's password.
  *      tags:
- *        - Authentication
+ *        - Forget-reset password
  *      requestBody:
  *        required: true
  *        content:
@@ -245,7 +248,6 @@
  *                email:
  *                  type: string
  *                  format: email
- *                  example: test@example.com
  *      responses:
  *        '200':
  *          description: Reset token resent successfully.
@@ -255,17 +257,17 @@
 
 /**
  * @swagger
- *  /reset-password/{token}:
+ *  /auth/reset-password/{token}:
  *    post:
  *      summary: Reset password
  *      description: Reset the user's password with the reset token sent to their email.
  *      tags:
- *        - Authentication
+ *        - Forget-reset password
  *      parameters:
  *        - name: token
  *          in: path
  *          required: true
- *          description: The reset token
+ *          description: The reset token sent in the email
  *          schema:
  *            type: string
  *      requestBody:
@@ -277,10 +279,10 @@
  *              properties:
  *                password:
  *                  type: string
- *                  example: test1234
+ *                  description: The new password
  *                passwordConfirm:
  *                  type: string
- *                  example: test1234
+ *                  description: Rewrite the new Password
  *      responses:
  *        '200':
  *          description: Password reset successfully.

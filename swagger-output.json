@@ -1,0 +1,3864 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TeleGrammy API Documentation",
+    "version": "1.0.0",
+    "description": "API documentation for the TeleGrammy Application"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/admins/users": {
+      "get": {
+        "summary": "Get all registered users ",
+        "description": "List all users in the application",
+        "tags": [
+          "Admin Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved the registered users successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          },
+                          "screenName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "phone": {
+                            "type": "string"
+                          },
+                          "picture": {
+                            "type": "string"
+                          },
+                          "bio": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "isBanned": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/admins/users/{userId}": {
+      "patch": {
+        "summary": "Ban or Deactivate User",
+        "description": "Ban or deactivate a specific user by setting their account status.",
+        "tags": [
+          "Admin Dashboard"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The id of the user whose ban state will be updated"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "isBanned": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isBanned"
+                ]
+              },
+              "example": {
+                "isBanned": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "screenName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        },
+                        "picture": {
+                          "type": "string"
+                        },
+                        "bio": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "isBanned": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "A novel user registers to the application.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "the username used in tha app"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "passwordConfirm": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "email",
+                  "password",
+                  "passwordConfirm",
+                  "phone"
+                ]
+              },
+              "example": {
+                "username": "test1",
+                "email": " test@example.com",
+                "password": "password1234",
+                "passwordConfirm": "password1234",
+                "phone": "010101010101"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "summary": "Verify user email",
+        "description": "Verifying the user by clicking on the verification link sent to their email.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "verificationCode": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "verificationCode"
+                ]
+              },
+              "example": {
+                "email": " test@example.com",
+                "verificationCode": "a1b457e#686@fd"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/auth/resend-verification": {
+      "post": {
+        "summary": "Resend verification link",
+        "description": "Resend the verification link to the user's email.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "test@example.com"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification link resent successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Logging the user into the system.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "UUID": {
+                    "type": "string",
+                    "description": "UUID is the email or username or phone number of the user"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password of the user"
+                  }
+                },
+                "required": [
+                  "UUID",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User logged in successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "User logout",
+        "description": "Logging the user out of the system.",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "User logged out successfully."
+          }
+        }
+      }
+    },
+    "/auth/logout-from-all-devices": {
+      "post": {
+        "summary": "Logout from all devices",
+        "description": "Logging the user out from all devices.",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "User logged out from all devices successfully."
+          }
+        }
+      }
+    },
+    "/google": {
+      "post": {
+        "summary": "Sign in with Google",
+        "description": "Register or log in with the user's Google account.",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "User authenticated with Google."
+          }
+        }
+      }
+    },
+    "/facebook": {
+      "post": {
+        "summary": "Sign in with Facebook",
+        "description": "Register or log in with the user's Facebook account.",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "User authenticated with Facebook."
+          }
+        }
+      }
+    },
+    "/forget-password": {
+      "post": {
+        "summary": "Forget password",
+        "description": "Request to set a new password.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "test@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset link sent successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/reset-password/{token}": {
+      "post": {
+        "summary": "Reset password",
+        "description": "Reset the user's password with the reset token sent to their email.",
+        "tags": [
+          "Authentication"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "The reset token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "test1234"
+                  },
+                  "passwordConfirm": {
+                    "type": "string",
+                    "example": "test1234"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/channels": {
+      "post": {
+        "summary": "create new channel",
+        "tags": [
+          "Channels"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the channel"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The description of the channel"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "example": {
+                "name": "name of channel",
+                "description": "description of the channel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The channel is created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "id": "df64663131fds",
+                    "name": "channel name",
+                    "description": "The channel description"
+                  },
+                  "message": "The channel is created Successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/channels/{channelId}": {
+      "patch": {
+        "summary": "update the channel",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to update its info"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the channel"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The description of the channel"
+                  }
+                }
+              },
+              "example": {
+                "name": "name of channel",
+                "description": "description of the channel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The channel is updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The channel is updated Successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "delete": {
+        "summary": "delete the channel",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to delete it"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The channel is deleted successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/admins/{userId}": {
+      "patch": {
+        "summary": "add new admin to the channel",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to add a new admin to"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the id of the user who will be the new admin in the channel",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user become an admin of the channel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The channel is updated Successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/subscribers/{userId}": {
+      "post": {
+        "summary": "add subscriber to the channel",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to add a new subscriber to"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the id of the user who will subscribe the channel",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Subscription Done",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "channelId": {
+                          "type": "string"
+                        },
+                        "userId": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "channelId": "gf45621sd",
+                    "userId": "4212sd2gf"
+                  },
+                  "message": "The user subscribe the channel successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/messages": {
+      "post": {
+        "summary": "Post messages to channels",
+        "description": "This endpoint allows only admins of the channel to post messages. Regular users cannot access this endpoint",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to post a new message to"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "the content of the message"
+                  },
+                  "media": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "video",
+                      "document"
+                    ],
+                    "description": "Type of media attached to the message"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The URL of the media file"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The message was posted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "groupId": {
+                          "type": "string"
+                        },
+                        "messageId": {
+                          "type": "string"
+                        },
+                        "content": {
+                          "type": "string",
+                          "description": "the content of the message"
+                        },
+                        "media": {
+                          "type": "string",
+                          "description": "Type of media attached to the message"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "The URL of the media file"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "groupId": "gf1sdfs2fs",
+                    "messageId": "gf1s15sfs",
+                    "content": "The message content",
+                    "media": "the media used in the message",
+                    "url": "the url of the media"
+                  },
+                  "message": "Message posted successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/privacy": {
+      "patch": {
+        "summary": "update channel privacy",
+        "description": "This endpoint allows only admins of the channel to change its privacy settings.",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to change its privacy settings"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "privacy": {
+                    "type": "string",
+                    "enum": [
+                      "public",
+                      "private"
+                    ],
+                    "description": "the privacy option"
+                  }
+                },
+                "required": [
+                  "privacy"
+                ]
+              },
+              "example": {
+                "privacy": "public"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The channel privacy was updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The channel privacy was updated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/invite": {
+      "post": {
+        "summary": "invite users to the specified channel via invite links",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to invite the users to"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "list of the ids you want to send the invitation link to"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "example": [
+                "id1",
+                "id2",
+                "id3"
+              ]
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Users were invited successfully via the invite link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "Users have been invited successfully via the invite link"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "Invalid request. Please check your input"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user does not have permission to invite users to the channel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "You do not have permission to invite users to this channel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/comments": {
+      "patch": {
+        "summary": "Enable or disable comments (threads) on channel posts",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the channel id you want to change its comment settings"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "boolean",
+                    "description": "Enable or disable comments on channel posts"
+                  }
+                },
+                "required": [
+                  "comment"
+                ]
+              },
+              "example": {
+                "comment": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment settings updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "Comment settings updated successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "Invalid request. Please check your input"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user does not have permission to change comment settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "You do not have permission to change comment settings for this channel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channelId}/permissions/{userId}": {
+      "patch": {
+        "summary": "Change downloading permission of the user",
+        "tags": [
+          "Channels"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the channel for which download permissions are being modified"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the user id who his permission will be changed"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "downloadVideo": {
+                    "type": "boolean",
+                    "description": "Enable or disable downloading videos"
+                  },
+                  "downloadAudio": {
+                    "type": "boolean",
+                    "description": "Enable or disable downloading audios"
+                  }
+                },
+                "required": [
+                  "video",
+                  "audio"
+                ]
+              },
+              "example": {
+                "video": true,
+                "audio": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Downloading permissions are updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "Downloading permissions are updated successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "Invalid request. Please check your input"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user does not have permission to change user's downloading permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "You do not have permission to change user's downloading permission"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/": {
+      "get": {
+        "summary": "Get all conversations",
+        "description": "List all conversations for the logged in user",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Pagination for conversations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved the conversations successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "lastMessage": {
+                            "type": "object",
+                            "properties": {
+                              "sender": {
+                                "type": "string"
+                              },
+                              "content": {
+                                "type": "string"
+                              },
+                              "messageType": {
+                                "type": "string"
+                              },
+                              "timeStamp": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "unreadCount": {
+                            "type": "number"
+                          },
+                          "picture": {
+                            "type": "string"
+                          },
+                          "isMuted": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/conversations/{id}": {
+      "get": {
+        "summary": "Get conversation messages and metadata",
+        "description": "List messages of the current conversation",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Conversation identifier."
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Pagination for messages."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved the conversations successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "participants": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "username": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "chatName": {
+                      "type": "string",
+                      "example": "SWE-Project F2024"
+                    },
+                    "picture": {
+                      "type": "string",
+                      "example": "https://telegrammy-general-s3.s3.us-east-1.amazonaws.com/media/1729268699315-cropped-pexels-photo-6424615-3.jpeg"
+                    },
+                    "conversationType": {
+                      "type": "string",
+                      "example": "channel"
+                    },
+                    "permissions": {
+                      "type": "object",
+                      "properties": {
+                        "canChat": {
+                          "type": "boolean"
+                        },
+                        "canSendMedia": {
+                          "type": "boolean"
+                        },
+                        "canEditMsg": {
+                          "type": "boolean"
+                        },
+                        "canDeleteMsg": {
+                          "type": "boolean"
+                        },
+                        "canDownload": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "isChatAdmin": {
+                      "type": "boolean"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "messageType": {
+                            "type": "string"
+                          },
+                          "sender": {
+                            "type": "object",
+                            "properties": {
+                              "username": {
+                                "type": "string"
+                              },
+                              "picture": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "sentList": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "userId": {
+                                  "type": "string"
+                                },
+                                "username": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "deliveredList": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "userId": {
+                                  "type": "string"
+                                },
+                                "username": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "seenList": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "userId": {
+                                  "type": "string"
+                                },
+                                "username": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "mentionList": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "userId": {
+                                  "type": "string"
+                                },
+                                "username": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "isForwarded": {
+                            "type": "boolean"
+                          },
+                          "repliedTo": {
+                            "type": "object",
+                            "properties": {
+                              "sender": {
+                                "type": "string"
+                              },
+                              "messageId": {
+                                "type": "string"
+                              },
+                              "content": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "media": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "filesize": {
+                                "type": "integer",
+                                "description": "file size in MegaBytes"
+                              },
+                              "url": {
+                                "type": "string"
+                              },
+                              "thumbnail": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/conversations/messages": {
+      "post": {
+        "summary": "Send a new message to a conversation",
+        "description": "Send a message over a conversation with an optional media. Should be done with formBody();",
+        "tags": [
+          "Conversations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "message content or caption for media",
+                    "example": "Hey guys this is my first message here!"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "An optional media file to upload"
+                  },
+                  "conversationId": {
+                    "type": "string",
+                    "description": "ID of the conversation you send the message to"
+                  },
+                  "replyingTo": {
+                    "type": "string",
+                    "description": "ID of the message you are replying to (optional)"
+                  },
+                  "mentionList": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "You are not authorized to send messages over this conversation"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/messages/{messageId}": {
+      "patch": {
+        "summary": "Edit a message",
+        "description": "Edits a message sent by the current authenticated user.",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "message identifier to be edited."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "message content or caption for media",
+                    "example": "Hey guys this is my first message here!"
+                  },
+                  "media": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "An optional media file to upload"
+                  },
+                  "conversationId": {
+                    "type": "string",
+                    "description": "ID of the conversation you send the message to"
+                  },
+                  "replyingTo": {
+                    "type": "string",
+                    "description": "ID of the message you are replying to (optional)"
+                  },
+                  "mentionList": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message edited successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "You are not authorized to send messages over this conversation"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "deletes a message",
+        "description": "deletes a message sent by the current authenticated user.",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "messageId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "message identifier to be edited."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "You are not authorized to delete messages over this conversation"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{conversationId}": {
+      "patch": {
+        "summary": "mutes notifications for a conversation",
+        "description": "mutes notifications of a conversation for the currently authenticated user.",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "message identifier to be edited."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mute": {
+                    "type": "boolean"
+                  },
+                  "duration": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "notification subscribed/unsubscribe operation success!"
+          },
+          "400": {
+            "description": "Bad request."
+          }
+        }
+      }
+    },
+    "/conversations/{conversationId}/read": {
+      "patch": {
+        "summary": "Mark all messages in a conversation as read",
+        "description": "Marks all messages in the specified conversation as read for the currently authenticated user.",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique identifier for the conversation."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully marked all messages as read in the conversation."
+          },
+          "400": {
+            "description": "Bad request. Invalid conversation ID or parameters."
+          }
+        }
+      }
+    },
+    "/groups": {
+      "post": {
+        "summary": "create New Group",
+        "tags": [
+          "Groups"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of group"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The group image"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The Description of the group"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "example": {
+                "name": "test1",
+                "description": "This is the official group of the university"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The group is created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "The name of group"
+                        },
+                        "image": {
+                          "type": "string",
+                          "format": "binary",
+                          "description": "The group image"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "The Description of the group"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The group is created Successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}": {
+      "delete": {
+        "summary": "Delete the group",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id needed to be deleted"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The group is deleted successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "get": {
+        "summary": "Getting group info",
+        "tags": [
+          "Groups"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieving the group info successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "description": "The name of group"
+                            },
+                            "image": {
+                              "type": "string",
+                              "format": "binary",
+                              "description": "The group image"
+                            },
+                            "description": {
+                              "type": "string",
+                              "description": "The Description of the group"
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "The time which the group was created At"
+                            },
+                            "members": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "description": "The id of the members participate in the group"
+                              }
+                            },
+                            "admins": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "description": "The id of the admins of the group"
+                              }
+                            },
+                            "chatId": {
+                              "type": "string",
+                              "description": "The chat ID"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/users": {
+      "delete": {
+        "summary": "Leave a group",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The group's id which the user wants to leave"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user left the group successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The user left the group successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "get": {
+        "summary": "View a list of group members",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id whose members will be retrieved as a list"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of all the members of the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "users": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "screenName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        },
+                        "bio": {
+                          "type": "string"
+                        },
+                        "pictureURL": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "members": [
+                    {
+                      "id": "fgs554445dsf",
+                      "username": "test12",
+                      "screenName": "test test",
+                      "email": "example@test.com",
+                      "phone": "0101010100",
+                      "bio": "Lover of tech, coffee, and adventure. Always curious. 🌍",
+                      "pictureURL": "http://testdgffg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/admins/{userId}": {
+      "patch": {
+        "summary": "add admin privileges to a regular member of the group",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id which a new admin is added to",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "user's Id who will the new admin",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user become group's admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The user get admin privileges successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/users/{userId}": {
+      "post": {
+        "summary": "The admin add user to the group",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id which the admin add user to",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "user's Id who will the new member of the group",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user become a member of the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The user is a group member now"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "delete": {
+        "summary": "The admin remove user from the group",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id which the admin remove user from",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The id of user who will be removed from the group",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user removed successfully from the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The user is removed from the group"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/users/permissions/{userId}": {
+      "patch": {
+        "summary": "Set permission for posting , editing ,deleting ,download videos and download audios",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the group for which the message permissions of his member are being modified"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the user id who his permission will be changed"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "canPost": {
+                    "type": "boolean",
+                    "description": "Enable or disable posting messages"
+                  },
+                  "canEdit": {
+                    "type": "boolean",
+                    "description": "Enable or disable editing messages"
+                  },
+                  "canDelete": {
+                    "type": "boolean",
+                    "description": "Enable or disable deleting messages"
+                  },
+                  "downloadVideo": {
+                    "type": "boolean",
+                    "description": "Enable or disable downloading videos"
+                  },
+                  "downloadAudio": {
+                    "type": "boolean",
+                    "description": "Enable or disable downloading audios"
+                  }
+                }
+              },
+              "example": {
+                "canPost": true,
+                "canEdit": false,
+                "canDelete": true,
+                "downloadVideo": false,
+                "downloadAudio": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "user's permission is updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The user's permissions are updated successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "Invalid request. Please check your input"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user does not have permission to change user's posting messages permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "fail",
+                  "message": "You do not have permission to change user's posting messages permission"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/privacy": {
+      "patch": {
+        "summary": "change group privacy",
+        "description": "This endpoint allows only admins of the group to change its privacy settings.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the group id you want to change its privacy settings"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "privacy": {
+                    "type": "string",
+                    "enum": [
+                      "Public",
+                      "Private"
+                    ],
+                    "description": "the privacy option"
+                  }
+                },
+                "required": [
+                  "privacy"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The privacy was updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The privacy was updated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/mute": {
+      "patch": {
+        "summary": "Mutes notifications for a group for the current user, either permanently or for a specific duration",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id which the user wants to mute its notifications"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mute": {
+                    "type": "boolean",
+                    "description": "the option for muting the notification of the group or not"
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      60,
+                      480,
+                      2880,
+                      -1
+                    ],
+                    "description": "Duration in minutes for which the notifications should be muted. Use 0 for permanent mute. Use null when you don't want to mute the notification"
+                  }
+                },
+                "required": [
+                  "mute"
+                ]
+              },
+              "example": {
+                "mute": true,
+                "duration": 60
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The user muted the notifications for the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The user muted the notifications for a certain time"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/admins/announcements": {
+      "post": {
+        "summary": "This endpoint allows group admins to send announcements. Only users listed as admins can access this.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id to which the admin wants to send an announcement"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the announcement"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Content of the announcement"
+                  }
+                },
+                "required": [
+                  "title",
+                  "message"
+                ]
+              },
+              "example": {
+                "title": "Announcement Title",
+                "message": "The content of the announcement."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The admin sent an announcement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "The admin sent an announcement"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/members/search": {
+      "get": {
+        "summary": "search for members in a group by their name",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id whose member you search for"
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The name of the user you are searching for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of users with the same name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "users": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "screenName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        },
+                        "bio": {
+                          "type": "string"
+                        },
+                        "pictureURL": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "members": [
+                    {
+                      "id": "fgs554445dsf",
+                      "username": "test12",
+                      "screenName": "test test",
+                      "email": "example@test.com",
+                      "phone": "0101010100",
+                      "bio": "Lover of tech, coffee, and adventure. Always curious. 🌍",
+                      "pictureURL": "http://testdgffg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/messages/search": {
+      "get": {
+        "summary": "Search for messages in a group",
+        "description": "Retrieves a list of messages matching the search query.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Group's id which you search for a message in its chat"
+          },
+          {
+            "in": "query",
+            "name": "message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "the message you are searching for "
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of messages that match the given message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "content": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "members": [
+                    {
+                      "id": "fgs554445dsf",
+                      "content": "This is the content of the message",
+                      "timestamp": "2023-10-01T12:34:56Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/search/groups-channels": {
+      "get": {
+        "summary": "Search for public groups or channels by name",
+        "tags": [
+          "Search and Discover"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The name of public group or channel"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Choose if you need to retrieve groups or channels"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The public group and channels are retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "The name of group"
+                          },
+                          "image": {
+                            "type": "string",
+                            "format": "binary",
+                            "description": "The group image"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "The Description of the group"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "group",
+                              "channel"
+                            ],
+                            "description": "Define the type of the object group or channel"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "429": {
+            "description": "Too many requests"
+          }
+        }
+      }
+    },
+    "/search/users": {
+      "get": {
+        "summary": "Search for users by (username,screen name , email , phone)",
+        "tags": [
+          "Search and Discover"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "username",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the username you are searching for"
+          },
+          {
+            "in": "query",
+            "name": "screenName",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the screenName you are searching for"
+          },
+          {
+            "in": "query",
+            "name": "email",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the email you are searching for"
+          },
+          {
+            "in": "query",
+            "name": "phone",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the phone number you are searching for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of users match the given data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          },
+                          "screenName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "phone": {
+                            "type": "string"
+                          },
+                          "picture": {
+                            "type": "string"
+                          },
+                          "bio": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "isBanned": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/search/messages": {
+      "get": {
+        "summary": "Search for messages matching the given string in public groups or channels",
+        "tags": [
+          "Search and Discover"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "message",
+            "schema": {
+              "type": "string"
+            },
+            "description": "the message you are searching for in public groups"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of messages in the public groups which match the given data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "sentBy": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/search/message/{chatId}": {
+      "get": {
+        "summary": "Search for messages in a certain chat",
+        "tags": [
+          "Search and Discover"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "chatId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "the chat id that the messages which match the given string belongs to"
+          },
+          {
+            "in": "query",
+            "name": "mediaType",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "text",
+                "image",
+                "video",
+                "link"
+              ]
+            },
+            "description": "The media type of the message you are searching for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of messages in the public groups which match the given data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "sentBy": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/user/profile": {
+      "get": {
+        "summary": "Get user profile information",
+        "description": "Retrieve the profile information of the user.",
+        "tags": [
+          "User Profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile information retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "screenName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        },
+                        "bio": {
+                          "type": "string"
+                        },
+                        "pictureURL": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": [
+                    {
+                      "_id": "fgs554445dsf",
+                      "username": "test12",
+                      "screenName": "test test",
+                      "email": "example@test.com",
+                      "phone": "0101010100",
+                      "bio": "Lover of tech, coffee, and adventure. Always curious. 🌍",
+                      "pictureURL": "http://testdgffg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update user profile information",
+        "description": "Update the profile information (username, screen name, phone, bio, and status) of the authenticated user.",
+        "tags": [
+          "User Profile"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "bio": {
+                    "type": "string"
+                  },
+                  "screenName": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile information updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "screenName": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        },
+                        "bio": {
+                          "type": "string"
+                        },
+                        "pictureURL": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": [
+                    {
+                      "id": "fgs554445dsf",
+                      "username": "test12",
+                      "screenName": "test test",
+                      "email": "example@test.com",
+                      "phone": "0101010100",
+                      "bio": "Lover of tech, coffee, and adventure. Always curious. 🌍",
+                      "pictureURL": "http://testdgffg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Duplicate field value."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/user/profile/status": {
+      "get": {
+        "summary": "Get user activity status",
+        "description": "Retrieve the activity status of the authenticated user.",
+        "tags": [
+          "User Profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "User activity status retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "lastSeen": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "status": "active",
+                    "lastSeen": "2022-01-01T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update user activity status",
+        "description": "Update the activity status of the authenticated user.",
+        "tags": [
+          "User Profile"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "default": "active",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User activity status updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "lastSeen": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "status": "active",
+                    "lastSeen": "2022-01-01T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/privacy/settings/profile-visibility": {
+      "patch": {
+        "summary": "Set profile visibility",
+        "description": "Control who can see profile picture, stories, and last seen.",
+        "tags": [
+          "Privacy Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profilePicture": {
+                    "type": "string",
+                    "enum": [
+                      "Everyone",
+                      "Contacts",
+                      "Nobody"
+                    ]
+                  },
+                  "stories": {
+                    "type": "string",
+                    "enum": [
+                      "Everyone",
+                      "Contacts",
+                      "Nobody"
+                    ]
+                  },
+                  "lastSeen": {
+                    "type": "string",
+                    "enum": [
+                      "Everyone",
+                      "Contacts",
+                      "Nobody"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile visibility settings updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "profilePicture": {
+                          "type": "string"
+                        },
+                        "stories": {
+                          "type": "string"
+                        },
+                        "lastSeen": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data."
+          }
+        }
+      }
+    },
+    "/privacy/settings/blocked-users": {
+      "post": {
+        "summary": "Block a user",
+        "description": "Block a specific user by ID.",
+        "tags": [
+          "Privacy Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User blocked successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Unblock a user",
+        "description": "Unblock a specific user by ID.",
+        "tags": [
+          "Privacy Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User unblocked successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "get": {
+        "summary": "Get blocked users",
+        "description": "Retrieve a list of all blocked users.",
+        "tags": [
+          "Privacy Settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of blocked users retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/privacy/settings/read-receipts": {
+      "patch": {
+        "summary": "Enable/Disable read receipts",
+        "description": "Enable or disable read receipts for the user.",
+        "tags": [
+          "Privacy Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read receipts setting updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data."
+          }
+        }
+      }
+    },
+    "/privacy/settings/group-control": {
+      "patch": {
+        "summary": "Control group add permissions",
+        "description": "Control who can add the user to groups or channels.",
+        "tags": [
+          "Privacy Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "addToGroups": {
+                    "type": "string",
+                    "enum": [
+                      "Everyone",
+                      "Admins"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group add permissions updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "addToGroups": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data."
+          }
+        }
+      }
+    },
+    "/calls/history": {
+      "get": {
+        "summary": "Retrieve past call records",
+        "description": "Fetches a list of past calls with details like duration and participants",
+        "tags": [
+          "Voice Calls"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved call history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "calls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "callId": {
+                            "type": "string"
+                          },
+                          "participants": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "duration": {
+                            "type": "string",
+                            "format": "time"
+                          },
+                          "date": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid input"
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}
