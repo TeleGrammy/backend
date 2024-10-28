@@ -12,13 +12,11 @@
     }
   ],
   "paths": {
-    "/conversations/": {
+    "/chats/": {
       "get": {
-        "summary": "Get all conversations",
-        "description": "List all conversations for the logged in user",
-        "tags": [
-          "Conversations"
-        ],
+        "summary": "Get all chats",
+        "description": "List all chats for the logged in user",
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "query",
@@ -28,12 +26,12 @@
               "default": 1,
               "minimum": 1
             },
-            "description": "Pagination for conversations."
+            "description": "Pagination for chats."
           }
         ],
         "responses": {
           "200": {
-            "description": "Retrieved the conversations successfully.",
+            "description": "Retrieved the chats successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -93,13 +91,11 @@
         }
       }
     },
-    "/conversations/{id}": {
+    "/chats/{id}": {
       "get": {
-        "summary": "Get conversation messages and metadata",
-        "description": "List messages of the current conversation",
-        "tags": [
-          "Conversations"
-        ],
+        "summary": "Get chat messages and metadata",
+        "description": "List messages of the current chat",
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "path",
@@ -123,7 +119,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Retrieved the conversations successfully.",
+            "description": "Retrieved the chats successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -326,13 +322,11 @@
         }
       }
     },
-    "/conversations/messages": {
+    "/chats/messages": {
       "post": {
-        "summary": "Send a new message to a conversation",
-        "description": "Send a message over a conversation with an optional media. Should be done with formBody();",
-        "tags": [
-          "Conversations"
-        ],
+        "summary": "Send a new message to a chat",
+        "description": "Send a message over a chat with an optional media. Should be done with formBody();",
+        "tags": ["Chats"],
         "requestBody": {
           "required": true,
           "content": {
@@ -350,9 +344,9 @@
                     "format": "binary",
                     "description": "An optional media file to upload"
                   },
-                  "conversationId": {
+                  "chatId": {
                     "type": "string",
-                    "description": "ID of the conversation you send the message to"
+                    "description": "ID of the chat you send the message to"
                   },
                   "replyingTo": {
                     "type": "string",
@@ -393,7 +387,7 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "example": "You are not authorized to send messages over this conversation"
+                      "example": "You are not authorized to send messages over this chat"
                     }
                   }
                 }
@@ -403,13 +397,11 @@
         }
       }
     },
-    "/conversations/messages/{messageId}": {
+    "/chats/messages/{messageId}": {
       "patch": {
         "summary": "Edit a message",
         "description": "Edits a message sent by the current authenticated user.",
-        "tags": [
-          "Conversations"
-        ],
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "path",
@@ -438,9 +430,9 @@
                     "format": "binary",
                     "description": "An optional media file to upload"
                   },
-                  "conversationId": {
+                  "chatId": {
                     "type": "string",
-                    "description": "ID of the conversation you send the message to"
+                    "description": "ID of the chat you send the message to"
                   },
                   "replyingTo": {
                     "type": "string",
@@ -481,7 +473,7 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "example": "You are not authorized to send messages over this conversation"
+                      "example": "You are not authorized to send messages over this chat"
                     }
                   }
                 }
@@ -493,9 +485,7 @@
       "delete": {
         "summary": "deletes a message",
         "description": "deletes a message sent by the current authenticated user.",
-        "tags": [
-          "Conversations"
-        ],
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "path",
@@ -523,7 +513,7 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "example": "You are not authorized to delete messages over this conversation"
+                      "example": "You are not authorized to delete messages over this chat"
                     }
                   }
                 }
@@ -533,17 +523,15 @@
         }
       }
     },
-    "/conversations/{conversationId}": {
+    "/chats/{chatId}": {
       "patch": {
-        "summary": "mutes notifications for a conversation",
-        "description": "mutes notifications of a conversation for the currently authenticated user.",
-        "tags": [
-          "Conversations"
-        ],
+        "summary": "mutes notifications for a chat",
+        "description": "mutes notifications of a chat for the currently authenticated user.",
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "path",
-            "name": "conversationId",
+            "name": "chatId",
             "required": true,
             "schema": {
               "type": "string"
@@ -583,3 +571,4 @@
   "components": {},
   "tags": []
 }
+

@@ -1,11 +1,11 @@
 /**
  * @swagger
- *  /conversations/:
+ *  /chats/:
  *    get:
- *      summary: 'Get all conversations'
- *      description: List all conversations for the logged in user
+ *      summary: 'Get all chats'
+ *      description: List all chats for the logged in user
  *      tags:
- *        - Conversations
+ *        - Chats
  *      parameters:
  *        - in: query
  *          name: page
@@ -13,10 +13,10 @@
  *            type: integer
  *            default: 1
  *            minimum: 1
- *          description: Pagination for conversations.
+ *          description: Pagination for chats.
  *      responses:
  *        '200':
- *          description: Retrieved the conversations successfully.
+ *          description: Retrieved the chats successfully.
  *          content:
  *            application/json:
  *              schema:
@@ -57,12 +57,12 @@
  */
 /**
  * @swagger
- *  /conversations/{id}:
+ *  /chats/{id}:
  *    get:
- *      summary: 'Get conversation messages and metadata'
- *      description: List messages of the current conversation
+ *      summary: 'Get chat messages and metadata'
+ *      description: List messages of the current chat
  *      tags:
- *        - Conversations
+ *        - Chats
  *      parameters:
  *        - in: path
  *          name: id
@@ -79,7 +79,7 @@
  *          description: Pagination for messages.
  *      responses:
  *        '200':
- *          description: Retrieved the conversations successfully.
+ *          description: Retrieved the chats successfully.
  *          content:
  *            application/json:
  *              schema:
@@ -212,12 +212,12 @@
  */
 /**
  * @swagger
- *  /conversations/messages:
+ *  /chats/messages:
  *    post:
- *      summary: Send a new message to a conversation
- *      description: Send a message over a conversation with an optional media. Should be done with formBody();
+ *      summary: Send a new message to a chat
+ *      description: Send a message over a chat with an optional media. Should be done with formBody();
  *      tags:
- *        - Conversations
+ *        - Chats
  *      requestBody:
  *        required: true
  *        content:
@@ -233,9 +233,9 @@
  *                  type: string
  *                  format: binary
  *                  description: An optional media file to upload
- *                conversationId:
+ *                chatId:
  *                  type: string
- *                  description: ID of the conversation you send the message to
+ *                  description: ID of the chat you send the message to
  *                replyingTo:
  *                  type: string
  *                  description: ID of the message you are replying to (optional)
@@ -260,18 +260,18 @@
  *                properties:
  *                  error:
  *                    type: string
- *                    example: "You are not authorized to send messages over this conversation"
+ *                    example: "You are not authorized to send messages over this chat"
  *        '400':
  *          description: Bad request.
  */
 /**
  * @swagger
- *  /conversations/messages/{messageId}:
+ *  /chats/messages/{messageId}:
  *    patch:
  *      summary: Edit a message
  *      description: Edits a message sent by the current authenticated user.
  *      tags:
- *        - Conversations
+ *        - Chats
  *      parameters:
  *        - in: path
  *          name: messageId
@@ -294,9 +294,9 @@
  *                  type: string
  *                  format: binary
  *                  description: An optional media file to upload
- *                conversationId:
+ *                chatId:
  *                  type: string
- *                  description: ID of the conversation you send the message to
+ *                  description: ID of the chat you send the message to
  *                replyingTo:
  *                  type: string
  *                  description: ID of the message you are replying to (optional)
@@ -321,18 +321,18 @@
  *                properties:
  *                  error:
  *                    type: string
- *                    example: "You are not authorized to send messages over this conversation"
+ *                    example: "You are not authorized to send messages over this chat"
  *        '400':
  *          description: Bad request.
  */
 /**
  * @swagger
- *  /conversations/messages/{messageId}:
+ *  /chats/messages/{messageId}:
  *    delete:
  *      summary: deletes a message
  *      description: deletes a message sent by the current authenticated user.
  *      tags:
- *        - Conversations
+ *        - Chats
  *      parameters:
  *        - in: path
  *          name: messageId
@@ -352,21 +352,21 @@
  *                properties:
  *                  error:
  *                    type: string
- *                    example: "You are not authorized to delete messages over this conversation"
+ *                    example: "You are not authorized to delete messages over this chat"
  *        '400':
  *          description: Bad request.
  */
 /**
  * @swagger
- *  /conversations/{conversationId}:
+ *  /chats/{chatId}:
  *    patch:
- *      summary: mutes notifications for a conversation
- *      description: mutes notifications of a conversation for the currently authenticated user.
+ *      summary: mutes notifications for a chat
+ *      description: mutes notifications of a chat for the currently authenticated user.
  *      tags:
- *        - Conversations
+ *        - Chats
  *      parameters:
  *        - in: path
- *          name: conversationId
+ *          name: chatId
  *          required: true
  *          schema:
  *            type: string
@@ -390,22 +390,22 @@
  */
 /**
  * @swagger
- *  /conversations/{conversationId}/read:
+ *  /chats/{chatId}/read:
  *    patch:
- *      summary: Mark all messages in a conversation as read
- *      description: Marks all messages in the specified conversation as read for the currently authenticated user.
+ *      summary: Mark all messages in a chat as read
+ *      description: Marks all messages in the specified chat as read for the currently authenticated user.
  *      tags:
- *        - Conversations
+ *        - Chats
  *      parameters:
  *        - in: path
- *          name: conversationId
+ *          name: chatId
  *          required: true
  *          schema:
  *            type: string
- *          description: Unique identifier for the conversation.
+ *          description: Unique identifier for the chat.
  *      responses:
  *        '200':
- *          description: Successfully marked all messages as read in the conversation.
+ *          description: Successfully marked all messages as read in the chat.
  *        '400':
- *          description: Bad request. Invalid conversation ID or parameters.
+ *          description: Bad request. Invalid chat ID or parameters.
  */
