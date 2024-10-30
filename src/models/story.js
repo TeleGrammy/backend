@@ -72,6 +72,10 @@ storySchema.post(/^find/, async function (docs, next) {
   next();
 });
 
+// Ensure virtuals are included in JSON and Object conversion
+storySchema.set("toJSON", {virtuals: true});
+storySchema.set("toObject", {virtuals: true});
+
 const Story = mongoose.model("Story", storySchema);
 
 module.exports = Story;
