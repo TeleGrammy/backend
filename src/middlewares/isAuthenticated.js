@@ -6,30 +6,38 @@ const catchAsync = require("../utils/catchAsync");
 
 const generateToken = require("../utils/generateToken");
 const addAuthCookie = require("../utils/addAuthCookie");
-const userService = require("../services/userService");
 const isLoggedOut = require("../utils/isLoggedOut");
 
+const userService = require("../services/userService");
+const sessionService = require("../services/sessionService");
+
 module.exports = catchAsync(async (req, res, next) => {
-  const accessToken = req.cookies[process.env.COOKIE_ACCESS_NAME];
-  const refreshToken = req.cookies[process.env.COOKIE_REFRESH_NAME];
+  const currentDeviceType = req.headers["user-agent"];
+
+  let accessToken =
+    req.cookies[process.env.COOKIE_ACCESS_NAME] ||
+    req.header("Authorization")?.replace("Bearer ", "");
 
   if (!accessToken) {
-    return next(new AppError("Unauthorized access, please log in", 401));
+    return new next(new AppError("Not authorized access, Please login!", 401));
   }
 
-  let decodedToken;
-  try {
-    decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
-  } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      if (!refreshToken) {
-        return next(new AppError("Token expired, please log in again", 401));
-      }
+  let decodedAccessToken = null;
 
-      let decodedRefreshToken;
+  try {
+    decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+  } catch (error) {
+    if (err.name === "TokenExpiredError") {
+      const currentUserId = jwt.decode(accessToken, {complete: true}).id;
+      const currentSessionData = sessionService.findSessionByUserIdAndDevice(
+        currentUserId,
+        currentDeviceType
+      );
+
+      let decodedRefreshToken = null;
       try {
-        decodedRefreshToken = await jwt.verify(
-          refreshToken,
+        decodedRefreshToken = jwt.verify(
+          currentSessionData.refreshToken,
           process.env.JWT_SECRET
         );
       } catch (error) {
@@ -42,50 +50,73 @@ module.exports = catchAsync(async (req, res, next) => {
         decodedRefreshToken.name
       );
       if (!user) {
-        return next(new AppError("User not found, please log in again", 401));
+        return next(new AppError("User not found, please login again", 401));
       }
 
-      const newAccessToken = generateToken(
-        {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          loggedOutFromAllDevicesAt: decodedToken.loggedOutFromAllDevicesAt,
-        },
-        process.env.COOKIE_ACCESS_NAME
-      );
-
-      const newRefreshToken = generateToken({
+      const userTokenedData = {
+        id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,
-        loggedOutFromAllDevicesAt:
-          decodedRefreshToken.loggedOutFromAllDevicesAt,
-      }); // To avoid token replay attacks
+        loggedOutFromAllDevicesAt: decodedAccessToken.loggedOutFromAllDevicesAt,
+      };
+
+      const newAccessToken = generateToken(
+        userTokenedData,
+        process.env.COOKIE_ACCESS_NAME
+      );
+
+      const newRefreshToken = generateToken(
+        userTokenedData,
+        process.env.COOKIE_REFRESH_NAME
+      );
+
+      const newSessionData = {
+        ip: (req.headers["x-forwarded-for"] || req.ip).split(",")[0].trim(),
+        deviceType: req.headers["user-agent"],
+        userId: user._id,
+        newRefreshToken,
+      };
+
+      const newSession = sessionService.createSession(newSessionData);
+
+      try {
+        await sessionService.findSessionByUserIdAndUpdate(
+          user._id,
+          currentDeviceType,
+          newSession
+        );
+      } catch (error) {
+        return next(error);
+      }
 
       addAuthCookie(newAccessToken, res, true);
-      addAuthCookie(newRefreshToken, res, false);
-
-      await userService.updateRefreshToken(user._id, newRefreshToken);
 
       req.user = decodedRefreshToken;
+      req.user.currentSession = currentSessionData;
+
       return next();
+    } else {
+      return next(new AppError("Invalid access token", 401));
     }
-    return next(new AppError("Invalid token, please log in again", 401));
   }
 
-  const user = await userService.getUserBasicInfoByUUID(decodedToken.name);
-
+  const user = await userService.getUserBasicInfoByUUID(
+    decodedAccessToken.name
+  );
   if (!user) {
     return next(new AppError("Unauthorized access", 401));
   }
 
-  if (await isLoggedOut(decodedToken)) {
+  const currentSession = await sessionService.findSessionByUserIdAndDevice(
+    user._id,
+    currentDeviceType
+  );
+
+  if (await isLoggedOut(decodedAccessToken)) {
+    await sessionService.deleteSession(currentSession._id, currentDeviceType);
+
     res.clearCookie(process.env.COOKIE_ACCESS_NAME, {
-      httpOnly: true,
-      secure: true,
-    });
-    res.clearCookie(process.env.COOKIE_REFRESH_NAME, {
       httpOnly: true,
       secure: true,
     });
@@ -95,6 +126,7 @@ module.exports = catchAsync(async (req, res, next) => {
     );
   }
 
-  req.user = decodedToken;
+  req.user = decodedAccessToken;
+  req.user.currentSession = currentSession;
   return next();
 });

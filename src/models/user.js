@@ -80,6 +80,7 @@ const userSchema = new mongoose.Schema({
     enum: ["active", "inactive", "banned"],
     default: "inactive",
   },
+
   googleId: {
     type: String,
     unique: true,
@@ -96,11 +97,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true,
-  },
-
-  jwtRefreshToken: {
-    type: String,
-    default: null,
   },
 
   accessToken: {
@@ -133,7 +129,9 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", function (next) {
-  if (!this.isModified("password") || this.isNew) return next();
+  if (!this.isModified("password") || this.isNew) {
+    return next();
+  }
 
   this.passwordModifiedAt = Date.now();
   return next();
