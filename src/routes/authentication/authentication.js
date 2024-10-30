@@ -56,7 +56,11 @@ router.post(
 
 router.patch("/reset-password/:token", accountRecovery.resetPassword);
 
-router.post("/register", registrationController.postRegistration);
+router.post(
+  "/register",
+  captchaController,
+  registrationController.postRegistration
+);
 
 router.post("/verify", registrationController.postVerify);
 
@@ -72,5 +76,4 @@ router.post(
   registrationController.resendVerification
 );
 
-router.post("/verify-captcha", captchaController);
 module.exports = router;

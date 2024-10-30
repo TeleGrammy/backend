@@ -1,7 +1,5 @@
 const User = require("../models/user");
 
-const AppError = require("../errors/appError");
-
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -19,6 +17,28 @@ const AppError = require("../errors/appError");
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
   return User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
+  }).select(selectionFilter);
+};
+
+/**
+ * Retrieves a user by email, username, or phone.
+ * @memberof Service.Users
+ * @method getUserByContactInfo
+ * @async
+ * @param {String} [email]              - User's email.
+ * @param {String} [username]           - User's username.
+ * @param {String} [phone]              - User's phone number.
+ * @param {Object} [selectionFilter={}] - The fields needed to select from the user object. Defaults to an empty object.
+ * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
+ */
+const getUserByContactInfo = async (
+  email,
+  username,
+  phone,
+  selectionFilter = {}
+) => {
+  return User.findOne({
+    $or: [{email}, {username}, {phone}],
   }).select(selectionFilter);
 };
 
@@ -129,20 +149,21 @@ const createUser = async (userData) => {
 };
 
 const findOne = async (filter) => {
-  return await User.findOne(filter);
+  return User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return await User.findOneAndUpdate(filter, updateData, options);
+  return User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
-  return await User.findById(ID);
+  return User.findById(ID);
 };
 
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
+  getUserByContactInfo,
   getUserByEmail,
   getUserPasswordById,
   getUserId,
