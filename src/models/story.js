@@ -7,6 +7,10 @@ const storySchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  viewers: {
+    type: Map,
+    of: {type: Date},
+  },
   content: {
     type: String,
   },
@@ -23,6 +27,9 @@ const storySchema = new mongoose.Schema({
   },
 });
 
+storySchema.virtual("viewersCount").get(function () {
+  return this.viewers ? this.viewers.size : 0;
+});
 storySchema.methods.generateSignedUrl = async function () {
   try {
     if (this.mediaKey)

@@ -1,9 +1,9 @@
 const express = require("express");
 const userProfileController = require("../../controllers/userProfile/userProfile");
-const storyController = require("../../controllers/userProfile/story");
+
 const isAuth = require("../../middlewares/isAuthenticated");
 
-const {uploadUserPicture, uploadStory} = require("../../middlewares/AWS");
+const {uploadUserPicture} = require("../../middlewares/AWS");
 
 const router = express.Router();
 
@@ -35,34 +35,6 @@ router.patch(
 );
 router.post("/email/confirm/", isAuth, userProfileController.confirmNewEmail);
 
-router.delete(
-  "/bio/",
-  isAuth,
-  storyController.checkAuthorization,
-  userProfileController.deleteUserBio
-);
+router.delete("/bio/", isAuth, userProfileController.deleteUserBio);
 
-router
-  .route("/story/")
-  .post(isAuth, uploadStory, storyController.createStory)
-  .get(isAuth, storyController.getMyStories)
-  .delete(isAuth, storyController.deleteStory);
-
-router.get("/stories", isAuth, storyController.getMyContactsStories);
-
-// get stories of a user by it's id
-router.get(
-  "/story/:userId",
-  isAuth,
-  storyController.inContacts,
-  storyController.getUserStories
-);
-// get story by id of the story
-router.get(
-  "/story//:stroyId",
-  isAuth,
-  storyController.addStoryOwnerId,
-  storyController.inContacts,
-  storyController.getStory
-);
 module.exports = router;

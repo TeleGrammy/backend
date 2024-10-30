@@ -91,17 +91,33 @@ exports.getStory = catchAsync(async (req, res, next) => {
 });
 
 exports.checkAuthorization = catchAsync(async (req, res, next) => {
-  const story = await stroyService.getStoryById(req.params.id);
-  if (story.userId !== req.user.id) {
-    next(new AppError("User not authorized to view this story", 403));
+  const story = await stroyService.getStoryById(req.params.storyId);
+  if (!story) {
+    return next(new AppError("Story not found", 404));
+  }
+
+  if (story.userId.toString() !== req.user.id) {
+    return next(new AppError("User not authorized to view this story", 403));
   }
   next();
 });
 
 exports.deleteStory = catchAsync(async (req, res, next) => {
-  await stroyService.deleteStoryById(req.body.id);
+  await stroyService.deleteStoryById(req.params.storyId);
   res.status(200).json({
     status: "success",
     message: "Story deleted successfully",
+  });
+});
+
+exports.updateStoryViewers = catchAsync(async (req, res, next) => {
+  const {storyId} = req.params;
+  const story = await stroyService.updateStoryViewers(storyId, req.user.id);
+  if (!story) {
+    next(new AppError("Story not found", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    data: {story},
   });
 });

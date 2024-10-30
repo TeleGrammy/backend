@@ -16,6 +16,8 @@ require("./middlewares/strategies/index");
 const authenticationRouter = require("./routes/authentication/authentication");
 const userRouter = require("./routes/user/user");
 const userProfileRouter = require("./routes/userProfile/userProfile");
+const storyRouter = require("./routes/userProfile/story");
+
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
 const app = express();
@@ -41,6 +43,7 @@ app.use(passport.initialize());
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);
 app.use("/api/v1/user/profile", userProfileRouter);
+app.use("/api/v1/user/stories", storyRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
