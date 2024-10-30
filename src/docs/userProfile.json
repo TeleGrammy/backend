@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "User Profile and Story Management API",
+    "title": "User Profile Management API",
     "version": "1.0.0",
     "description": "API documentation for managing user profiles and stories."
   },
@@ -576,194 +576,6 @@
         }
       }
     },
-    "/user/profile/story": {
-      "post": {
-        "summary": "Create a new story",
-        "description": "Create a new story for the authenticated user.",
-        "tags": ["User Story"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "content": {
-                    "type": "string"
-                  },
-                  "media": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Story created successfully."
-          },
-          "400": {
-            "description": "No content or media provided."
-          },
-          "404": {
-            "description": "User not found."
-          }
-        }
-      },
-      "get": {
-        "summary": "Get user's stories",
-        "description": "Retrieve all stories of the authenticated user.",
-        "tags": ["User Story"],
-        "responses": {
-          "200": {
-            "description": "User's stories retrieved successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {
-                      "type": "string"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "content": {
-                      "type": "string"
-                    },
-                    "media": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete a story",
-        "description": "Delete a story of the authenticated user by its ID.",
-        "tags": ["User Story"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Story deleted successfully."
-          },
-          "404": {
-            "description": "Story not found."
-          }
-        }
-      }
-    },
-    "/user/profile/story/{id}": {
-      "get": {
-        "summary": "Get stories of a specific user",
-        "description": "Retrieve stories of a specific user by their ID.",
-        "tags": ["User Story"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User's stories retrieved successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {
-                      "type": "string"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "content": {
-                      "type": "string"
-                    },
-                    "media": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not authorized to view this user's stories."
-          }
-        }
-      }
-    },
-    "/user/profile/story//{id}": {
-      "get": {
-        "summary": "Get a specific story",
-        "description": "Retrieve a specific story by its ID.",
-        "tags": ["User Story"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Story retrieved successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {
-                      "type": "string"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "content": {
-                      "type": "string"
-                    },
-                    "media": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Story not found."
-          }
-        }
-      }
-    },
     "/privacy/settings/profile-visibility": {
       "patch": {
         "summary": "Set profile visibility",
@@ -776,9 +588,18 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "profilePicture": { "type": "string", "enum": ["Everyone", "Contacts", "Nobody"] },
-                  "stories": { "type": "string", "enum": ["Everyone", "Contacts", "Nobody"] },
-                  "lastSeen": { "type": "string", "enum": ["Everyone", "Contacts", "Nobody"] }
+                  "profilePicture": {
+                    "type": "string",
+                    "enum": ["Everyone", "Contacts", "Nobody"]
+                  },
+                  "stories": {
+                    "type": "string",
+                    "enum": ["Everyone", "Contacts", "Nobody"]
+                  },
+                  "lastSeen": {
+                    "type": "string",
+                    "enum": ["Everyone", "Contacts", "Nobody"]
+                  }
                 }
               }
             }
@@ -792,13 +613,13 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "string", "example": "success" },
+                    "status": {"type": "string", "example": "success"},
                     "data": {
                       "type": "object",
                       "properties": {
-                        "profilePicture": { "type": "string" },
-                        "stories": { "type": "string" },
-                        "lastSeen": { "type": "string" }
+                        "profilePicture": {"type": "string"},
+                        "stories": {"type": "string"},
+                        "lastSeen": {"type": "string"}
                       }
                     }
                   }
@@ -806,7 +627,7 @@
               }
             }
           },
-          "400": { "description": "Invalid request data." }
+          "400": {"description": "Invalid request data."}
         }
       }
     },
@@ -819,7 +640,10 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "userId": { "type": "string" } } }
+              "schema": {
+                "type": "object",
+                "properties": {"userId": {"type": "string"}}
+              }
             }
           }
         },
@@ -827,10 +651,17 @@
           "200": {
             "description": "User blocked successfully.",
             "content": {
-              "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "example": "success" } } } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string", "example": "success"}
+                  }
+                }
+              }
             }
           },
-          "404": { "description": "User not found." }
+          "404": {"description": "User not found."}
         }
       },
       "delete": {
@@ -841,7 +672,10 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "userId": { "type": "string" } } }
+              "schema": {
+                "type": "object",
+                "properties": {"userId": {"type": "string"}}
+              }
             }
           }
         },
@@ -849,10 +683,17 @@
           "200": {
             "description": "User unblocked successfully.",
             "content": {
-              "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "example": "success" } } } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string", "example": "success"}
+                  }
+                }
+              }
             }
           },
-          "404": { "description": "User not found." }
+          "404": {"description": "User not found."}
         }
       },
       "get": {
@@ -867,12 +708,15 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "string", "example": "success" },
+                    "status": {"type": "string", "example": "success"},
                     "data": {
                       "type": "array",
                       "items": {
                         "type": "object",
-                        "properties": { "userId": { "type": "string" }, "username": { "type": "string" } }
+                        "properties": {
+                          "userId": {"type": "string"},
+                          "username": {"type": "string"}
+                        }
                       }
                     }
                   }
@@ -892,7 +736,10 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "enabled": { "type": "boolean" } } }
+              "schema": {
+                "type": "object",
+                "properties": {"enabled": {"type": "boolean"}}
+              }
             }
           }
         },
@@ -904,14 +751,17 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "string", "example": "success" },
-                    "data": { "type": "object", "properties": { "enabled": { "type": "boolean" } } }
+                    "status": {"type": "string", "example": "success"},
+                    "data": {
+                      "type": "object",
+                      "properties": {"enabled": {"type": "boolean"}}
+                    }
                   }
                 }
               }
             }
           },
-          "400": { "description": "Invalid request data." }
+          "400": {"description": "Invalid request data."}
         }
       }
     },
@@ -924,7 +774,15 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "addToGroups": { "type": "string", "enum": ["Everyone", "Admins"] } } }
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "addToGroups": {
+                    "type": "string",
+                    "enum": ["Everyone", "Admins"]
+                  }
+                }
+              }
             }
           }
         },
@@ -936,14 +794,17 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "string", "example": "success" },
-                    "data": { "type": "object", "properties": { "addToGroups": { "type": "string" } } }
+                    "status": {"type": "string", "example": "success"},
+                    "data": {
+                      "type": "object",
+                      "properties": {"addToGroups": {"type": "string"}}
+                    }
                   }
                 }
               }
             }
           },
-          "400": { "description": "Invalid request data." }
+          "400": {"description": "Invalid request data."}
         }
       }
     }
