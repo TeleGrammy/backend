@@ -35,7 +35,12 @@ router.patch(
 );
 router.post("/email/confirm/", isAuth, userProfileController.confirmNewEmail);
 
-router.delete("/bio/", isAuth, userProfileController.deleteUserBio);
+router.delete(
+  "/bio/",
+  isAuth,
+  storyController.checkAuthorization,
+  userProfileController.deleteUserBio
+);
 
 router
   .route("/story/")
@@ -43,7 +48,18 @@ router
   .get(isAuth, storyController.getMyStories)
   .delete(isAuth, storyController.deleteStory);
 
-router.get("/story/:id", isAuth, storyController.getUserStories);
+router.get(
+  "/story/:userId",
+  isAuth,
+  storyController.inContacts,
+  storyController.getUserStories
+);
 // get story by id of the story
-router.get("/story//:id", isAuth, storyController.getStory);
+router.get(
+  "/story//:stroyId",
+  isAuth,
+  storyController.addStoryOwnerId,
+  storyController.inContacts,
+  storyController.getStory
+);
 module.exports = router;

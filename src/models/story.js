@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 
 const storySchema = new mongoose.Schema({
-  user: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
@@ -31,6 +31,7 @@ storySchema.methods.generateSignedUrl = async function () {
     console.error(`Error generating url for story ${doc._id}:`, err);
     this.media = null;
   }
+  this.mediaKey = undefined;
 };
 
 storySchema.pre(/Delete$/, async function (next) {
@@ -52,12 +53,10 @@ storySchema.post(/^find/, async function (docs, next) {
 
   if (!docs.length) {
     await docs.generateSignedUrl();
-    docs.mediaKey = undefined;
   } else {
     await Promise.all(
       docs.map(async (doc) => {
         await doc.generateSignedUrl();
-        doc.mediaKey = undefined;
       })
     );
   }

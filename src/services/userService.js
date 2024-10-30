@@ -138,14 +138,20 @@ const updateRefreshToken = async (id, newRefreshToken) => {
   return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
 };
 
-const findOne = (filter) => {
+const findOne = async (filter) => {
   return User.findOne(filter);
 };
 
-const findOneAndUpdate = (filter, updateData, options) => {
+const findOneAndUpdate = async (filter, updateData, options) => {
   return User.findOneAndUpdate(filter, updateData, options);
 };
 
+const findByIdAndUpdate = async (id, updateData, options) => {
+  return User.findByIdAndUpdate(id, updateData, options);
+};
+const getUserById = async (id, select = "") => {
+  return User.findById(id).select(select);
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -156,4 +162,6 @@ module.exports = {
   updateRefreshToken,
   findOne,
   findOneAndUpdate,
+  findByIdAndUpdate,
+  getUserById,
 };
