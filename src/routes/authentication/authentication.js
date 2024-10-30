@@ -54,7 +54,10 @@ router.post(
   accountRecovery.logOutFromAllDevices
 );
 
-router.patch("/reset-password/:token", accountRecovery.resetPassword);
+router
+  .route("/reset-password/:token")
+  .patch(accountRecovery.resetPassword)
+  .get(accountRecovery.redirectResetPage);
 
 router.post(
   "/register",
