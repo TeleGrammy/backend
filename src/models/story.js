@@ -28,7 +28,7 @@ storySchema.methods.generateSignedUrl = async function () {
     if (this.mediaKey)
       this.media = await generateSignedUrl(this.mediaKey, 15 * 60);
   } catch (err) {
-    console.error(`Error generating url for story ${doc._id}:`, err);
+    console.error(`Error generating url for story ${this._id}:`, err);
     this.media = null;
   }
   this.mediaKey = undefined;
@@ -49,9 +49,11 @@ storySchema.post("save", async function (doc, next) {
 
 // this middleware is responsible for creating signed URLs to the retreived stories from the database
 storySchema.post(/^find/, async function (docs, next) {
-  if (!docs || (Array.isArray(docs) && docs.length === 0)) next();
+  if (!docs || (Array.isArray(docs) && docs.length === 0)) {
+    next();
+  }
 
-  if (!docs.length) {
+  if (!Array.isArray(docs)) {
     await docs.generateSignedUrl();
   } else {
     await Promise.all(

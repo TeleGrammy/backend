@@ -48,6 +48,9 @@ router
   .get(isAuth, storyController.getMyStories)
   .delete(isAuth, storyController.deleteStory);
 
+router.get("/stories", isAuth, storyController.getMyContactsStories);
+
+// get stories of a user by it's id
 router.get(
   "/story/:userId",
   isAuth,

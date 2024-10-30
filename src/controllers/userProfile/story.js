@@ -35,6 +35,21 @@ exports.getMyStories = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getMyContactsStories = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  let limit = parseInt(req.query.limit, 10) || 10;
+  limit = limit > 10 ? 10 : limit;
+  const stories = await stroyService.getStoriesOfContacts(
+    req.user.id,
+    page,
+    limit
+  );
+  res.json({
+    status: "success",
+    data: stories,
+  });
+});
+
 exports.addStoryOwnerId = catchAsync(async (req, res, next) => {
   req.storyId = req.params.stroyId;
 
