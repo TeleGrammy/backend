@@ -83,6 +83,13 @@
  *      summary: Getting group info
  *      tags:
  *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: Group's id needed to get its info
  *      responses:
  *        '200':
  *          description: Retrieving the group info successfully

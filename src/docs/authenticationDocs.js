@@ -167,7 +167,7 @@
 /**
  * @swagger
  *  /auth/google:
- *    post:
+ *    get:
  *      summary: Sign in with Google
  *      description: Register or log in with the user's Google account.
  *      tags:
@@ -180,7 +180,7 @@
 /**
  * @swagger
  *  /auth/github:
- *    post:
+ *    get:
  *      summary: Sign in with GitHub
  *      description: Register or log in with the user's GitHub account.
  *      tags:
@@ -193,7 +193,7 @@
 /**
  * @swagger
  *  /auth/facebook:
- *    post:
+ *    get:
  *      summary: Sign in with Facebook
  *      description: Register or log in with the user's Facebook account.
  *      tags:
@@ -258,7 +258,7 @@
 /**
  * @swagger
  *  /auth/reset-password/{token}:
- *    post:
+ *    patch:
  *      summary: Reset password
  *      description: Reset the user's password with the reset token sent to their email.
  *      tags:
