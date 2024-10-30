@@ -25,7 +25,7 @@ const reCaptchaVerification = async (req, res, next) => {
 
     const {success} = response.data;
     if (success) {
-      return res.status(200).json({success: true});
+      return next();
     }
     return res
       .status(400)
