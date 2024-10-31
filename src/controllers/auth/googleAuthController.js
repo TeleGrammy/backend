@@ -56,14 +56,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         res,
         existingUser
       );
-
-      return res.status(200).json({
-        data: {
-          updatedUser,
-          accessToken,
-        },
-        status: "Logged in successfully with Google",
-      });
+      return res.cookie('accessToken',accessToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 60 * 60 * 1000 }).redirect(process.env.FRONTEND_LOGIN_CALLBACK);
     }
   )(req, res);
 });
