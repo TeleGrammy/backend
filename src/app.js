@@ -1,6 +1,8 @@
 const express = require("express");
+const session = require("express-session");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const requestIp = require("request-ip");
 const passport = require("passport");
 const {swaggerUi, specs} = require("../swaggerConfig");
 const cronJobs = require("./middlewares/cronJobs");
@@ -22,6 +24,9 @@ const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
 const app = express();
 
+app.set("trust-proxy", true);
+app.set(requestIp.mw());
+
 // use cron job script to automatically delete expired stories
 cronJobs();
 
@@ -35,10 +40,17 @@ app.use(
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+app.use(
+  session({secret: "supersecretkey", resave: false, saveUninitialized: true})
+);
+
 app.use(cookieParser());
 app.use(express.json({limit: "10kb"}));
 app.use(express.urlencoded({extended: true}));
+
 app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);

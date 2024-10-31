@@ -4,7 +4,8 @@ const isLoggedOut = async (decodedToken) => {
   const user = await userService.getUserByEmail(decodedToken.email);
   if (
     !user.loggedOutFromAllDevicesAt ||
-    user.loggedOutFromAllDevicesAt === decodedToken.loggedOutFromAllDevicesAt
+    user.loggedOutFromAllDevicesAt.toISOString() ===
+      decodedToken.loggedOutFromAllDevicesAt
   ) {
     return false;
   }

@@ -130,11 +130,6 @@ const userSchema = new mongoose.Schema({
     sparse: true,
   },
 
-  jwtRefreshToken: {
-    type: String,
-    default: null,
-  },
-
   accessToken: {
     type: String,
     default: null,
@@ -190,7 +185,9 @@ userSchema.pre(/Delete$/, async function (next) {
 });
 
 userSchema.pre("save", function (next) {
-  if (!this.isModified("password") || this.isNew) return next();
+  if (!this.isModified("password") || this.isNew) {
+    return next();
+  }
 
   this.passwordModifiedAt = Date.now();
   return next();

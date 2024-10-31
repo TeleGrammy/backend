@@ -78,7 +78,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   }
 
   await userServices.findOneAndUpdate(
-    {_id: user._id},
+    {email: user.email},
     {
       password,
       passwordConfirm,
@@ -92,22 +92,21 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     }
   );
 
+  const userTokenedData = {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    loggedOutFromAllDevicesAt: Date.now(),
+  };
+
   const newAccessToken = generateToken(
-    {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      loggedOutFromAllDevicesAt: Date.now(),
-    },
+    userTokenedData,
     process.env.COOKIE_ACCESS_NAME
   );
 
   const newRefreshToken = generateToken(
-    {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-    },
+    userTokenedData,
     process.env.COOKIE_REFRESH_NAME
   );
 
@@ -176,9 +175,10 @@ exports.logOutFromAllDevices = catchAsync(async (req, res, next) => {
   );
 
   const userTokenedData = {
-    id: accessToken.id,
-    email: accessToken.email,
-    phone: accessToken.phone,
+    id: decodedToken.id,
+    name: decodedToken.name,
+    email: decodedToken.email,
+    phone: decodedToken.phone,
     loggedOutFromAllDevicesAt: updatedUser.loggedOutFromAllDevicesAt,
   };
 
