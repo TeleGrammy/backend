@@ -110,6 +110,49 @@
  *          description: The channel is deleted successfully
  *        '400':
  *          description: Bad request
+ *    get:
+ *      summary: get the channel info
+ *      tags:
+ *        - Channels
+ *      parameters:
+ *        - in: path
+ *          name: channelId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: the channel id you want to get its info
+ *      responses:
+ *        '200':
+ *          description: Retrieve the channel's info successfully
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      channelId:
+ *                        type: string
+ *                      channelName:
+ *                        type: string
+ *                      description:
+ *                        type: string
+ *                      ownerId:
+ *                        type: string
+ *                      createdAt:
+ *                        type: string
+ *                        format: date-time
+ *                      subscribers:
+ *                        type: array
+ *                        items:
+ *                          type: string
+ *                  message:
+ *                    type: string
+ *        '400':
+ *          description: Bad request
  */
 
 /**

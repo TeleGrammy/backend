@@ -208,8 +208,8 @@
       }
     },
 
-    "/google": {
-      "post": {
+    "/auth/google": {
+      "get": {
         "summary": "Sign in with Google",
         "description": "Register or log in with the user's Google account.",
         "tags": ["User Login"],
@@ -221,8 +221,8 @@
       }
     },
 
-    "/github": {
-      "post": {
+    "/auth/github": {
+      "get": {
         "summary": "Sign in with GitHub",
         "description": "Register or log in with the user's GitHub account.",
         "tags": ["User Login"],
@@ -234,8 +234,8 @@
       }
     },
 
-    "/facebook": {
-      "post": {
+    "/auth/facebook": {
+      "get": {
         "summary": "Sign in with Facebook",
         "description": "Register or log in with the user's Facebook account.",
         "tags": ["User Login"],
@@ -247,10 +247,10 @@
       }
     },
 
-    "/forget-password": {
+    "/auth/forget-password": {
       "post": {
         "summary": "Forget password",
-        "description": "Request to set a new password.",
+        "description": "Forget the password. Request to set a new password through sending a reset token the email.",
         "tags": ["Forget-reset password"],
         "requestBody": {
           "required": true,
@@ -261,8 +261,7 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "format": "email",
-                    "example": "test@example.com"
+                    "format": "email"
                   }
                 }
               }
@@ -280,7 +279,7 @@
       }
     },
 
-    "/reset-password/resend": {
+    "/auth/reset-password/resend": {
       "post": {
         "summary": "Resend reset token",
         "description": "Resend a new reset token for resetting the user's password.",
@@ -294,8 +293,7 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "format": "email",
-                    "example": "test@example.com"
+                    "format": "email"
                   }
                 }
               }
@@ -313,17 +311,17 @@
       }
     },
 
-    "/reset-password/{token}": {
-      "post": {
+    "/auth/reset-password/{token}": {
+      "patch": {
         "summary": "Reset password",
         "description": "Reset the user's password with the reset token sent to their email.",
-        "tags": ["Forget-reset password","Authentication"],
+        "tags": ["Forget-reset password"],
         "parameters": [
           {
             "name": "token",
             "in": "path",
             "required": true,
-            "description": "The reset token",
+            "description": "The reset token sent in the email",
             "schema": {
               "type": "string"
             }
@@ -338,11 +336,11 @@
                 "properties": {
                   "password": {
                     "type": "string",
-                    "example": "test1234"
+                    "description": "The new password"
                   },
                   "passwordConfirm": {
                     "type": "string",
-                    "example": "test1234"
+                    "description": "Rewrite the new Password"
                   }
                 }
               }
