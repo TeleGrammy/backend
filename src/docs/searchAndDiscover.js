@@ -60,7 +60,7 @@
  * @swagger
  *  /search/users:
  *    get:
- *      summary: Search for public groups or channels by name
+ *      summary: Search for users by (username,screen name , email , phone)
  *      tags:
  *        - Search and Discover
  *      parameters:
