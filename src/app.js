@@ -7,8 +7,6 @@ const passport = require("passport");
 const {swaggerUi, specs} = require("../swaggerConfig");
 const cronJobs = require("./middlewares/cronJobs");
 
-const morgan = require("morgan");
-
 require("dotenv").config({
   path: "../env",
 });
@@ -38,6 +36,7 @@ app.use(
 );
 
 if (process.env.NODE_ENV === "development") {
+  const morgan = require("morgan");
   app.use(morgan("dev"));
 }
 
