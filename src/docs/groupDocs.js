@@ -79,6 +79,67 @@
  *          description: The group is deleted successfully
  *        '400':
  *          description: Bad request
+ *    get:
+ *      summary: Getting group info
+ *      tags:
+ *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: Group's id needed to get its info
+ *      responses:
+ *        '200':
+ *          description: Retrieving the group info successfully
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      user:
+ *                        type: object
+ *                        properties:
+ *                          name:
+ *                            type: string
+ *                            description: The name of group
+ *                          image:
+ *                            type: string
+ *                            format: binary
+ *                            description: The group image
+ *                          description:
+ *                            type: string
+ *                            description: The Description of the group
+ *                          createdAt:
+ *                            type: string
+ *                            format: date-time
+ *                            description: The time which the group was created At
+ *                          members:
+ *                            type: array
+ *                            items:
+ *                              type: string
+ *                              description: The id of the members participate in the group
+ *                          admins:
+ *                            type: array
+ *                            items:
+ *                              type: string
+ *                              description: The id of the admins of the group
+ *                          chatId:
+ *                            type: string
+ *                            description: The chat ID
+ *                  message:
+ *                    type: string
+ *        '400':
+ *          description: Bad request
+ *        '429':
+ *          description: Too many requests
  */
 
 /**

@@ -1,0 +1,81 @@
+asyncapi: "2.6.0"
+info:
+  title: TeleGrammy API
+  version: "1.0.0"
+  description: Documentation for channels and his features.
+defaultContentType: application/json
+
+servers:
+  local:
+    url: "ws://localhost:8080"
+    protocol: ws
+    description: Local WebSocket server for development
+
+channels:
+  /channelCommentSent:
+    description: channel for sending announcement's comments to the server
+
+    publish:
+      summary: send comment to the server
+      operationId: sendAnnouncementComment
+      message:
+        $ref: "#/components/messages/Comment"
+
+  /channelCommentReceived:
+    description: channel for sending announcement's comments to the server
+    subscribe:
+      summary: Receive comment from the server
+      operationId: receiveAnnouncementComment
+      message:
+        $ref: "#/components/messages/Comment"
+
+  /chatMessageSent:
+    description: channel for sending messages
+
+    publish:
+      summary: send message to the server
+      operationId: sendNewMessage
+      message:
+        $ref: "#/components/messages/Message"
+
+  /chatMessageReceived:
+    description: channel for receiving messages
+
+    subscribe:
+      summary: Receive message from the server
+      operationId: receiveNewMessage
+      message:
+        $ref: "#/components/messages/Message"
+
+components:
+  messages:
+    Comment:
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+          ChannelId:
+            type: string
+          comment:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+      description: New Comment received from a user.
+    Message:
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+          chatId:
+            type: string
+          message:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+      description: New Comment received from a user.
