@@ -1,17 +1,14 @@
 const AppError = require("../../errors/appError");
 
-const userService = require("../../services/userService");
-const sessionService = require("../../services/sessionService");
+const {findOneAndUpdate} = require("../../services/userService");
+const {deleteSession} = require("../../services/sessionService");
 
 const logout = async (req, res, next) => {
   try {
     const currentDeviceType = req.headers["user-agent"];
-    await sessionService.deleteSession(
-      req.user.currentSession._id,
-      currentDeviceType
-    );
+    await deleteSession(req.user.currentSession._id, currentDeviceType);
 
-    await userService.findOneAndUpdate(
+    await findOneAndUpdate(
       {email: req.user.email},
       {status: "inactive"},
       {new: true}

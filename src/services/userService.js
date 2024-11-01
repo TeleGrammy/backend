@@ -1,7 +1,5 @@
 const User = require("../models/user");
 
-const AppError = require("../errors/appError");
-
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -17,11 +15,7 @@ const AppError = require("../errors/appError");
  * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
-  if (!UUID) {
-    throw new AppError("An UUID is required", 500);
-  }
-
-  return await User.findOne({
+  return User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -57,10 +51,6 @@ const getUserByContactInfo = async (
  * @returns {Promise<User|null>} A promise that resolves to basic user information if found, otherwise returns null.
  */
 const getUserBasicInfoByUUID = async (UUID) => {
-  if (!UUID) {
-    throw new AppError("An UUID is required", 500);
-  }
-
   const userBasicInfo = {
     _id: 1,
     username: 1,
@@ -68,7 +58,6 @@ const getUserBasicInfoByUUID = async (UUID) => {
     phone: 1,
     sessions: 1,
     status: 1,
-    password: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
   };
@@ -86,16 +75,9 @@ const getUserBasicInfoByUUID = async (UUID) => {
  */
 
 const getUserPasswordById = async (id) => {
-  if (!id) {
-    throw new AppError("User Id is required", 500);
-  }
+  const user = await User.findById(id).select("password");
 
-  try {
-    const user = await User.findById(id).select("password");
-    return user ? user.password : null;
-  } catch (error) {
-    throw new AppError("Could not retrieve the user's password", 404);
-  }
+  return user ? user.password : null;
 };
 
 /**
@@ -108,16 +90,9 @@ const getUserPasswordById = async (id) => {
  */
 
 const getUserId = async (UUID) => {
-  if (!UUID) {
-    throw new AppError("A UUID is required", 500);
-  }
+  const user = await getUserByUUID(UUID);
 
-  try {
-    const user = await getUserByUUID(UUID);
-    return user ? user.id : null;
-  } catch (error) {
-    throw new AppError("Could not retrieve the user's Id", 404);
-  }
+  return user ? user.id : null;
 };
 
 /**
@@ -130,15 +105,7 @@ const getUserId = async (UUID) => {
  */
 
 const getUserByEmail = async (email) => {
-  if (!email) {
-    throw new AppError("An email is required", 500);
-  }
-
-  try {
-    return await User.findOne({email});
-  } catch (error) {
-    throw new AppError("Could not retrieve the user's information", 404);
-  }
+  return User.findOne({email});
 };
 
 /**
@@ -163,9 +130,10 @@ const createUser = async (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
+    isFaceBookUser,
   } = userData;
 
-  return await User.create({
+  return User.create({
     username,
     email,
     phone,
@@ -176,19 +144,20 @@ const createUser = async (userData) => {
     refreshToken,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
+    ...(isFaceBookUser ? {faceBookId: id} : {}),
   });
 };
 
 const findOne = async (filter) => {
-  return await User.findOne(filter);
+  return User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return await User.findOneAndUpdate(filter, updateData, options);
+  return User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
-  return await User.findById(ID);
+  return User.findById(ID);
 };
 
 module.exports = {

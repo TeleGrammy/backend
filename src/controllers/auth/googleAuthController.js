@@ -5,7 +5,7 @@ const AppError = require("../../errors/appError");
 const userService = require("../../services/userService");
 
 const catchAsync = require("../../utils/catchAsync");
-const manageSessionForUserModule = require("../../utils/sessionManagement");
+const manageSessionForUser = require("../../utils/sessionManagement");
 
 const signInWithGoogle = (req, res, next) => {
   passport.authenticate("google", {
@@ -27,6 +27,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
 
       const refreshTokenExpiration = new Date();
       refreshTokenExpiration.setMonth(refreshTokenExpiration.getMonth() + 6);
+
       if (!existingUser) {
         existingUser = await userService.createUser({
           username: user.name,
@@ -50,8 +51,11 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const {updatedUser, accessToken} =
-        await manageSessionForUserModule.default(req, res, existingUser);
+      const {updatedUser, accessToken} = await manageSessionForUser(
+        req,
+        res,
+        existingUser
+      );
 
       return res.status(200).json({
         data: {
