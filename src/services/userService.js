@@ -17,7 +17,7 @@ const AppError = require("../errors/appError");
  * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
-  return User.findOne({
+  return await User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -31,12 +31,15 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
  * @returns {Promise<User|null>} A promise that resolves to basic user information if found, otherwise returns null.
  */
 const getUserBasicInfoByUUID = async (UUID) => {
+  if (!UUID) {
+    throw new AppError("An UUID is required", 500);
+  }
+
   const userBasicInfo = {
     _id: 1,
     username: 1,
     email: 1,
     phone: 1,
-    sessions: 1,
     status: 1,
     password: 1,
     registrationDate: 1,
@@ -56,9 +59,16 @@ const getUserBasicInfoByUUID = async (UUID) => {
  */
 
 const getUserPasswordById = async (id) => {
-  const user = await User.findById(id).select("password");
+  if (!id) {
+    throw new AppError("User Id is required", 500);
+  }
 
-  return user ? user.password : null;
+  try {
+    const user = await User.findById(id).select("password");
+    return user ? user.password : null;
+  } catch (error) {
+    throw new AppError("Could not retrieve the user's password", 404);
+  }
 };
 
 /**
@@ -71,9 +81,16 @@ const getUserPasswordById = async (id) => {
  */
 
 const getUserId = async (UUID) => {
-  const user = await getUserByUUID(UUID);
+  if (!UUID) {
+    throw new AppError("A UUID is required", 500);
+  }
 
-  return user ? user.id : null;
+  try {
+    const user = await getUserByUUID(UUID);
+    return user ? user.id : null;
+  } catch (error) {
+    throw new AppError("Could not retrieve the user's Id", 404);
+  }
 };
 
 /**
@@ -86,7 +103,15 @@ const getUserId = async (UUID) => {
  */
 
 const getUserByEmail = async (email) => {
-  return User.findOne({email});
+  if (!email) {
+    throw new AppError("An email is required", 500);
+  }
+
+  try {
+    return await User.findOne({email});
+  } catch (error) {
+    throw new AppError("Could not retrieve the user's information", 404);
+  }
 };
 
 /**
@@ -111,10 +136,9 @@ const createUser = async (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
-    isFaceBookUser,
   } = userData;
 
-  return User.create({
+  return await User.create({
     username,
     email,
     phone,
@@ -125,7 +149,6 @@ const createUser = async (userData) => {
     refreshToken,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
-    ...(isFaceBookUser ? {faceBookId: id} : {}),
   });
 };
 

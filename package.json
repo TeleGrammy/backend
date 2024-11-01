@@ -6,11 +6,14 @@
   "engines": {
     "node": ">=8.3.0"
   },
+  "type": "commonjs",
   "scripts": {
     "start": "nodemon src/index.js",
     "lint": "eslint .",
     "start:prod": "cross-env NODE_ENV=production nodemon server.js",
-    "debug": "ndb src/index.js"
+    "debug": "ndb src/index.js",
+    "coverage": "nyc --reporter=lcov --reporter=text npm run test",
+    "test": "mocha './src/tests/**/*.test.js'"
   },
   "repository": {
     "type": "git",
@@ -49,6 +52,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
+    "chai": "^4.5.0",
+    "chai-as-promised": "^7.0.0",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-node": "^4.1.0",
@@ -57,8 +62,10 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.11.0",
+    "mocha": "^10.8.2",
     "ndb": "^1.1.5",
     "nodemon": "^3.1.7",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "sinon": "^19.0.2"
   }
 }
