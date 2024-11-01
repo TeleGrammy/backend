@@ -12,7 +12,7 @@ const userService = require("../services/userService");
 
 chai.use(chaiAsPromised);
 
-describe("User Service Test Suite", function () {
+describe("User Service Test Suites", function () {
   this.timeout(5000);
   afterEach(() => {
     sinon.restore();

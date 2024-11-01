@@ -1,5 +1,5 @@
 {
-  "include": "src/services/userService.js",
+  "include": ["src/services/userService.js", "src/utils/generateToken.js"],
   "exclude": "tests",
   "check-coverage": true,
   "lines": 90,
