@@ -6,8 +6,8 @@ const userServices = require("../../services/userService");
 const mails = require("../../utils/mailTemplate");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
-const generateToken = require("../../utils/generateToken").default;
-const addAuthCookie = require("../../utils/addAuthCookie").default;
+const generateToken = require("../../utils/generateToken");
+const addAuthCookie = require("../../utils/addAuthCookie");
 
 const AppError = require("../../errors/appError");
 

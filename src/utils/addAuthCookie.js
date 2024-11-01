@@ -32,4 +32,4 @@ const addAuthCookie = (token, res, isAccessToken = true) => {
   return res;
 };
 
-module.exports.default = addAuthCookie;
+module.exports = addAuthCookie;
