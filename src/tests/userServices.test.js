@@ -162,7 +162,7 @@ describe("User Service Test Suites", function () {
     });
   });
 
-  describe("getUserByEmail", function () {
+  describe("getUserByEmail Function Test Suite", function () {
     it("should return the user's information with a correct email", async () => {
       const mockUserData = {
         id: 1,
@@ -422,7 +422,7 @@ describe("User Service Test Suites", function () {
     });
   });
 
-  describe("findOne Function Test", function () {
+  describe("findOne Function Test Suite", function () {
     it("should return a user if a valid filter is provided", async () => {
       const mockUser = {email: "user@example.com", username: "user123"};
       const filter = {email: "user@example.com"};
