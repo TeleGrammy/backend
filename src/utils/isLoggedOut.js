@@ -12,4 +12,4 @@ const isLoggedOut = async (decodedToken) => {
   return true;
 };
 
-module.exports = isLoggedOut;
+module.exports.default = isLoggedOut;

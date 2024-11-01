@@ -4,9 +4,9 @@ const AppError = require("../errors/appError");
 
 const catchAsync = require("../utils/catchAsync");
 
-const generateToken = require("../utils/generateToken");
-const addAuthCookie = require("../utils/addAuthCookie");
-const isLoggedOut = require("../utils/isLoggedOut");
+const generateToken = require("../utils/generateToken").default;
+const addAuthCookieModule = require("../utils/addAuthCookie").default;
+const isLoggedOutModule = require("../utils/isLoggedOut");
 
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
@@ -19,7 +19,7 @@ module.exports = catchAsync(async (req, res, next) => {
     req.header("Authorization")?.replace("Bearer ", "");
 
   if (!accessToken) {
-    return new next(new AppError("Not authorized access, Please login!", 401));
+    return next(new AppError("Not authorized access, Please login!", 401));
   }
 
   let decodedAccessToken = null;
@@ -27,12 +27,13 @@ module.exports = catchAsync(async (req, res, next) => {
   try {
     decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);
   } catch (error) {
-    if (err.name === "TokenExpiredError") {
+    if (error.name === "TokenExpiredError") {
       const currentUserId = jwt.decode(accessToken, {complete: true}).id;
-      const currentSessionData = sessionService.findSessionByUserIdAndDevice(
-        currentUserId,
-        currentDeviceType
-      );
+      const currentSessionData =
+        await sessionService.findSessionByUserIdAndDevice(
+          currentUserId,
+          currentDeviceType
+        );
 
       let decodedRefreshToken = null;
       try {
@@ -49,6 +50,7 @@ module.exports = catchAsync(async (req, res, next) => {
       const user = await userService.getUserBasicInfoByUUID(
         decodedRefreshToken.name
       );
+
       if (!user) {
         return next(new AppError("User not found, please login again", 401));
       }
@@ -71,6 +73,8 @@ module.exports = catchAsync(async (req, res, next) => {
         process.env.COOKIE_REFRESH_NAME
       );
 
+      
+
       const newSessionData = {
         ip: (req.headers["x-forwarded-for"] || req.ip).split(",")[0].trim(),
         deviceType: req.headers["user-agent"],
@@ -78,7 +82,7 @@ module.exports = catchAsync(async (req, res, next) => {
         newRefreshToken,
       };
 
-      const newSession = sessionService.createSession(newSessionData);
+      const newSession = await sessionService.createSession(newSessionData);
 
       try {
         await sessionService.findSessionByUserIdAndUpdate(
@@ -90,8 +94,7 @@ module.exports = catchAsync(async (req, res, next) => {
         return next(error);
       }
 
-      addAuthCookie(newAccessToken, res, true);
-
+      addAuthCookieModule.default(newAccessToken, res, true);
       req.user = decodedRefreshToken;
       req.user.currentSession = currentSessionData;
 
@@ -104,6 +107,7 @@ module.exports = catchAsync(async (req, res, next) => {
   const user = await userService.getUserBasicInfoByUUID(
     decodedAccessToken.name
   );
+
   if (!user) {
     return next(new AppError("Unauthorized access", 401));
   }
@@ -112,8 +116,7 @@ module.exports = catchAsync(async (req, res, next) => {
     user._id,
     currentDeviceType
   );
-
-  if (await isLoggedOut(decodedAccessToken)) {
+  if (await isLoggedOutModule.default(decodedAccessToken)) {
     await sessionService.deleteSession(currentSession._id, currentDeviceType);
 
     res.clearCookie(process.env.COOKIE_ACCESS_NAME, {
