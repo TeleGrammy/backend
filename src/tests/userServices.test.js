@@ -45,6 +45,20 @@ describe("User Service Test Suite", function () {
       sinon.assert.calledWith(findByIdStub, 1);
     });
 
+    it("should throw an error if the DB failed executing the query", async () => {
+      const findByIdStub = sinon.stub(User, "findById").returns({
+        select: sinon.stub().rejects(new Error("Database error")),
+      });
+
+      await expect(userService.getUserPasswordById(1)).to.be.rejectedWith(
+        AppError,
+        "Could not retrieve the user's password"
+      );
+
+      sinon.assert.calledOnce(findByIdStub);
+      sinon.assert.calledWith(findByIdStub, 1);
+    });
+
     const testInvalidId = async (id) => {
       const findByIdStub = sinon.stub(User, "findById").returns({
         select: sinon.stub().resolves(null),
@@ -107,6 +121,25 @@ describe("User Service Test Suite", function () {
       });
     });
 
+    it("should throw an error if the DB failed executing the query", async () => {
+      const findByEmailStub = sinon.stub(User, "findOne").returns({
+        select: sinon.stub().rejects(new Error("Database error")),
+      });
+
+      await expect(
+        userService.getUserId("test@example.com")
+      ).to.be.rejectedWith(AppError, "Could not retrieve the user's Id");
+
+      sinon.assert.calledOnce(findByEmailStub);
+      sinon.assert.calledWith(findByEmailStub, {
+        $or: [
+          {email: "test@example.com"},
+          {username: "test@example.com"},
+          {phone: "test@example.com"},
+        ],
+      });
+    });
+
     const testInvalidId = async (id) => {
       const findUserIdStub = sinon
         .stub(userService, "getUserByUUID")
@@ -155,6 +188,22 @@ describe("User Service Test Suite", function () {
       expect(result).to.equal(null);
       sinon.assert.calledOnce(findUserStub);
       sinon.assert.calledWith(findUserStub, {email: "test@example.com"});
+    });
+
+    it("should throw an error if the DB failed executing the query", async () => {
+      const findByEmailStub = sinon
+        .stub(User, "findOne")
+        .rejects(new Error("Database Error"));
+
+      await expect(
+        userService.getUserByEmail("test@example.com")
+      ).to.be.rejectedWith(
+        AppError,
+        "Could not retrieve the user's information"
+      );
+
+      sinon.assert.calledOnce(findByEmailStub);
+      sinon.assert.calledWith(findByEmailStub, {email: "test@example.com"});
     });
 
     const testInvalidEmail = async (email) => {
@@ -319,6 +368,164 @@ describe("User Service Test Suite", function () {
       expect(createStub.calledWith(sinon.match.has("gitHubId", "github123"))).to
         .be.true;
       expect(result).to.equal(expectedData);
+    });
+  });
+
+  describe("getUserByUUID Function Test Suite", function () {
+    it("should throw an error if UUID is not provided", async () => {
+      await expect(userService.getUserByUUID(null)).to.be.rejectedWith(
+        AppError,
+        "An UUID is required"
+      );
+
+      await expect(userService.getUserByUUID(undefined)).to.be.rejectedWith(
+        AppError,
+        "An UUID is required"
+      );
+    });
+
+    it("should return a user if a valid UUID is provided and user is found", async () => {
+      const mockUser = {
+        email: "user@example.com",
+        username: "user123",
+        phone: "1234567890",
+      };
+      const UUID = "user@example.com";
+
+      const findOneStub = sinon.stub(User, "findOne").returns({
+        select: sinon.stub().resolves(mockUser),
+      });
+
+      const result = await userService.getUserByUUID(UUID);
+
+      expect(result).to.deep.equal(mockUser);
+      sinon.assert.calledOnce(findOneStub);
+      sinon.assert.calledWith(findOneStub, {
+        $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
+      });
+    });
+
+    it("should return null if a valid UUID is provided but no user is found", async () => {
+      const UUID = "nonexistent@example.com";
+
+      const findOneStub = sinon.stub(User, "findOne").returns({
+        select: sinon.stub().resolves(null),
+      });
+
+      const result = await userService.getUserByUUID(UUID);
+
+      expect(result).to.be.null;
+      sinon.assert.calledOnce(findOneStub);
+      sinon.assert.calledWith(findOneStub, {
+        $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
+      });
+    });
+  });
+
+  describe("findOne Function Test", function () {
+    it("should return a user if a valid filter is provided", async () => {
+      const mockUser = {email: "user@example.com", username: "user123"};
+      const filter = {email: "user@example.com"};
+
+      const findOneStub = sinon.stub(User, "findOne").resolves(mockUser);
+
+      const result = await userService.findOne(filter);
+
+      expect(result).to.deep.equal(mockUser);
+      sinon.assert.calledOnce(findOneStub);
+      sinon.assert.calledWith(findOneStub, filter);
+    });
+
+    it("should return null if no user matches the filter", async () => {
+      const filter = {email: "nonexistent@example.com"};
+
+      const findOneStub = sinon.stub(User, "findOne").resolves(null);
+
+      const result = await userService.findOne(filter);
+
+      expect(result).to.be.null;
+      sinon.assert.calledOnce(findOneStub);
+      sinon.assert.calledWith(findOneStub, filter);
+    });
+  });
+
+  describe("findOneAndUpdate Function Test", function () {
+    it("should update and return the user if a valid filter is provided", async () => {
+      const mockUser = {email: "user@example.com", username: "user123"};
+      const filter = {email: "user@example.com"};
+      const updateData = {username: "updatedUser"};
+      const options = {new: true};
+
+      const findOneAndUpdateStub = sinon
+        .stub(User, "findOneAndUpdate")
+        .resolves(mockUser);
+
+      const result = await userService.findOneAndUpdate(
+        filter,
+        updateData,
+        options
+      );
+
+      expect(result).to.deep.equal(mockUser);
+      sinon.assert.calledOnce(findOneAndUpdateStub);
+      sinon.assert.calledWith(
+        findOneAndUpdateStub,
+        filter,
+        updateData,
+        options
+      );
+    });
+
+    it("should return null if no user matches the filter during update", async () => {
+      const filter = {email: "nonexistent@example.com"};
+      const updateData = {username: "updatedUser"};
+      const options = {new: true};
+
+      const findOneAndUpdateStub = sinon
+        .stub(User, "findOneAndUpdate")
+        .resolves(null);
+
+      const result = await userService.findOneAndUpdate(
+        filter,
+        updateData,
+        options
+      );
+
+      expect(result).to.be.null;
+      sinon.assert.calledOnce(findOneAndUpdateStub);
+      sinon.assert.calledWith(
+        findOneAndUpdateStub,
+        filter,
+        updateData,
+        options
+      );
+    });
+  });
+
+  describe("getUserByID Function Test", function () {
+    it("should return a user if a valid ID is provided", async () => {
+      const mockUser = {_id: "123", email: "user@example.com"};
+      const ID = "123";
+
+      const findByIdStub = sinon.stub(User, "findById").resolves(mockUser);
+
+      const result = await userService.getUserByID(ID);
+
+      expect(result).to.deep.equal(mockUser);
+      sinon.assert.calledOnce(findByIdStub);
+      sinon.assert.calledWith(findByIdStub, ID);
+    });
+
+    it("should return null if no user is found for the provided ID", async () => {
+      const ID = "nonexistentID";
+
+      const findByIdStub = sinon.stub(User, "findById").resolves(null);
+
+      const result = await userService.getUserByID(ID);
+
+      expect(result).to.be.null;
+      sinon.assert.calledOnce(findByIdStub);
+      sinon.assert.calledWith(findByIdStub, ID);
     });
   });
 });

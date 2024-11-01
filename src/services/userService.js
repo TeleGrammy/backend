@@ -17,6 +17,10 @@ const AppError = require("../errors/appError");
  * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
+  if (!UUID) {
+    throw new AppError("An UUID is required", 500);
+  }
+
   return await User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);

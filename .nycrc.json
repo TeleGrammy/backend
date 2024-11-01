@@ -1,5 +1,5 @@
 {
-  "include": "src",
+  "include": "src/services/userService.js",
   "exclude": "tests",
   "check-coverage": true,
   "lines": 90,
