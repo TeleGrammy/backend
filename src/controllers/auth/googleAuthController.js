@@ -27,7 +27,6 @@ const googleCallBack = catchAsync(async (req, res, next) => {
 
       const refreshTokenExpiration = new Date();
       refreshTokenExpiration.setMonth(refreshTokenExpiration.getMonth() + 6);
-
       if (!existingUser) {
         existingUser = await userService.createUser({
           username: user.name,
