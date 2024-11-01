@@ -5,7 +5,7 @@ const AppError = require("../../errors/appError");
 const userService = require("../../services/userService");
 
 const catchAsync = require("../../utils/catchAsync");
-const manageSessionForUser = require("../../utils/sessionManagement");
+const sessionManagementModule = require("../../utils/sessionManagement");
 
 /**
  * Logs a user in by validating credentials, managing sessions, and generating tokens.
@@ -29,7 +29,12 @@ const login = catchAsync(async (req, res, next) => {
     return next(new AppError("Wrong password entered", 401));
   }
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await sessionManagementModule.default(
+    req,
+    res,
+    user
+  );
+
   return res.status(200).json({
     data: {
       updatedUser,

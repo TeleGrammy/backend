@@ -55,4 +55,4 @@ const manageSessionForUser = async (req, res, user) => {
   return {updatedUser, accessToken};
 };
 
-module.exports = manageSessionForUser;
+module.exports.default = manageSessionForUser;

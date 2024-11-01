@@ -2,7 +2,8 @@
   "include": [
     "src/services/userService.js",
     "src/utils/generateToken.js",
-    "src/utils/catchAsync.js"
+    "src/utils/catchAsync.js",
+    "src/controllers/auth/login.js"
   ],
   "exclude": "tests",
   "check-coverage": true,
