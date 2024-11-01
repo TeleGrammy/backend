@@ -204,6 +204,6 @@ exports.logOutFromAllDevices = catchAsync(async (req, res, next) => {
 });
 
 exports.redirectResetPage = catchAsync(async (req, res, next) => {
-  const resetURL = `${process.env.SET_PASSWORD_URL}?token=${req.params.token}`;
+  const resetURL = `${process.env.SET_PASSWORD_URL}/${req.params.token}`;
   res.redirect(resetURL);
 });
