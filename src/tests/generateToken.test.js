@@ -7,72 +7,75 @@ const AppError = require("../errors/appError");
 
 const generateToken = require("../utils/generateToken");
 
-describe("generateToken Function Test Suite", function () {
-  const userTokenedData = {id: 1, username: "testUser"};
+describe("generateToken Function", () => {
+  let userTokenedData;
+  let tokenName;
+
+  beforeEach(() => {
+    userTokenedData = {id: "12345", name: "testUser"};
+    tokenName = "accessToken";
+    sinon.stub(jwt, "sign");
+  });
 
   afterEach(() => {
     sinon.restore();
   });
 
+  it("should generate a token for access", () => {
+    process.env.JWT_SECRET = "secret";
+    process.env.JWT_ACCESS_EXPIRES_IN_HOURS = "1h";
+    process.env.COOKIE_ACCESS_NAME = "accessToken";
+
+    jwt.sign.returns("mockAccessToken");
+
+    const token = generateToken(userTokenedData, tokenName);
+
+    expect(token).to.equal("mockAccessToken");
+    expect(jwt.sign.calledOnce).to.be.true;
+    expect(jwt.sign.firstCall.args[0]).to.deep.equal(userTokenedData); // Check user data
+    expect(jwt.sign.firstCall.args[1]).to.equal(process.env.JWT_SECRET); // Check secret
+    expect(jwt.sign.firstCall.args[2]).to.deep.equal({
+      expiresIn: "1h",
+      issuer: "myapp",
+      audience: "myapp-users",
+    });
+  });
+
+  it("should generate a token for refresh", () => {
+    process.env.JWT_SECRET = "secret";
+    process.env.JWT_REFRESH_EXPIRES_IN_DAYS = "7d";
+    process.env.COOKIE_REFRESH_NAME = "refresh_token";
+
+    tokenName = process.env.COOKIE_REFRESH_NAME;
+
+    jwt.sign.returns("mockRefreshToken");
+    const token = generateToken(userTokenedData, tokenName);
+
+    expect(token).to.equal("mockRefreshToken");
+    expect(jwt.sign.calledOnce).to.be.true;
+    expect(jwt.sign.firstCall.args[0]).to.deep.equal(userTokenedData); // Check user data
+    expect(jwt.sign.firstCall.args[1]).to.equal(process.env.JWT_SECRET); // Check secret
+    expect(jwt.sign.firstCall.args[2]).to.deep.equal({
+      expiresIn: "7d",
+      issuer: "myapp",
+      audience: "myapp-users",
+    });
+  });
+
   it("should throw an error if JWT_SECRET is not defined", () => {
     delete process.env.JWT_SECRET;
 
-    expect(() => generateToken(userTokenedData, "access")).to.throw(
+    expect(() => generateToken(userTokenedData, tokenName)).to.throw(
       AppError,
       "JWT secret is not defined in environment variables."
     );
   });
 
-  it("should generate an access token with correct options", () => {
-    process.env.JWT_SECRET = "testSecret";
-    process.env.COOKIE_ACCESS_NAME = "access";
-    process.env.JWT_ACCESS_EXPIRES_IN_HOURS = "1h";
+  it("should throw an error for unknown token name", () => {
+    process.env.JWT_SECRET = "secret";
+    tokenName = "unknown_token";
 
-    const signStub = sinon.stub(jwt, "sign").returns("mockedAccessToken");
-
-    const token = generateToken(
-      userTokenedData,
-      process.env.COOKIE_ACCESS_NAME
-    );
-
-    expect(token).to.equal("mockedAccessToken");
-    expect(signStub.calledOnce).to.be.true;
-    expect(
-      signStub.calledWith(userTokenedData, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN_HOURS,
-        issuer: "myapp",
-        audience: "myapp-users",
-      })
-    ).to.be.true;
-  });
-
-  it("should generate a refresh token with correct options", () => {
-    process.env.JWT_SECRET = "testSecret";
-    process.env.COOKIE_REFRESH_NAME = "refresh";
-    process.env.JWT_REFRESH_EXPIRES_IN_DAYS = "30d";
-
-    const signStub = sinon.stub(jwt, "sign").returns("mockedRefreshToken");
-
-    const token = generateToken(
-      userTokenedData,
-      process.env.COOKIE_REFRESH_NAME
-    );
-
-    expect(token).to.equal("mockedRefreshToken");
-    expect(signStub.calledOnce).to.be.true;
-    expect(
-      signStub.calledWith(userTokenedData, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN_DAYS,
-        issuer: "myapp",
-        audience: "myapp-users",
-      })
-    ).to.be.true;
-  });
-
-  it("should throw an error if an unknown token name is passed", () => {
-    process.env.JWT_SECRET = "testSecret";
-
-    expect(() => generateToken(userTokenedData, "unknownToken")).to.throw(
+    expect(() => generateToken(userTokenedData, tokenName)).to.throw(
       AppError,
       "Unknown token name is passed"
     );
