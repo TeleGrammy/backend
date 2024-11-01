@@ -5,7 +5,7 @@ const AppError = require("../../errors/appError");
 const userService = require("../../services/userService");
 
 const catchAsync = require("../../utils/catchAsync");
-const manageSessionForUser = require("../../utils/sessionManagement");
+const manageSessionForUserModule = require("../../utils/sessionManagement");
 
 const signInWithGitHub = (req, res, next) => {
   passport.authenticate("github", {
@@ -45,19 +45,10 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const {updatedUser, accessToken} = await manageSessionForUser(
-        req,
-        res,
-        existingUser
-      );
+      const {updatedUser, accessToken} =
+        await manageSessionForUserModule.default(req, res, existingUser);
 
-      return res.status(200).json({
-        data: {
-          updatedUser,
-          accessToken,
-        },
-        status: "Logged in successfully with GitHub",
-      });
+      return res.status(300).redirect(process.env.FRONTEND_LOGIN_CALLBACK);
     }
   )(req, res);
 });

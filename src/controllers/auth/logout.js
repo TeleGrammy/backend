@@ -1,14 +1,17 @@
 const AppError = require("../../errors/appError");
 
-const {findOneAndUpdate} = require("../../services/userService");
-const {deleteSession} = require("../../services/sessionService");
+const userService = require("../../services/userService");
+const sessionService = require("../../services/sessionService");
 
 const logout = async (req, res, next) => {
   try {
     const currentDeviceType = req.headers["user-agent"];
-    await deleteSession(req.user.currentSession._id, currentDeviceType);
+    await sessionService.deleteSession(
+      req.user.currentSession._id,
+      currentDeviceType
+    );
 
-    await findOneAndUpdate(
+    await userService.findOneAndUpdate(
       {email: req.user.email},
       {status: "inactive"},
       {new: true}
@@ -24,7 +27,6 @@ const logout = async (req, res, next) => {
       message: "Successfully logged out",
     });
   } catch (err) {
-    console.log(err);
     next(new AppError("Logout failed, please try again later", 500));
   }
 };
