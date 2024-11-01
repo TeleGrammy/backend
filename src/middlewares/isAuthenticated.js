@@ -73,6 +73,8 @@ module.exports = catchAsync(async (req, res, next) => {
         process.env.COOKIE_REFRESH_NAME
       );
 
+      
+
       const newSessionData = {
         ip: (req.headers["x-forwarded-for"] || req.ip).split(",")[0].trim(),
         deviceType: req.headers["user-agent"],

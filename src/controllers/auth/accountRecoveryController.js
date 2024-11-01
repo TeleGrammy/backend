@@ -49,7 +49,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   return res.status(200).json({
     status: "success",
     data: {
-      message: "Sent Email successfully. (Valid for 1 hour)",
+      message: `Sent Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
     },
   });
 });
@@ -138,12 +138,12 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
     );
 
   const timeSinceLastRequest = Date.now() - user.lastPasswordResetRequestAt;
-  const resendCoolDown = 1 * 60 * 1000;
+  const resendCoolDown = process.env.RESEND_PASSWORD_TOKEN_COOLDOWN * 60 * 1000;
 
   if (timeSinceLastRequest < resendCoolDown) {
     return next(
       new AppError(
-        `You need to wait ${resendCoolDown / 60000} minutes from the last sent reset password email before resending. Please try again later.`,
+        `You need to wait ${process.env.RESEND_PASSWORD_TOKEN_COOLDOWN} minutes from the last sent reset password email before resending. Please try again later.`,
         400
       )
     );
@@ -157,7 +157,7 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
   return res.status(200).json({
     status: "success",
     data: {
-      message: "Resend Email successfully. (Valid for 1 hour)",
+      message: `Resend Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
     },
   });
 });
@@ -201,4 +201,9 @@ exports.logOutFromAllDevices = catchAsync(async (req, res, next) => {
       message: "logged out successfully from all devices",
     },
   });
+});
+
+exports.redirectResetPage = catchAsync(async (req, res, next) => {
+  const resetURL = `${process.env.SET_PASSWORD_URL}/${req.params.token}`;
+  res.redirect(resetURL);
 });

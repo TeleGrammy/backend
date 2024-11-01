@@ -27,6 +27,28 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
 };
 
 /**
+ * Retrieves a user by email, username, or phone.
+ * @memberof Service.Users
+ * @method getUserByContactInfo
+ * @async
+ * @param {String} [email]              - User's email.
+ * @param {String} [username]           - User's username.
+ * @param {String} [phone]              - User's phone number.
+ * @param {Object} [selectionFilter={}] - The fields needed to select from the user object. Defaults to an empty object.
+ * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
+ */
+const getUserByContactInfo = async (
+  email,
+  username,
+  phone,
+  selectionFilter = {}
+) => {
+  return User.findOne({
+    $or: [{email}, {username}, {phone}],
+  }).select(selectionFilter);
+};
+
+/**
  * Retrieves user's basic information by email, username, or phone.
  * @memberof Service.Users
  * @method getUserBasicInfoByUUID
@@ -44,6 +66,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     username: 1,
     email: 1,
     phone: 1,
+    sessions: 1,
     status: 1,
     password: 1,
     registrationDate: 1,
@@ -171,6 +194,7 @@ const getUserByID = async (ID) => {
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
+  getUserByContactInfo,
   getUserByEmail,
   getUserPasswordById,
   getUserId,

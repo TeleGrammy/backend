@@ -12,8 +12,9 @@
     "lint": "eslint .",
     "start:prod": "cross-env NODE_ENV=production nodemon server.js",
     "debug": "ndb src/index.js",
-    "coverage": "nyc --reporter=lcov --reporter=text npm run test",
-    "test": "mocha './src/tests/**/*.test.js'"
+    "test": "jest",
+    "coverage": "nyc --reporter=lcov --reporter=text npm run test-mocha",
+    "test-mocha": "mocha './src/tests/**/*.test.js'"
   },
   "repository": {
     "type": "git",
@@ -63,10 +64,12 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.11.0",
+    "jest": "^29.7.0",
     "mocha": "^10.8.2",
     "ndb": "^1.1.5",
     "nodemon": "^3.1.7",
     "prettier": "^3.3.3",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.2",
+    "supertest": "^7.0.0"
   }
 }

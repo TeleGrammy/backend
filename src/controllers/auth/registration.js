@@ -7,11 +7,26 @@ const catchAsync = require("../../utils/catchAsync");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
 
 const {sendConfirmationEmail} = require("../../utils/mailingServcies");
+const manageSessionForUser = require("../../utils/sessionManagement");
 
 exports.postRegistration = catchAsync(async (req, res, next) => {
   const {username, email, password, passwordConfirm, phone} = req.body;
 
   const verificationCode = generateConfirmationCode();
+
+  let existingUser = await userService.getUserByUUID(username);
+  if (existingUser) {
+    console.log(existingUser);
+    return res.status(400).json({error: "Username already exists."});
+  }
+  existingUser = await userService.getUserByUUID(email);
+  if (existingUser) {
+    return res.status(400).json({error: "Email already exists."});
+  }
+  existingUser = await userService.getUserByUUID(phone);
+  if (existingUser) {
+    return res.status(400).json({error: "Phone already exists."});
+  }
 
   const newUser = new PendingUser({
     username,
@@ -31,7 +46,7 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.postVerify = async (req, res) => {
+exports.postVerify = catchAsync(async (req, res) => {
   const {email, verificationCode} = req.body;
 
   if (!email) {
@@ -55,7 +70,7 @@ exports.postVerify = async (req, res) => {
     return res.status(400).json({message: "Verification code has expired"});
   }
 
-  await userService.createUser({
+  const user = await userService.createUser({
     username: pendingUser.username,
     email: pendingUser.email,
     password: pendingUser.password,
@@ -64,10 +79,18 @@ exports.postVerify = async (req, res) => {
   });
   await PendingUser.deleteOne({email});
 
-  return res.status(200).json({message: "Account verified successfully"});
-};
+  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
 
-exports.resendVerification = async (req, res) => {
+  return res.status(200).json({
+    data: {
+      updatedUser,
+      accessToken,
+    },
+    status: "Logged in successfully",
+  });
+});
+
+exports.resendVerification = catchAsync(async (req, res) => {
   const {email} = req.body;
   if (!email) {
     return res.status(400).json({message: "Email is required"});
@@ -97,4 +120,4 @@ exports.resendVerification = async (req, res) => {
   return res
     .status(200)
     .json({message: "Verification code resent successfully"});
-};
+});

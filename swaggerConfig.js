@@ -14,12 +14,12 @@ const options = {
     },
     servers: [
       {
-        url: `http://${process.env.HOST_NAME}:${process.env.PORT}`,
+        url: `http://${process.env.HOST_NAME}:${process.env.PORT}/api/v1`,
         description: "Local server",
       },
     ],
   },
-  apis: ["./src/docs/*.js", "./src/routes/*.js"],
+  apis: ["./src/docs/*.js"],
 };
 const specs = swaggerJsdoc(options);
 
