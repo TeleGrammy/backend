@@ -9,11 +9,11 @@ const userService = require("../services/userService");
 const manageSessionForUserModule = require("../utils/sessionManagement");
 
 const {
-  signInWithGoogle,
-  googleCallBack,
-} = require("../controllers/auth/googleAuthController");
+  signInWithGitHub,
+  gitHubCallBack,
+} = require("../controllers/auth/githubAuthController");
 
-describe("Auth Controller - Google Authentication", () => {
+describe("Auth Controller - GitHub Authentication", () => {
   let req, res, next;
 
   beforeEach(() => {
@@ -29,32 +29,26 @@ describe("Auth Controller - Google Authentication", () => {
     sinon.restore();
   });
 
-  describe("signInWithGoogle Function Test Suites", () => {
-    it("should call passport.authenticate with correct parameters", () => {
+  describe("signInWithGitHub Function Test Suites", () => {
+    it("should call passport-authenticate with correct parameters", () => {
       const authenticateSpy = sinon.spy(passport, "authenticate");
 
-      signInWithGoogle(req, res, next);
+      signInWithGitHub(req, res, next);
 
       expect(authenticateSpy.calledOnce).to.be.true;
-      expect(authenticateSpy.firstCall.args[0]).to.equal("google");
+      expect(authenticateSpy.firstCall.args[0]).to.equal("github");
       expect(authenticateSpy.firstCall.args[1]).to.deep.include({
-        scope: ["email", "profile"],
+        scope: ["user:email", "user"],
         accessType: "offline",
       });
     });
   });
 
-  describe("googleCallBack", () => {
+  describe("gitHubCallBack", () => {
     let authenticateStub;
 
     beforeEach(() => {
       authenticateStub = sinon.stub(passport, "authenticate");
-      req = {};
-      res = {
-        status: sinon.stub().returnsThis(),
-        json: sinon.stub(),
-      };
-      next = sinon.stub(); // Changed to stub for consistency
     });
 
     it("should return an error if authentication fails", async () => {
@@ -64,7 +58,7 @@ describe("Auth Controller - Google Authentication", () => {
         };
       });
 
-      await googleCallBack(req, res, next);
+      await await await gitHubCallBack(req, res, next);
 
       expect(next.calledOnce).to.be.true;
       expect(next.firstCall.args[0]).to.be.instanceOf(AppError);
@@ -74,9 +68,9 @@ describe("Auth Controller - Google Authentication", () => {
 
     it("should create a new user if not found and return user info", async () => {
       const user = {
-        name: "Google User",
-        email: "googleuser@example.com",
-        id: "google-id",
+        name: "GitHub User",
+        email: "githubuser@example.com",
+        id: "github-id",
         accessToken: "access-token",
         refreshToken: "refresh-token",
         profilePicture: "profile-pic-url",
@@ -84,6 +78,7 @@ describe("Auth Controller - Google Authentication", () => {
 
       authenticateStub.callsFake((strategy, options, callback) => {
         return (req, res, next) => {
+          req.user = user;
           callback(null, user);
         };
       });
@@ -95,7 +90,7 @@ describe("Auth Controller - Google Authentication", () => {
         accessToken: "new-access-token",
       });
 
-      await await await googleCallBack(req, res, next);
+      await await await gitHubCallBack(req, res, next);
 
       expect(res.status.calledWith(200)).to.be.true;
       expect(res.json.calledOnce).to.be.true;
@@ -104,15 +99,15 @@ describe("Auth Controller - Google Authentication", () => {
           updatedUser: user,
           accessToken: "new-access-token",
         },
-        status: "Logged in successfully with Google",
+        status: "Logged in successfully with GitHub",
       });
     });
 
     it("should update existing user tokens and return user info", async () => {
       const user = {
-        name: "Google User",
-        email: "googleuser@example.com",
-        id: "google-id",
+        name: "GitHub User",
+        email: "githubuser@example.com",
+        id: "github-id",
         accessToken: "access-token",
         refreshToken: "refresh-token",
         profilePicture: "profile-pic-url",
@@ -121,6 +116,7 @@ describe("Auth Controller - Google Authentication", () => {
 
       authenticateStub.callsFake((strategy, options, callback) => {
         return (req, res, next) => {
+          req.user = user;
           callback(null, user);
         };
       });
@@ -133,7 +129,7 @@ describe("Auth Controller - Google Authentication", () => {
           accessToken: "new-access-token",
         });
 
-      await await await googleCallBack(req, res, next);
+      await await await gitHubCallBack(req, res, next);
 
       expect(user.save.calledOnce).to.be.true;
       expect(manageSessionStub.calledOnce).to.be.true;
@@ -144,7 +140,7 @@ describe("Auth Controller - Google Authentication", () => {
           updatedUser: user,
           accessToken: "new-access-token",
         },
-        status: "Logged in successfully with Google",
+        status: "Logged in successfully with GitHub",
       });
     });
   });
