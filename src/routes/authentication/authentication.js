@@ -17,11 +17,6 @@ const {
   gitHubCallBack,
 } = require("../../controllers/auth/githubAuthController");
 
-const {
-  signInWithFaceBook,
-  faceBookCallBack,
-} = require("../../controllers/auth/facebookAuthController");
-
 const registrationController = require("../../controllers/auth/registration");
 
 const resendPasswordTokenLimiter = require("../../middlewares/resendPasswordTokenLimiter");
@@ -33,9 +28,6 @@ router.get("/google/secrets", googleCallBack);
 
 router.get("/gitHub", signInWithGitHub);
 router.get("/gitHub/secrets", gitHubCallBack);
-
-router.get("/facebook", signInWithFaceBook);
-router.get("/facebook/callback", faceBookCallBack);
 
 router.post("/login", login);
 router.post("/logout", isAuthenticated, logout);
