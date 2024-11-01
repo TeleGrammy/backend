@@ -52,7 +52,7 @@ describe("Auth Controller - Google Authentication", () => {
       req = {};
       res = {
         status: sinon.stub().returnsThis(),
-        json: sinon.stub(),
+        redirect: sinon.stub(),
       };
       next = sinon.stub(); // Changed to stub for consistency
     });
@@ -97,15 +97,11 @@ describe("Auth Controller - Google Authentication", () => {
 
       await await await googleCallBack(req, res, next);
 
-      expect(res.status.calledWith(200)).to.be.true;
-      expect(res.json.calledOnce).to.be.true;
-      expect(res.json.firstCall.args[0]).to.deep.equal({
-        data: {
-          updatedUser: user,
-          accessToken: "new-access-token",
-        },
-        status: "Logged in successfully with Google",
-      });
+      expect(res.status.calledWith(300)).to.be.true;
+      expect(res.redirect.calledOnce).to.be.true;
+      expect(res.redirect.firstCall.args[0]).to.deep.equal(
+        process.env.FRONTEND_LOGIN_CALLBACK
+      );
     });
 
     it("should update existing user tokens and return user info", async () => {
@@ -137,15 +133,11 @@ describe("Auth Controller - Google Authentication", () => {
 
       expect(user.save.calledOnce).to.be.true;
       expect(manageSessionStub.calledOnce).to.be.true;
-      expect(res.status.calledWith(200)).to.be.true;
-      expect(res.json.calledOnce).to.be.true;
-      expect(res.json.firstCall.args[0]).to.deep.equal({
-        data: {
-          updatedUser: user,
-          accessToken: "new-access-token",
-        },
-        status: "Logged in successfully with Google",
-      });
+      expect(res.status.calledWith(300)).to.be.true;
+      expect(res.redirect.calledOnce).to.be.true;
+      expect(res.redirect.firstCall.args[0]).to.deep.equal(
+        process.env.FRONTEND_LOGIN_CALLBACK
+      );
     });
   });
 });

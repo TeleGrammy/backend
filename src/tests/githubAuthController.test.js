@@ -20,7 +20,7 @@ describe("Auth Controller - GitHub Authentication", () => {
     req = {body: {}, query: {}, cookies: {}, user: {}};
     res = {
       status: sinon.stub().returnsThis(),
-      json: sinon.stub(),
+      redirect: sinon.stub(),
     };
     next = sinon.stub();
   });
@@ -92,15 +92,11 @@ describe("Auth Controller - GitHub Authentication", () => {
 
       await await await gitHubCallBack(req, res, next);
 
-      expect(res.status.calledWith(200)).to.be.true;
-      expect(res.json.calledOnce).to.be.true;
-      expect(res.json.firstCall.args[0]).to.deep.equal({
-        data: {
-          updatedUser: user,
-          accessToken: "new-access-token",
-        },
-        status: "Logged in successfully with GitHub",
-      });
+      expect(res.status.calledWith(300)).to.be.true;
+      expect(res.redirect.calledOnce).to.be.true;
+      expect(res.redirect.firstCall.args[0]).to.deep.equal(
+        process.env.FRONTEND_LOGIN_CALLBACK
+      );
     });
 
     it("should update existing user tokens and return user info", async () => {
@@ -133,15 +129,11 @@ describe("Auth Controller - GitHub Authentication", () => {
 
       expect(user.save.calledOnce).to.be.true;
       expect(manageSessionStub.calledOnce).to.be.true;
-      expect(res.status.calledWith(200)).to.be.true;
-      expect(res.json.calledOnce).to.be.true;
-      expect(res.json.firstCall.args[0]).to.deep.equal({
-        data: {
-          updatedUser: user,
-          accessToken: "new-access-token",
-        },
-        status: "Logged in successfully with GitHub",
-      });
+      expect(res.status.calledWith(300)).to.be.true;
+      expect(res.redirect.calledOnce).to.be.true;
+      expect(res.redirect.firstCall.args[0]).to.deep.equal(
+        process.env.FRONTEND_LOGIN_CALLBACK
+      );
     });
   });
 });
