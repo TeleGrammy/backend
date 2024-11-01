@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const AppError = require("../errors/appError");
 
-const generateToken = require("../utils/generateToken");
+const generateToken = require("../utils/generateToken").default;
 
 describe("generateToken Function", () => {
   let userTokenedData;

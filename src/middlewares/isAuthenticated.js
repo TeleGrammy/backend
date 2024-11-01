@@ -4,8 +4,8 @@ const AppError = require("../errors/appError");
 
 const catchAsync = require("../utils/catchAsync");
 
-const generateToken = require("../utils/generateToken");
-const addAuthCookie = require("../utils/addAuthCookie");
+const generateToken = require("../utils/generateToken").default;
+const addAuthCookie = require("../utils/addAuthCookie").default;
 const isLoggedOut = require("../utils/isLoggedOut");
 
 const userService = require("../services/userService");
