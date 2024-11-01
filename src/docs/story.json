@@ -15,6 +15,7 @@
       "post": {
         "summary": "create a story",
         "description": "create a story",
+        "tags": ["Stories"],
         "operationId": "createAStory",
         "requestBody": {
           "content": {
@@ -153,6 +154,7 @@
       "get": {
         "summary": "get user stories",
         "description": "get user stories",
+        "tags": ["Stories"],
         "operationId": "getUserStories",
         "responses": {
           "200": {
@@ -416,6 +418,7 @@
       "get": {
         "summary": "get story by id",
         "description": "get user story by it's id",
+        "tags": ["Stories"],
         "operationId": "getUserStoryById",
         "parameters": [
           {
@@ -546,6 +549,7 @@
       "patch": {
         "summary": "update story viewers",
         "description": "update story viewers",
+        "tags": ["Stories"],
         "operationId": "updateStoryViewers",
         "parameters": [
           {
@@ -706,6 +710,7 @@
       "get": {
         "summary": "get stories of user by userid",
         "description": "get stories of user by userid",
+        "tags": ["Stories"],
         "operationId": "getStoriesOfUserByUserid",
         "parameters": [
           {
@@ -867,6 +872,7 @@
       "get": {
         "summary": "get stories of contacts of the user",
         "description": "get stories of contacts of the user",
+        "tags": ["Stories"],
         "operationId": "getStoriesOfContactsOfTheUser",
         "parameters": [
           {
@@ -1019,6 +1025,7 @@
       "delete": {
         "summary": "delete user story",
         "description": "delete user story",
+        "tags": ["Stories"],
         "operationId": "deleteUserStory",
         "parameters": [
           {
@@ -1191,6 +1198,5 @@
         }
       }
     }
-  },
-  "tags": []
+  }
 }
