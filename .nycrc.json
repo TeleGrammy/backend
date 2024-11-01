@@ -1,5 +1,9 @@
 {
-  "include": ["src/services/userService.js", "src/utils/generateToken.js"],
+  "include": [
+    "src/services/userService.js",
+    "src/utils/generateToken.js",
+    "src/utils/catchAsync.js"
+  ],
   "exclude": "tests",
   "check-coverage": true,
   "lines": 90,
