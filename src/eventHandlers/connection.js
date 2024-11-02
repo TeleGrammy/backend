@@ -1,1 +1,3 @@
-module.exports.onConnection = async (socket) => {};
+module.exports.onConnection = async (socket) => {
+  console.log(`New connection: ${socket.id}`);
+};
