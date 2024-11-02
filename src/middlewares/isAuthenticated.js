@@ -16,7 +16,8 @@ module.exports = catchAsync(async (req, res, next) => {
 
   let accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
-    req.header("Authorization")?.replace("Bearer ", "");
+    req.headers["Authorization"]?.replace("Bearer ", "") ||
+    req.headers["authorization"]?.replace("Bearer ", "");
 
   if (!accessToken) {
     return next(new AppError("Not authorized access, Please login!", 401));
@@ -72,8 +73,6 @@ module.exports = catchAsync(async (req, res, next) => {
         userTokenedData,
         process.env.COOKIE_REFRESH_NAME
       );
-
-      
 
       const newSessionData = {
         ip: (req.headers["x-forwarded-for"] || req.ip).split(",")[0].trim(),

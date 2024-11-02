@@ -6,8 +6,7 @@ const userServices = require("../../services/userService");
 const mails = require("../../utils/mailTemplate");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
-const generateToken = require("../../utils/generateToken").default;
-const addAuthCookie = require("../../utils/addAuthCookie").default;
+const manageSessionForUser = require("../../utils/sessionManagement").default;
 
 const AppError = require("../../errors/appError");
 
@@ -27,7 +26,7 @@ const sendPasswordResetEmail = (req, user) => {
   sendEmail(msg);
 };
 
-exports.forgetPassword = catchAsync(async (req, res, next) => {
+const forgetPassword = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
   if (!email)
@@ -48,13 +47,12 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: "success",
-    data: {
-      message: `Sent Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
-    },
+    data: {},
+    message: `Sent Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
   });
 });
 
-exports.resetPassword = catchAsync(async (req, res, next) => {
+const resetPassword = catchAsync(async (req, res, next) => {
   const {token} = req.params;
   const {password, passwordConfirm} = req.body;
 
@@ -92,36 +90,20 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     }
   );
 
-  const userTokenedData = {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    loggedOutFromAllDevicesAt: Date.now(),
-  };
-
-  const newAccessToken = generateToken(
-    userTokenedData,
-    process.env.COOKIE_ACCESS_NAME
-  );
-
-  const newRefreshToken = generateToken(
-    userTokenedData,
-    process.env.COOKIE_REFRESH_NAME
-  );
-
-  addAuthCookie(newAccessToken, res, true);
-  addAuthCookie(newRefreshToken, res, false);
+  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  updatedUser.password = undefined;
 
   return res.status(200).json({
     status: "success",
     data: {
-      message: "The password is reset successfully.",
+      user: updatedUser,
+      accessToken,
     },
+    message: "The password is reset successfully.",
   });
 });
 
-exports.resendResetToken = catchAsync(async (req, res, next) => {
+const resendResetToken = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
   const user = await userServices.getUserByEmail(email);
@@ -156,54 +138,51 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: "success",
-    data: {
-      message: `Resend Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
-    },
+    data: {},
+    message: `Resend Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
   });
 });
 
-exports.logOutFromAllDevices = catchAsync(async (req, res, next) => {
-  const accessToken = req.cookies[process.env.COOKIE_ACCESS_NAME];
-  const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+const logOutFromAllDevices = catchAsync(async (req, res, next) => {
+  console.log(1);
+  const currentAccessToken =
+    req.cookies[process.env.COOKIE_ACCESS_NAME] ||
+    req.headers.authorization?.split(" ")[1] ||
+    req.headers.Authorization?.split(" ")[1];
+
+  const decodedToken = jwt.verify(currentAccessToken, process.env.JWT_SECRET);
 
   const {email} = decodedToken;
 
-  const updatedUser = await userServices.findOneAndUpdate(
+  const user = await userServices.findOneAndUpdate(
     {email},
     {loggedOutFromAllDevicesAt: Date.now()},
     {new: true}
   );
 
-  const userTokenedData = {
-    id: decodedToken.id,
-    name: decodedToken.name,
-    email: decodedToken.email,
-    phone: decodedToken.phone,
-    loggedOutFromAllDevicesAt: updatedUser.loggedOutFromAllDevicesAt,
-  };
-
-  const newAccessToken = generateToken(
-    userTokenedData,
-    process.env.COOKIE_ACCESS_NAME
-  );
-
-  const newRefreshToken = generateToken(
-    userTokenedData,
-    process.env.COOKIE_ACCESS_NAME
-  );
-
-  addAuthCookie(newAccessToken, res, true);
-  addAuthCookie(newRefreshToken, res, false);
+  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  updatedUser.password = undefined;
 
   res.status(200).json({
     status: "success",
     data: {
-      message: "logged out successfully from all devices",
+      user,
+      accessToken,
     },
+    message: "logged out successfully from all devices",
   });
 });
 
-exports.redirectResetPage = catchAsync(async (req, res, next) => {
+const redirectResetPage = catchAsync(async (req, res, next) => {
   const resetURL = `${process.env.SET_PASSWORD_URL}/${req.params.token}`;
   res.redirect(resetURL);
 });
+
+module.exports = {
+  sendPasswordResetEmail,
+  forgetPassword,
+  resetPassword,
+  resendResetToken,
+  logOutFromAllDevices,
+  redirectResetPage,
+};
