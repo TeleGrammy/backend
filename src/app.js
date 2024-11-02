@@ -30,7 +30,19 @@ cronJobs();
 
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost",
+        "https://localhost",
+        "http://telegrammy.tech",
+        "https://telegrammy.tech",
+      ];
+      if (origin && allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
