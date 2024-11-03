@@ -14,6 +14,7 @@ require("./middlewares/strategies/index");
 
 const authenticationRouter = require("./routes/authentication/authentication");
 const userRouter = require("./routes/user/user");
+const chatRouter = require("./routes/chat/chat");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
@@ -42,6 +43,7 @@ app.use(passport.session());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);
+app.use("/api/v1/chat", chatRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(globalErrorHandler);

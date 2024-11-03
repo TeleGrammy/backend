@@ -16,7 +16,6 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
 
   let existingUser = await userService.getUserByUUID(username);
   if (existingUser) {
-    console.log(existingUser);
     return res.status(400).json({error: "Username already exists."});
   }
   existingUser = await userService.getUserByUUID(email);
