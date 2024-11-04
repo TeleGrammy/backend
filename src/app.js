@@ -24,7 +24,9 @@ app.set(requestIp.mw());
 
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
     credentials: true,
   })
 );
