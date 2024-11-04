@@ -30,6 +30,7 @@ cronJobs();
 
 app.use(
   cors({
+    origin: (origin, callback) => {
       callback(null, true);
     },
     credentials: true,
