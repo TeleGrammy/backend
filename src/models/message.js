@@ -31,6 +31,10 @@ const messageSchema = new mongoose.Schema({
     },
     required: [true, "Message type is required"],
   },
+  isEdited: {
+    type: Boolean,
+    default: false,
+  },
   duration: {
     type: Number,
     default: undefined,

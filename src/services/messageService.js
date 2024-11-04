@@ -1,7 +1,7 @@
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
-
+const filterObject = require("../utils/utilitiesFunc");
 /**
  * Creates a new message.
  * @memberof Service.Message
@@ -89,4 +89,34 @@ module.exports.updateChatViewers = async (chatId, messageId, viewerId) => {
       await mes.updateMessageViewer(viewerId, numberOfMembers);
     })
   );
+};
+
+module.exports.updateMessage = async (payload) => {
+  let message = await Message.findById(payload.messageId);
+
+  if (message.senderId.toString() !== payload.senderId) {
+    throw new AppError("You are not authorized to update this message", 403);
+  }
+  message = await Message.findByIdAndUpdate(
+    payload.messageId,
+    {
+      content: payload.content,
+      mentions: payload.mentions,
+      isEdited: true,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  return message;
+};
+
+module.exports.deleteMessage = async (messageId, senderId) => {
+  const message = await Message.findById(messageId);
+  if (message.senderId.toString() !== senderId) {
+    throw new AppError("You are not authorized to delete this message", 403);
+  }
+  await Message.findByIdAndDelete(messageId);
+  return message;
 };

@@ -19,7 +19,7 @@ module.exports.sendMessage = function ({io, socket}) {
       const message = await messageService.createMessage(messageData);
       socket.broadcast
         .to(`chat:${payload.chatId}`)
-        .emit("message:new", message);
+        .emit("message:sent", message);
 
       // i think this is useless since at the event of new message
       // the user will have the mentions and can know if he is mentioned or not
@@ -53,5 +53,37 @@ module.exports.updateMessageViewres = function ({io, socket}) {
     socket.broadcast
       .to(`chat:${payload.chatId}`)
       .emit("message:seen", {...payload, viewerId: socket.userId});
+  };
+};
+
+module.exports.updateMessage = function ({io, socket}) {
+  return async (payload) => {
+    try {
+      payload.senderId = socket.userId;
+      const message = await messageService.updateMessage(payload);
+
+      io.to(`chat:${message.chatId}`).emit("message:updated", message);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
+module.exports.deleteMessage = function ({io, socket}) {
+  return async (payload) => {
+    try {
+      // we will make it delete from all the users
+      const message = await messageService.deleteMessage(
+        payload.messageId,
+        socket.userId
+      );
+      socket.broadcast
+        .to(`chat:${message.chatId}`)
+        .emit("message:deleted", message);
+    } catch (err) {
+      console.log(err);
+
+      socket.emit("error", {message: err.message});
+    }
   };
 };
