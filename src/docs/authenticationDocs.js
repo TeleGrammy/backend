@@ -156,7 +156,7 @@
  *  /auth/logout-from-all-devices:
  *    post:
  *      summary: Logout from all devices
- *      description: Logs the user out from all devices.
+ *      description: Logging the user out from all devices.
  *      tags:
  *        - User Logout
  *      responses:

@@ -8,6 +8,7 @@ const generateToken = require("../utils/generateToken").default;
 const addAuthCookieModule = require("../utils/addAuthCookie").default;
 const isLoggedOutModule = require("../utils/isLoggedOut");
 
+
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
@@ -112,7 +113,6 @@ module.exports = catchAsync(async (req, res, next) => {
   const user = await userService.getUserBasicInfoByUUID(
     decodedAccessToken.name
   );
-
   if (!user) {
     return next(new AppError("Unauthorized access", 401));
   }

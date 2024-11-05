@@ -27,6 +27,7 @@ const logout = async (req, res, next) => {
       message: "Successfully logged out",
     });
   } catch (err) {
+    console.log(err);
     next(new AppError("Logout failed, please try again later", 500));
   }
 };

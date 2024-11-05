@@ -188,9 +188,15 @@ const findOneAndUpdate = async (filter, updateData, options) => {
 };
 
 const getUserByID = async (ID) => {
-  return await User.findById(ID);
+  return User.findById(ID);
 };
 
+const findByIdAndUpdate = async (id, updateData, options) => {
+  return User.findByIdAndUpdate(id, updateData, options);
+};
+const getUserById = async (id, select = "") => {
+  return User.findById(id).select(select);
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -202,4 +208,6 @@ module.exports = {
   createUser,
   findOne,
   findOneAndUpdate,
+  findByIdAndUpdate,
+  getUserById,
 };
