@@ -13,7 +13,6 @@
     "start:prod": "cross-env NODE_ENV=production nodemon server.js",
     "debug": "ndb src/index.js",
     "test": "jest",
-    "test": "jest",
     "coverage": "nyc --reporter=lcov --reporter=text npm run test-mocha",
     "test-mocha": "mocha './src/tests/**/*.test.js'"
   },
@@ -45,6 +44,9 @@
     "mime": "^4.0.4",
     "mime-types": "^2.1.35",
     "mongoose": "^8.7.1",
+    "multer": "^1.4.5-lts.1",
+    "multer-s3": "^3.0.1",
+    "node-cron": "^3.0.3",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
@@ -74,4 +76,3 @@
     "prettier": "^3.3.3"
   }
 }
-

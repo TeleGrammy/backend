@@ -118,12 +118,6 @@ const userSchema = new mongoose.Schema({
     sparse: true,
   },
 
-  faceBookId: {
-    type: String,
-    unique: true,
-    sparse: true,
-  },
-
   gitHubId: {
     type: String,
     unique: true,
