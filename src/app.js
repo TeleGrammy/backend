@@ -25,13 +25,10 @@ const app = express();
 app.set("trust-proxy", true);
 app.set(requestIp.mw());
 
-// use cron job script to automatically delete expired stories
-cronJobs();
-
 app.use(
   cors({
     origin: (origin, callback) => {
-        callback(null, true);
+      callback(null, true);
     },
     credentials: true,
   })

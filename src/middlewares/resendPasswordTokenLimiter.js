@@ -1,8 +1,8 @@
 const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
-  windowMS: 1 * 60 * 1000,
-  max: 3,
+  windowMS: 2 * 60 * 1000,
+  max: 6,
   handler: (req, res) => {
     res.status(429).json({
       status: "fail",
