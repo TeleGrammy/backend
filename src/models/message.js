@@ -31,6 +31,11 @@ const messageSchema = new mongoose.Schema({
     },
     required: [true, "Message type is required"],
   },
+  replyOn: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message",
+    default: null,
+  },
   isEdited: {
     type: Boolean,
     default: false,

@@ -120,3 +120,10 @@ module.exports.deleteMessage = async (messageId, senderId) => {
   await Message.findByIdAndDelete(messageId);
   return message;
 };
+
+module.exports.checkChatOfMessage = async (id, chatId) => {
+  const message = await Message.findById(id);
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+};

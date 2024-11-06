@@ -6,16 +6,22 @@ module.exports.sendMessage = function ({io, socket}) {
     if (typeof callback !== "function") {
       return;
     }
-
     const messageData = {
       senderId: socket.userId,
       chatId: payload.chatId,
       messageType: payload.messageType,
       content: payload.content || "",
       mentions: payload.mentions || [],
+      replyOn: payload.replyOn || null,
     };
 
     try {
+      if (messageData.replyOn) {
+        await messageService.checkChatOfMessage(
+          messageData.replyOn,
+          messageData.chatId
+        );
+      }
       const message = await messageService.createMessage(messageData);
       socket.broadcast
         .to(`chat:${payload.chatId}`)
