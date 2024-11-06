@@ -5,6 +5,7 @@ const {
   updateMessageViewres,
   updateMessage,
   deleteMessage,
+  forwardMessage,
 } = require("./chat/message");
 const {updateTypingStatus} = require("./chat/typing");
 exports.onConnection = async (socket, io) => {

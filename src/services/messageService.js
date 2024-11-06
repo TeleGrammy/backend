@@ -127,3 +127,21 @@ module.exports.checkChatOfMessage = async (id, chatId) => {
     throw new AppError("Message is not part of the provided chat", 400);
   }
 };
+
+module.exports.createForwardMessageData = async (
+  idOfMessageToForward,
+  senderId,
+  chatId
+) => {
+  const message = await Message.findById(idOfMessageToForward);
+  const newMessageData = {
+    senderId,
+    chatId,
+    messageType: message.messageType,
+    content: message.content,
+    isForwarded: true,
+    forwardedFrom: message._id,
+    mediaUrl: message.mediaUrl,
+  };
+  return newMessageData;
+};

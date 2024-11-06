@@ -1,21 +1,15 @@
-const chatService = require("../../services/chatService");
 const messageService = require("../../services/messageService");
+const {createMessageData} = require("../utils/message");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
     if (typeof callback !== "function") {
       return;
     }
-    const messageData = {
-      senderId: socket.userId,
-      chatId: payload.chatId,
-      messageType: payload.messageType,
-      content: payload.content || "",
-      mentions: payload.mentions || [],
-      replyOn: payload.replyOn || null,
-    };
 
     try {
+      const messageData = await createMessageData(payload, socket.userId);
+      console.log(messageData);
       if (messageData.replyOn) {
         await messageService.checkChatOfMessage(
           messageData.replyOn,
@@ -29,7 +23,7 @@ module.exports.sendMessage = function ({io, socket}) {
 
       // i think this is useless since at the event of new message
       // the user will have the mentions and can know if he is mentioned or not
-      messageData.mentions.forEach((userId) => {
+      message.mentions.forEach((userId) => {
         io.to(`${userId}`).emit("message:mention", message);
       });
 
@@ -43,6 +37,7 @@ module.exports.sendMessage = function ({io, socket}) {
       // Update the message status to "sent" after acknowledgment
       await messageService.updateMessageStatus(message.id, "sent");
     } catch (err) {
+      console.log(err);
       socket.emit("error", {message: err.message});
     }
   };
@@ -50,15 +45,19 @@ module.exports.sendMessage = function ({io, socket}) {
 
 module.exports.updateMessageViewres = function ({io, socket}) {
   return async (payload) => {
-    await messageService.updateChatViewers(
-      payload.chatId,
-      payload.messageId,
-      socket.userId
-    );
+    try {
+      await messageService.updateChatViewers(
+        payload.chatId,
+        payload.messageId,
+        socket.userId
+      );
 
-    socket.broadcast
-      .to(`chat:${payload.chatId}`)
-      .emit("message:seen", {...payload, viewerId: socket.userId});
+      socket.broadcast
+        .to(`chat:${payload.chatId}`)
+        .emit("message:seen", {...payload, viewerId: socket.userId});
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
   };
 };
 
@@ -87,8 +86,6 @@ module.exports.deleteMessage = function ({io, socket}) {
         .to(`chat:${message.chatId}`)
         .emit("message:deleted", message);
     } catch (err) {
-      console.log(err);
-
       socket.emit("error", {message: err.message});
     }
   };
