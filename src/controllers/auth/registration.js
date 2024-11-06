@@ -10,7 +10,8 @@ const {sendConfirmationEmail} = require("../../utils/mailingServcies");
 const manageSessionForUser = require("../../utils/sessionManagement");
 
 exports.postRegistration = catchAsync(async (req, res, next) => {
-  const {username, email, password, passwordConfirm, phone} = req.body;
+  const {username, email, password, passwordConfirm, phone, publicKey} =
+    req.body;
 
   const verificationCode = generateConfirmationCode();
 
@@ -34,6 +35,7 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
     passwordConfirm,
     phone,
     verificationCode,
+    publicKey,
   });
   await sendConfirmationEmail(
     email,
@@ -80,6 +82,7 @@ exports.postVerify = catchAsync(async (req, res) => {
     password: pendingUser.password,
     passwordConfirm: pendingUser.passwordConfirm,
     phone: pendingUser.phone,
+    publicKey: pendingUser.publicKey,
   });
   await PendingUser.deleteOne({email});
 
