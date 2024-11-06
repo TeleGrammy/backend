@@ -157,6 +157,12 @@ const userSchema = new mongoose.Schema({
   passwordResetTokenExpiresAt: Date,
   lastPasswordResetRequestAt: Date,
   loggedOutFromAllDevicesAt: {type: Date, default: null},
+
+  profilePictureVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {

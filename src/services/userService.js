@@ -1,3 +1,4 @@
+const AppError = require("../errors/appError");
 const User = require("../models/user");
 
 /**
@@ -60,6 +61,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     status: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
+    profilePictureVisibility: 1,
   };
 
   return getUserByUUID(UUID, userBasicInfo);
@@ -159,27 +161,39 @@ const createUser = async (userData) => {
  */
 
 const updateRefreshToken = async (id, newRefreshToken) => {
-  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
+  return await User.update(
+    {jwtRefreshToken: newRefreshToken},
+    {where: {_id: id}}
+  );
 };
 
 const findOne = async (filter) => {
-  return User.findOne(filter);
+  return await User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return User.findOneAndUpdate(filter, updateData, options);
+  return await User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
-  return User.findById(ID);
+  return await User.findById(ID);
 };
 
 const findByIdAndUpdate = async (id, updateData, options) => {
-  return User.findByIdAndUpdate(id, updateData, options);
+  return await User.findByIdAndUpdate(id, updateData, options);
 };
 const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+  return await User.findById(id).select(select);
 };
+
+const changeProfilePictureVisibilityByUserId = async (id, visibilityOption) => {
+  return await findOneAndUpdate(
+    {_id: id},
+    {profilePictureVisibility: visibilityOption},
+    {new: true}
+  );
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -193,4 +207,5 @@ module.exports = {
   findOneAndUpdate,
   findByIdAndUpdate,
   getUserById,
+  changeProfilePictureVisibilityByUserId,
 };
