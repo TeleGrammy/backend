@@ -21,6 +21,28 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
 };
 
 /**
+ * Retrieves a user by email, username, or phone.
+ * @memberof Service.Users
+ * @method getUserByContactInfo
+ * @async
+ * @param {String} [email]              - User's email.
+ * @param {String} [username]           - User's username.
+ * @param {String} [phone]              - User's phone number.
+ * @param {Object} [selectionFilter={}] - The fields needed to select from the user object. Defaults to an empty object.
+ * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
+ */
+const getUserByContactInfo = async (
+  email,
+  username,
+  phone,
+  selectionFilter = {}
+) => {
+  return User.findOne({
+    $or: [{email}, {username}, {phone}],
+  }).select(selectionFilter);
+};
+
+/**
  * Retrieves user's basic information by email, username, or phone.
  * @memberof Service.Users
  * @method getUserBasicInfoByUUID
@@ -34,6 +56,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     username: 1,
     email: 1,
     phone: 1,
+    sessions: 1,
     status: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
@@ -139,22 +162,35 @@ const updateRefreshToken = async (id, newRefreshToken) => {
   return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
 };
 
-const findOne = (filter) => {
+const findOne = async (filter) => {
   return User.findOne(filter);
 };
 
-const findOneAndUpdate = (filter, updateData, options) => {
+const findOneAndUpdate = async (filter, updateData, options) => {
   return User.findOneAndUpdate(filter, updateData, options);
 };
 
+const getUserByID = async (ID) => {
+  return User.findById(ID);
+};
+
+const findByIdAndUpdate = async (id, updateData, options) => {
+  return User.findByIdAndUpdate(id, updateData, options);
+};
+const getUserById = async (id, select = "") => {
+  return User.findById(id).select(select);
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
+  getUserByContactInfo,
   getUserByEmail,
   getUserPasswordById,
   getUserId,
+  getUserByID,
   createUser,
-  updateRefreshToken,
   findOne,
   findOneAndUpdate,
+  findByIdAndUpdate,
+  getUserById,
 };

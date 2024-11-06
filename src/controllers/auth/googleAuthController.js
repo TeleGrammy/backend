@@ -5,8 +5,7 @@ const AppError = require("../../errors/appError");
 const userService = require("../../services/userService");
 
 const catchAsync = require("../../utils/catchAsync");
-const addAuthCookie = require("../../utils/addAuthCookie");
-const generateToken = require("../../utils/generateToken");
+const manageSessionForUser = require("../../utils/sessionManagement");
 
 const signInWithGoogle = (req, res, next) => {
   passport.authenticate("google", {
@@ -52,28 +51,19 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const userTokenedData = {
-        id: existingUser.id,
-        name: existingUser.username,
-        email: existingUser.email,
-        phone: existingUser.phone,
-        loggedOutFromAllDevicesAt: existingUser.loggedOutFromAllDevicesAt,
-      };
-
-      const accessToken = generateToken(
-        userTokenedData,
-        process.env.COOKIE_ACCESS_NAME
+      const {updatedUser, accessToken} = await manageSessionForUser(
+        req,
+        res,
+        existingUser
       );
 
-      const refreshToken = generateToken(
-        userTokenedData,
-        process.env.COOKIE_REFRESH_NAME
-      );
-
-      addAuthCookie(accessToken, res, true);
-      addAuthCookie(refreshToken, res, false);
-
-      return res.redirect("/api/v1/user");
+      return res.status(200).json({
+        data: {
+          updatedUser,
+          accessToken,
+        },
+        status: "Logged in successfully with Google",
+      });
     }
   )(req, res);
 });
