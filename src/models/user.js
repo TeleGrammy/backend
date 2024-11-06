@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {phoneRegex} = require("../utils/regexFormat");
 const AppError = require("../errors/appError");
+const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 
 const contactSchema = new mongoose.Schema({
   contactId: {
@@ -173,15 +174,23 @@ userSchema.post(/^find/, async function (doc, next) {
     throw new AppError("User not found", 404);
   }
 
-  // if (!doc.length) {
-  //   await doc.generateSignedUrl();
-  // } else {
-  //   await Promise.all(
-  //     doc.map(async (document) => {
-  //       await document.generateSignedUrl();
-  //     })
-  //   );
-  // }
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
   next();
 });
 
@@ -277,11 +286,25 @@ userSchema.methods.verifyConfirmationCode = function (confirmationCode) {
   }
 };
 
+userSchema.methods.generateSignedUrl = async function () {
+  if (this.pictureKey) {
+    this.picture = await generateSignedUrl(this.pictureKey, 15 * 60);
+  }
+};
+
 userSchema.methods.updatePictureKey = async function (key) {
   this.pictureKey = key;
   await this.generateSignedUrl();
   await this.save();
   this.pictureKey = undefined;
+};
+userSchema.methods.deleteUserPicture = async function () {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+    this.picture = "default.jpg";
+    this.pictureKey = null;
+    await this.save();
+  }
 };
 
 applySoftDeleteMiddleWare(userSchema);

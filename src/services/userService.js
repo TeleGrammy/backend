@@ -148,6 +148,20 @@ const createUser = async (userData) => {
   });
 };
 
+/**
+ *  Retrieves the user by his id.
+ * @memberof Service.Users
+ * @method updateRefreshToken
+ * @async
+ * @param {String} [id]       - User's id.
+ * @param {String} [newRefreshToken] - Storing a new refresh token (while invalidating the old one) helps to prevent replay attacks and also offers the ability to sign out all users who had access to the old refresh token.
+ * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
+ */
+
+const updateRefreshToken = async (id, newRefreshToken) => {
+  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
+};
+
 const findOne = async (filter) => {
   return User.findOne(filter);
 };
@@ -160,6 +174,12 @@ const getUserByID = async (ID) => {
   return User.findById(ID);
 };
 
+const findByIdAndUpdate = async (id, updateData, options) => {
+  return User.findByIdAndUpdate(id, updateData, options);
+};
+const getUserById = async (id, select = "") => {
+  return User.findById(id).select(select);
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -171,4 +191,6 @@ module.exports = {
   createUser,
   findOne,
   findOneAndUpdate,
+  findByIdAndUpdate,
+  getUserById,
 };
