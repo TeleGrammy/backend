@@ -2,7 +2,6 @@ const userService = require("../../services/userService");
 const AppError = require("../../errors/appError");
 
 module.exports.getMainPage = (req, res, next) => {
-  console.log(req.user);
   res.status(200).json({
     data: "Main Page",
     message: "Successful",
@@ -16,7 +15,6 @@ module.exports.updatePublicKey = async (req, res, next) => {
   if (!publicKey) {
     next(new AppError("Please provide a public key", 400));
   }
-  console.log(req.user);
   const user = await userService.findByIdAndUpdate(
     req.user.id,
     {publicKey},

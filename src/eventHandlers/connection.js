@@ -7,27 +7,38 @@ const {
   deleteMessage,
   forwardMessage,
 } = require("./chat/message");
+const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
+
 exports.onConnection = async (socket, io) => {
   console.log("User connected:", socket.id);
 
-  const userId = socket.user.id;
+  socket.userId = socket.user.id;
+  console.log("User id connected:", socket.userId);
 
-  socket.userId = userId;
-  console.log("User id connected:", userId);
-  /**  user will join all channels once connected so there will be not a join chat event */
   // user join it is own room
-  socket.join(`${userId}`);
+  socket.join(`${socket.userId}`);
 
-  const {contacts} = await userService.getUserByID(socket.userId);
-  contacts.forEach((contact) => socket.join(`chat:${contact.chatId}`));
+  const user = await userService.getUserByID(socket.userId);
+  await Promise.all(
+    user.contacts.map(async (contact) => {
+      socket.join(`chat:${contact.chatId}`);
+      const offset = user.userChats.get(contact.chatId);
+
+      await sendMissedEvents({
+        io,
+        userId: socket.userId,
+        chatId: contact.chatId,
+        offset,
+      });
+    })
+  );
 
   socket.on("message:send", sendMessage({io, socket}));
   socket.on("message:update", updateMessage({io, socket}));
   socket.on("message:delete", deleteMessage({io, socket}));
-
   socket.on("message:seen", updateMessageViewres({io, socket}));
-
+  socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
 
   socket.on("message", (msg) => {
@@ -37,5 +48,4 @@ exports.onConnection = async (socket, io) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
-  
 };

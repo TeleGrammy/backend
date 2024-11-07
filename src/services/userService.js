@@ -131,8 +131,9 @@ const createUser = async (userData) => {
     isGoogleUser,
     isGitHubUser,
     isFaceBookUser,
+    publicKey,
   } = userData;
-
+  console.log(publicKey);
   return User.create({
     username,
     email,
@@ -142,6 +143,7 @@ const createUser = async (userData) => {
     picture,
     accessToken,
     refreshToken,
+    publicKey,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
     ...(isFaceBookUser ? {faceBookId: id} : {}),
@@ -180,6 +182,22 @@ const findByIdAndUpdate = async (id, updateData, options) => {
 const getUserById = async (id, select = "") => {
   return User.findById(id).select(select);
 };
+
+const ackEvent = async (id, chatId, offset) => {
+  const user = await User.findById(id);
+
+  // Check if the user already has a chat entry and if the new offset is greater than the current one
+  const currentOffset = user.userChats
+    ? user.userChats.get(`${chatId}`)
+    : undefined;
+
+  if (currentOffset === undefined || offset > currentOffset) {
+    user.userChats.set(`${chatId}`, offset);
+  }
+  await user.save();
+
+  return user;
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -193,4 +211,5 @@ module.exports = {
   findOneAndUpdate,
   findByIdAndUpdate,
   getUserById,
+  ackEvent,
 };

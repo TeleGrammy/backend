@@ -75,14 +75,13 @@ exports.postVerify = catchAsync(async (req, res) => {
   if (pendingUser.codeExpiresAt < new Date()) {
     return res.status(400).json({message: "Verification code has expired"});
   }
-
   const user = await userService.createUser({
     username: pendingUser.username,
     email: pendingUser.email,
     password: pendingUser.password,
     passwordConfirm: pendingUser.passwordConfirm,
     phone: pendingUser.phone,
-    publicKey: pendingUser.publicKey,
+    publicKey: pendingUser._doc.publicKey,
   });
   await PendingUser.deleteOne({email});
 

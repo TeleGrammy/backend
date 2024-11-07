@@ -1,3 +1,5 @@
+const eventService = require("../../services/eventService");
+const userService = require("../../services/userService");
 const messageService = require("../../services/messageService");
 
 module.exports.createMessageData = async (payload, userId) => {
@@ -20,4 +22,17 @@ module.exports.createMessageData = async (payload, userId) => {
   };
 
   return messageData;
+};
+
+module.exports.logThenEmit = async (userId, event, payload, sockets) => {
+  const newEvent = await eventService.create({
+    name: event,
+    chatId: payload.chatId,
+    payload,
+  });
+
+  sockets.emit(event, {...payload, eventIndex: newEvent.index});
+
+  // update the last event acknoleged by the user in that chat
+  await userService.ackEvent(userId, payload.chatId, newEvent.index);
 };

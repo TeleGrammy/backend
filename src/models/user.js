@@ -125,6 +125,11 @@ const userSchema = new mongoose.Schema({
     default: Date.now(),
   },
   contacts: [contactSchema],
+  userChats: {
+    type: Map,
+    of: String,
+    default: new Map(),
+  },
   pendingEmail: {
     type: String,
     validate: [validator.isEmail, "Please provide a valid new email address"],
