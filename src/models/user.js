@@ -21,6 +21,22 @@ const contactSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
+  publicKey: {
+    type: String,
+    unique: true,
+    required: true,
+    validate: {
+      validator: (value) => {
+        try {
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],

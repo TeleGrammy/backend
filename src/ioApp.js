@@ -5,8 +5,6 @@ const {onConnection} = require("./eventHandlers/connection");
 
 const AppError = require("./errors/appError");
 
-const fake =
-  "eyJpZCI6IjY3MjI5N2Y1MGY2MzVkMTdkNTQ1MDk1YyIsIm5hbWUiOiJNb2hfRUxjIiwiZW1haWwiOiJtb2hhbWVkLmFidWVsbmdhMDNAZ21haWwuY29tIiwicGhvbmUiOiIrMjAxMDA2NTQwMTc1IiwibG9nZ2VkT3V0RnJvbUFsbERldmljZXNBdCI6bnVsbCwiaWF0IjoxNzMwOTI2MjIwLCJleHAiOjE3MzA5Mjk4MjAsImF1ZCI6Im15YXBwLXVzZXJzIiwiaXNzIjoibXlhcHAifQ";
 
 const createIoApp = (httpServer) => {
   console.log("Setup Socket.IO")
@@ -21,11 +19,9 @@ const createIoApp = (httpServer) => {
     let decodedAccessToken = null;
     try {
       decodedAccessToken = jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decodedAccessToken);
       socket.user = decodedAccessToken;
     } catch (error) {
-      console.log(error);
-      return socket.emit("error", "JWT Expire");
+      return next(new Error("Invalid refresh token, please log in again", 401));
     }
     return next();
   });
