@@ -1,6 +1,9 @@
 const messageService = require("../../services/messageService");
 
+const {uploadVoiceNote} = require("../../middlewares/AWS");
+
 const {logThenEmit, createMessageData} = require("../utils/utilsFunc");
+
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
     if (typeof callback !== "function") {
@@ -98,6 +101,40 @@ module.exports.deleteMessage = function ({io, socket}) {
         message,
         socket.broadcast.to(`chat:${message.chatId}`)
       );
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
+module.exports.sendVoiceNote = function ({io, socket}) {
+  console.log("Testing Send voice");
+  return async (payload) => {
+    console.log("Inside Testing Send voice");
+
+    const {file} = payload; // The audio file sent from the client
+    console.log(file);
+    try {
+      const url = await uploadVoiceNote(file);
+      console.log(url);
+      socket.broadcast.emit("message:send_voicenote", url);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
+module.exports.sendVoiceNote = function ({io, socket}) {
+  console.log("Testing Send voice");
+  return async (payload) => {
+    console.log("Inside Testing Send voice");
+
+    const {file} = payload; // The audio file sent from the client
+    console.log(file);
+    try {
+      const url = await uploadVoiceNote(file);
+      console.log(url);
+      socket.broadcast.emit("message:send_voicenote", url);
     } catch (err) {
       socket.emit("error", {message: err.message});
     }

@@ -30,6 +30,7 @@ cronJobs();
 
 app.use(
   cors({
+  
     origin: (origin, callback) => {
       callback(null, true);
     },
@@ -51,7 +52,7 @@ app.use(express.json({limit: "10kb"}));
 app.use(express.urlencoded({extended: true}));
 
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);

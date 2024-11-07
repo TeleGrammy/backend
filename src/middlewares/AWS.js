@@ -3,11 +3,13 @@ const {
   GetObjectCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
+  PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 const {getSignedUrl} = require("@aws-sdk/s3-request-presigner");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
 const mime = require("mime-types");
+const AppError = require("../errors/appError");
 
 require("dotenv").config();
 
@@ -28,13 +30,7 @@ const storage = multerS3({
     cb(null, {fieldName: file.fieldname});
   },
   key: (req, file, cb) => {
-    let folder = "";
-    if (file.fieldname === "picture") {
-      folder = "userProfilesPictures";
-    } else if (file.fieldname === "story") {
-      folder = "stories";
-    }
-    const fileName = `media/${folder}/${Date.now().toString()}-${file.originalname}`;
+    const fileName = `media/${file.fieldname}/${Date.now().toString()}-${file.originalname}`;
     cb(null, fileName);
   },
   contentDisposition: "inline", // Ensure files are displayed in the browser
@@ -47,11 +43,13 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     if (
-      !file.originalname.match(/\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov)$/i)
+      !file.originalname.match(
+        /\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov|wav|mp3)$/i
+      )
     ) {
       return cb(new Error("Invalid file format"), false);
     }
-    cb(null, true);
+    return cb(null, true);
   },
 });
 exports.uploadUserPicture = upload.single("picture");
@@ -121,4 +119,33 @@ exports.getFileFromS3 = async (key, expireTime = null) => {
     expiresIn: expireTime || 3600, // Default to 1 hour if no expireTime is provided
   });
   return url;
+};
+
+exports.uploadVoiceNote = async (file) => {
+  try {
+    // Assuming the file is sent as a multipart form-data request (via Socket.IO Binary)
+    const buffer = Buffer.from(file.data);
+
+    // Upload the audio file to S3
+    const fileName = `${Date.now()}-${file.name}`;
+    const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `voiceNotes/${fileName}`,
+      Body: buffer,
+      ContentType: mime.lookup(fileName) || "application/octet-stream", // Set the mime type
+    };
+
+    // Upload file to S3
+    const uploadResponse = await s3.send(new PutObjectCommand(uploadParams));
+
+    // Generate a signed URL for the uploaded file
+    const signedUrl = await generateSignedUrl(`voiceNotes/${fileName}`);
+    console.log("File uploaded successfully:", uploadResponse);
+
+    // Emit the URL to the client so they can play the file
+    return signedUrl;
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    return new AppError("Failed to upload audio file");
+  }
 };
