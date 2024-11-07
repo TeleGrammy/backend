@@ -6,8 +6,12 @@ const {
   updateMessage,
   deleteMessage,
   forwardMessage,
+  sendVoiceNote,
 } = require("./chat/message");
 const {updateTypingStatus} = require("./chat/typing");
+
+const {uploadVoiceNote} = require("../middlewares/AWS");
+
 exports.onConnection = async (socket, io) => {
   console.log("User connected:", socket.id);
 
@@ -15,7 +19,8 @@ exports.onConnection = async (socket, io) => {
 
   socket.userId = userId;
   console.log("User id connected:", userId);
-  /**  user will join all channels once connected so there will be not a join chat event */
+  socket.emit("message", "Hello from server MY NAGA");
+  /* user will join all channels once connected so there will be not a join chat event */
   // user join it is own room
   socket.join(`${userId}`);
 
@@ -31,11 +36,21 @@ exports.onConnection = async (socket, io) => {
   socket.on("typing", updateTypingStatus({io, socket}));
 
   socket.on("message", (msg) => {
-    console.log("Message from server:", msg);
+    console.log("Message from Client:", msg);
+  });
+  socket.on("message:send_voicenote", (payload, callback) => {
+    console.log(
+      "Received 'message:send_voicenote' event from client:",
+      payload
+    );
+
+    // Acknowledge receipt if needed
+    if (callback) {
+      callback({status: "success", message: "Voice note received"});
+    }
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
-  
 };
