@@ -1,5 +1,6 @@
 const Story = require("../models/story");
 const User = require("../models/user");
+const {getBasicProfileInfo} = require("../services/userProfileService");
 
 exports.create = async (data) => {
   const {userId, content, mediaKey} = data;
@@ -19,7 +20,7 @@ exports.getStoriesOfContacts = async (id, page, limit) => {
   const {contacts} = await User.findById(id).populate("contacts.contactId");
   const contactIds = contacts.map((contact) => contact.contactId._id);
 
-  return Story.aggregate([
+  const docs = await Story.aggregate([
     {
       $match: {userId: {$in: contactIds}, expiresAt: {$gte: new Date()}},
     },
@@ -40,6 +41,25 @@ exports.getStoriesOfContacts = async (id, page, limit) => {
       $limit: limit,
     },
   ]);
+
+  await Promise.all(
+    docs.map(async (user) => {
+      await Promise.all(
+        user.stories.map(async (story) => {
+          if (story.viewers) {
+            const arr = Object.values(story.viewers); // Converts viewers (JSON object) to an array of [key, value] pairs
+            await Promise.all(
+              arr.map(async (obj) => {
+                obj.profile = await getBasicProfileInfo(obj.viewerId);
+              })
+            );
+          }
+        })
+      );
+    })
+  );
+
+  return docs;
 };
 exports.deleteStoryById = async (id) => {
   return Story.findByIdAndDelete(id);
@@ -49,7 +69,12 @@ exports.updateStoryViewers = async (storyId, userId) => {
   return Story.findByIdAndUpdate(
     storyId,
     {
-      $set: {[`viewers.${userId}`]: Date.now()},
+      $set: {
+        [`viewers.${userId}`]: {
+          viewedAt: new Date(),
+          viewerId: userId,
+        },
+      },
     },
     {new: true, runValidators: true}
   );
