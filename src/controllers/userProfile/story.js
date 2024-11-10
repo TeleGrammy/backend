@@ -37,7 +37,7 @@ exports.getMyStories = catchAsync(async (req, res, next) => {
 
 exports.getMyContactsStories = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page, 10) || 1;
-  let limit = parseInt(req.query.limit, 10) || 10;
+  let limit = parseInt(req.query.limit, 10) || 50;
   limit = limit > 10 ? 10 : limit;
   const stories = await stroyService.getStoriesOfContacts(
     req.user.id,
@@ -62,10 +62,15 @@ exports.addStoryOwnerId = catchAsync(async (req, res, next) => {
 });
 
 exports.inContacts = catchAsync(async (req, res, next) => {
-  const {contacts} = await userService.getUserById(req.user.id);
+  const user = await userService.getUserById(req.user.id);
   const storiesOwnerId = req.params.userId || req.storyOwnerId.toString();
   req.storyOwnerId = storiesOwnerId;
-  if (!contacts.includes(storiesOwnerId) && !(storiesOwnerId === req.user.id)) {
+
+  if (
+    !Array.isArray(user.contacts) &&
+    !user.contacts.includes(storiesOwnerId) &&
+    !(storiesOwnerId === req.user.id)
+  ) {
     next(new AppError("You are not authorized to view this stories", 403));
   }
   next();

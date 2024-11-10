@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
+const {getBasicProfileInfo} = require("../services/userProfileService");
 
 const storySchema = new mongoose.Schema({
   userId: {
@@ -9,7 +10,23 @@ const storySchema = new mongoose.Schema({
   },
   viewers: {
     type: Map,
-    of: {type: Date},
+    of: {
+      type: new mongoose.Schema({
+        viewerId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User", // Reference to the User model
+          required: true,
+        },
+        viewedAt: {
+          type: Date,
+          // Defaults to the time of viewing
+        },
+        profile: {
+          type: Object,
+          default: null,
+        },
+      }),
+    },
   },
   content: {
     type: String,
@@ -41,6 +58,25 @@ storySchema.methods.generateSignedUrl = async function () {
   this.mediaKey = undefined;
 };
 
+storySchema.methods.appendViewersProfiles = async function () {
+  if (this.viewers) {
+    // Convert viewersIds to an array
+    const viewerIds = Array.from(this.viewers.keys());
+
+    await Promise.all(
+      viewerIds.map(async (viewerId) => {
+        const profile = await getBasicProfileInfo(viewerId);
+        console.log(profile);
+        const newValue = this.viewers.get(viewerId);
+        newValue.profile = profile;
+
+        this.viewers.set(viewerId, newValue);
+      })
+    );
+  }
+  return this;
+};
+
 storySchema.pre(/Delete$/, async function (next) {
   try {
     if (this.mediaKey) await deleteFile(this.mediaKey);
@@ -57,18 +93,18 @@ storySchema.post("save", async function (doc, next) {
 // this middleware is responsible for creating signed URLs to the retreived stories from the database
 storySchema.post(/^find/, async function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
-    next();
+    return next();
   }
 
-  if (!Array.isArray(docs)) {
-    await docs.generateSignedUrl();
-  } else {
-    await Promise.all(
-      docs.map(async (doc) => {
-        await doc.generateSignedUrl();
-      })
-    );
-  }
+  const documents = Array.isArray(docs) ? docs : [docs];
+
+  await Promise.all(
+    documents.map(async (doc) => {
+      await doc.generateSignedUrl();
+      await doc.appendViewersProfiles();
+    })
+  );
+
   next();
 });
 

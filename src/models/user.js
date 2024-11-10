@@ -7,7 +7,36 @@ const {phoneRegex} = require("../utils/regexFormat");
 const AppError = require("../errors/appError");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 
+const contactSchema = new mongoose.Schema({
+  contactId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+    required: true,
+  },
+});
+
 const userSchema = new mongoose.Schema({
+  publicKey: {
+    type: String,
+    unique: true,
+    required: true,
+    validate: {
+      validator: (value) => {
+        try {
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],
@@ -95,9 +124,11 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-  contacts: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
+  contacts: [contactSchema],
+  userChats: {
+    type: Map,
+    of: String,
+    default: new Map(),
   },
   pendingEmail: {
     type: String,
