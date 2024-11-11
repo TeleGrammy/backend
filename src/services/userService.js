@@ -1,3 +1,4 @@
+const AppError = require("../errors/appError");
 const User = require("../models/user");
 
 const AppError = require("../errors/appError");
@@ -71,6 +72,7 @@ const getUserBasicInfoByUUID = async (UUID) => {
     password: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
+    profilePictureVisibility: 1,
   };
 
   return getUserByUUID(UUID, userBasicInfo);
@@ -179,6 +181,23 @@ const createUser = async (userData) => {
   });
 };
 
+/**
+ *  Retrieves the user by his id.
+ * @memberof Service.Users
+ * @method updateRefreshToken
+ * @async
+ * @param {String} [id]       - User's id.
+ * @param {String} [newRefreshToken] - Storing a new refresh token (while invalidating the old one) helps to prevent replay attacks and also offers the ability to sign out all users who had access to the old refresh token.
+ * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
+ */
+
+const updateRefreshToken = async (id, newRefreshToken) => {
+  return await User.update(
+    {jwtRefreshToken: newRefreshToken},
+    {where: {_id: id}}
+  );
+};
+
 const findOne = async (filter) => {
   return await User.findOne(filter);
 };
@@ -188,15 +207,25 @@ const findOneAndUpdate = async (filter, updateData, options) => {
 };
 
 const getUserByID = async (ID) => {
-  return User.findById(ID);
+  return await User.findById(ID);
 };
 
 const findByIdAndUpdate = async (id, updateData, options) => {
-  return User.findByIdAndUpdate(id, updateData, options);
+  return await User.findByIdAndUpdate(id, updateData, options);
 };
 const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+  return await User.findById(id).select(select);
 };
+
+const changeProfilePictureVisibilityByUserId = async (id, visibilityOption) => {
+  return await findOneAndUpdate(
+    {_id: id},
+    {profilePictureVisibility: visibilityOption},
+    {new: true}
+  );
+};
+
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -210,4 +239,5 @@ module.exports = {
   findOneAndUpdate,
   findByIdAndUpdate,
   getUserById,
+  changeProfilePictureVisibilityByUserId,
 };

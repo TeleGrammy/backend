@@ -8,17 +8,22 @@ const generateToken = require("../utils/generateToken").default;
 const addAuthCookieModule = require("../utils/addAuthCookie").default;
 const isLoggedOutModule = require("../utils/isLoggedOut");
 
-
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
 module.exports = catchAsync(async (req, res, next) => {
-  const allowedOrigins = ["http://localhost:5173", "https://localhost:5173", "http://telegrammy.tech", "https://telegrammy.tech" ];
-  const origin = req.headers.origin;
-  if(allowedOrigins.includes(origin)){
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://localhost:5173",
+    "http://telegrammy.tech",
+    "https://telegrammy.tech",
+  ];
+  const {origin} = req.headers;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
   }
+
   const currentDeviceType = req.headers["user-agent"];
 
   let accessToken =
@@ -136,5 +141,5 @@ module.exports = catchAsync(async (req, res, next) => {
 
   req.user = decodedAccessToken;
   req.user.currentSession = currentSession;
-  return next();
+  next();
 });

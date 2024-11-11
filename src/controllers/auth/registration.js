@@ -12,7 +12,7 @@ const manageSessionForUser = require("../../utils/sessionManagement");
 exports.postRegistration = catchAsync(async (req, res, next) => {
   const {username, email, password, passwordConfirm, phone} = req.body;
 
-  const verificationCode = generateConfirmationCode();
+  const verificationCode = generateConfirmationCode();w
 
   let existingUser = await userService.getUserByUUID(username);
   if (existingUser) {
@@ -36,7 +36,12 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
     phone,
     verificationCode,
   });
-  await sendConfirmationEmail(email, username, verificationCode);
+  await sendConfirmationEmail(
+    email,
+    username,
+    verificationCode,
+    process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
+  );
 
   await newUser.save();
 

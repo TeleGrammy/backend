@@ -33,6 +33,11 @@ router.patch(
   isAuth,
   userProfileController.requestNewConfirmationCode
 );
+router.patch(
+  "/profile-picture-visibility",
+  isAuth,
+  userProfileController.profilePictureVisibility
+);
 router.post("/email/confirm/", isAuth, userProfileController.confirmNewEmail);
 
 router.delete("/bio/", isAuth, userProfileController.deleteUserBio);
