@@ -118,12 +118,6 @@ const userSchema = new mongoose.Schema({
     sparse: true,
   },
 
-  faceBookId: {
-    type: String,
-    unique: true,
-    sparse: true,
-  },
-
   gitHubId: {
     type: String,
     unique: true,
@@ -163,6 +157,56 @@ const userSchema = new mongoose.Schema({
     enum: ["EveryOne", "Contacts", "Nobody"],
     default: "EveryOne",
   },
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
 });
 
 userSchema.post(/^find/, async function (doc, next) {
