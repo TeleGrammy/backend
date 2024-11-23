@@ -13,11 +13,16 @@ const sessionService = require("../services/sessionService");
 
 module.exports = catchAsync(async (req, res, next) => {
   const currentDeviceType = req.headers["user-agent"];
-
+  const allowedOrigins = ["http://localhost:5173", "https://localhost:5173", "http://telegrammy.tech", "https://telegrammy.tech" ];
+  const origin = req.headers.origin;
+  if(allowedOrigins.includes(origin)){
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
   let accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
     req.header("Authorization")?.replace("Bearer ", "");
-
+  
   if (!accessToken) {
     return new next(new AppError("Not authorized access, Please login!", 401));
   }
