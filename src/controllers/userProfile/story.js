@@ -12,6 +12,7 @@ exports.createStory = catchAsync(async (req, res, next) => {
     return next(new AppError("No content or media provided.", 400));
   }
   const user = await userService.getUserById(req.user.id);
+
   if (!user) {
     return next(new AppError("User not found", 404));
   }
