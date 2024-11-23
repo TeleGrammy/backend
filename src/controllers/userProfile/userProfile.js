@@ -2,7 +2,7 @@ const userService = require("../../services/userService");
 
 const Email = require("../../utils/mailingServcies");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
-const {filterObject} = require("../../utils/utilitiesFunc");
+const {filterObject, extractProfileInfo} = require("../../utils/utilitiesFunc");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -62,10 +62,10 @@ exports.confirmNewEmail = catchAsync(async (req, res, next) => {
   await user.verifyConfirmationCode(confirmationCode);
 
   await user.updateUserEmail();
-
+  const profile = extractProfileInfo(user);
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -74,9 +74,11 @@ exports.getUserProfileInformation = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User not found", 404));
   }
+  const profile = extractProfileInfo(user);
+
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -97,9 +99,12 @@ exports.updateUserProfileInformation = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User not found", 404));
   }
+
+  const profile = extractProfileInfo(user);
+
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -112,9 +117,11 @@ exports.deleteUserBio = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User not found", 404));
   }
+
+  const profile = extractProfileInfo(user);
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -130,9 +137,10 @@ exports.updateUserPicture = catchAsync(async (req, res, next) => {
   }
   await user.updatePictureKey(photo.key);
 
+  const profile = extractProfileInfo(user);
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -144,9 +152,12 @@ exports.deleteUserPicture = catchAsync(async (req, res, next) => {
   await user.deleteUserPicture();
 
   user.pictureKey = undefined;
+
+  const profile = extractProfileInfo(user);
+
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
