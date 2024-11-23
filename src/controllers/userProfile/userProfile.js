@@ -10,6 +10,7 @@ exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
   const user = await userService.findOne({_id: req.user.id});
+
   if (!user) {
     return next(new AppError("User not found", 404));
   }

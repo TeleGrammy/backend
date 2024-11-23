@@ -238,7 +238,10 @@ userSchema.pre("findOneAndUpdate", async function (next) {
   if (update.password) {
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
-    update.passwordConfirm = undefined;
+    update.passwordConfirm = await bcrypt.hash(
+      update.passwordConfirm,
+      saltRounds
+    );
     update.passwordModifiedAt = Date.now();
   }
   next();
