@@ -2,7 +2,7 @@ const userService = require("../../services/userService");
 
 const Email = require("../../utils/mailingServcies");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
-const {filterObject} = require("../../utils/utilitiesFunc");
+const {filterObject, extractProfileInfo} = require("../../utils/utilitiesFunc");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -11,6 +11,9 @@ exports.updateUserEmail = catchAsync(async (req, res, next) => {
 
   const user = await userService.findOne({_id: req.user.id});
 
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   // Update pendingEmail and create confirmation code
   const confirmationCode = generateConfirmationCode();
   await user.setNewEmailInfo(email, confirmationCode);
@@ -29,7 +32,9 @@ exports.updateUserEmail = catchAsync(async (req, res, next) => {
 
 exports.requestNewConfirmationCode = catchAsync(async (req, res, next) => {
   const user = await userService.findOne({_id: req.user.id});
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   // Update pendingEmail and create confirmation code
   const confirmationCode = generateConfirmationCode();
   await user.setNewEmailInfo(user.pendingEmail, confirmationCode);
@@ -51,23 +56,29 @@ exports.confirmNewEmail = catchAsync(async (req, res, next) => {
   const {confirmationCode} = req.body;
 
   const user = await userService.getUserById(req.user.id);
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   await user.verifyConfirmationCode(confirmationCode);
 
   await user.updateUserEmail();
-
+  const profile = extractProfileInfo(user);
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
 exports.getUserProfileInformation = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+  const profile = extractProfileInfo(user);
 
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -85,10 +96,15 @@ exports.updateUserProfileInformation = catchAsync(async (req, res, next) => {
     new: true,
     runValidators: true,
   });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const profile = extractProfileInfo(user);
 
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
@@ -98,44 +114,58 @@ exports.deleteUserBio = catchAsync(async (req, res, next) => {
     {bio: ""},
     {new: true, runValidators: true}
   );
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
 
+  const profile = extractProfileInfo(user);
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
 exports.updateUserPicture = catchAsync(async (req, res, next) => {
   const photo = req.file;
   if (!photo) {
-    next(new AppError("No photo uploaded", 400));
+    return next(new AppError("No photo uploaded", 400));
   }
 
   const user = await userService.getUserById(req.user.id);
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   await user.updatePictureKey(photo.key);
 
+  const profile = extractProfileInfo(user);
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
 exports.deleteUserPicture = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id, "+pictureKey");
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   await user.deleteUserPicture();
 
   user.pictureKey = undefined;
+
+  const profile = extractProfileInfo(user);
+
   res.status(200).json({
     status: "success",
-    data: {user},
+    data: {user: profile},
   });
 });
 
 exports.getUserActivity = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id);
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   const data = {
     status: user.status,
     lastSeen: user.lastSeen,
@@ -155,7 +185,9 @@ exports.updateUserActivity = catchAsync(async (req, res, next) => {
     },
     {new: true, runValidators: true}
   );
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   const data = {
     status: user.status,
     lastSeen: user.lastSeen,

@@ -9,10 +9,12 @@ exports.createStory = catchAsync(async (req, res, next) => {
   const {content} = req.body;
   const mediaKey = req.file ? req.file.key : null;
   if (!content && !mediaKey) {
-    next(new AppError("No content or media provided.", 400));
+    return next(new AppError("No content or media provided.", 400));
   }
   const user = await userService.getUserById(req.user.id);
-
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   const story = await stroyService.create({
     userId: user._id,
     content,
@@ -55,7 +57,7 @@ exports.addStoryOwnerId = catchAsync(async (req, res, next) => {
 
   const story = await stroyService.getStoryById(req.storyId);
   if (!story) {
-    next(new AppError("Story not found", 404));
+    return next(new AppError("Story not found", 404));
   }
   req.storyOwnerId = story.userId;
   next();
@@ -63,6 +65,9 @@ exports.addStoryOwnerId = catchAsync(async (req, res, next) => {
 
 exports.inContacts = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
   const storiesOwnerId = req.params.userId || req.storyOwnerId.toString();
   req.storyOwnerId = storiesOwnerId;
 
@@ -71,7 +76,9 @@ exports.inContacts = catchAsync(async (req, res, next) => {
     !user.contacts.includes(storiesOwnerId) &&
     !(storiesOwnerId === req.user.id)
   ) {
-    next(new AppError("You are not authorized to view this stories", 403));
+    return next(
+      new AppError("You are not authorized to view this stories", 403)
+    );
   }
   next();
 });
@@ -87,7 +94,7 @@ exports.getUserStories = catchAsync(async (req, res, next) => {
 exports.getStory = catchAsync(async (req, res, next) => {
   const story = await stroyService.getStoryById(req.storyId);
   if (!story) {
-    next(new AppError("Story not found", 404));
+    return next(new AppError("Story not found", 404));
   }
   res.json({
     status: "success",
@@ -119,7 +126,7 @@ exports.updateStoryViewers = catchAsync(async (req, res, next) => {
   const {storyId} = req.params;
   const story = await stroyService.updateStoryViewers(storyId, req.user.id);
   if (!story) {
-    next(new AppError("Story not found", 404));
+    return next(new AppError("Story not found", 404));
   }
   res.status(200).json({
     status: "success",

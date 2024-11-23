@@ -192,7 +192,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("User not found", 404);
+    return next();
   }
 
   if (!doc.length) {
@@ -238,7 +238,10 @@ userSchema.pre("findOneAndUpdate", async function (next) {
   if (update.password) {
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
-    update.passwordConfirm = undefined;
+    update.passwordConfirm = await bcrypt.hash(
+      update.passwordConfirm,
+      saltRounds
+    );
     update.passwordModifiedAt = Date.now();
   }
   next();
