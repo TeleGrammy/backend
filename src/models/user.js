@@ -192,7 +192,8 @@ const userSchema = new mongoose.Schema({
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("User not found", 404);
+    next();
+    return;
   }
 
   if (!doc.length) {
