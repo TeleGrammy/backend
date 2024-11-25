@@ -17,6 +17,7 @@ const authenticationRouter = require("./routes/authentication/authentication");
 const userRouter = require("./routes/user/user");
 const userProfileRouter = require("./routes/userProfile/userProfile");
 const storyRouter = require("./routes/userProfile/story");
+const groupRouter = require("./routes/group/groupRoutes");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
@@ -54,6 +55,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authenticationRouter);
 app.use("/api/v1/user/profile", userProfileRouter);
 app.use("/api/v1/user/stories", storyRouter);
+app.use("/api/v1/groups", groupRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
