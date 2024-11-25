@@ -5,12 +5,25 @@
     "plugin:prettier/recommended"
   ],
   "plugins": ["prettier"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
+      }
+    }
+  },
   "rules": {
     "linebreak-style": ["error", "windows"],
     "no-console": "warn",
     "no-unused-vars": ["error", {"argsIgnorePattern": "req|res|next|err"}],
     "no-underscore-dangle": "off",
-    "func-names": "off"
+    "func-names": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ]
   },
   "parserOptions": {
     "ecmaVersion": 2020,
