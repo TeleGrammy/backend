@@ -25,6 +25,14 @@
       }
     ]
   },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js"],
+      "rules": {
+        "node/no-unpublished-require": "off"
+      }
+    }
+  ],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module"
