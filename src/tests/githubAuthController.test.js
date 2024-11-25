@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-expressions */
+/* eslint-disable*/
 
 const {expect} = require("chai");
 const sinon = require("sinon");
