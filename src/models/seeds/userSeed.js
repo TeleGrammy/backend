@@ -1,4 +1,4 @@
-const User = require("./userModel");
+const User = require("../user");
 
 const seedUsers = async () => {
   const users = [
@@ -9,7 +9,7 @@ const seedUsers = async () => {
       phone: "1234567890",
       picture: "http://example.com/picture1.jpg",
       bio: "Hello, I'm User 1!",
-      status: "active"
+      status: "active",
     },
     {
       username: "user2",
@@ -18,7 +18,7 @@ const seedUsers = async () => {
       phone: "0987654321",
       picture: "http://example.com/picture2.jpg",
       bio: "Hi there, I'm User 2!",
-      status: "inactive"
+      status: "inactive",
     },
     {
       username: "user3",
@@ -27,8 +27,8 @@ const seedUsers = async () => {
       phone: "5555555555",
       picture: "http://example.com/picture3.jpg",
       bio: "Greetings, I'm User 3!",
-      status: "banned"
-    }
+      status: "banned",
+    },
   ];
 
   try {

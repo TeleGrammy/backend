@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
+
 const {expect} = require("chai");
 const sinon = require("sinon");
 
@@ -9,7 +12,9 @@ const generateTokenModule = require("../utils/generateToken");
 const addAuthCookieModule = require("../utils/addAuthCookie");
 
 describe("manageSessionForUser Function Test Suites", () => {
-  let req, res, user;
+  let req;
+  let res;
+  let user;
 
   beforeEach(() => {
     req = {

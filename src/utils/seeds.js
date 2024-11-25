@@ -1,4 +1,4 @@
-const userSeed = require("../models/userSeed");
+const userSeed = require("../models/seeds/userSeed");
 
 exports.seeds = () => {
   userSeed();

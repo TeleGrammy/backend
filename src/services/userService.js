@@ -21,7 +21,7 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
     throw new AppError("An UUID is required", 500);
   }
 
-  return await User.findOne({
+  return User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -150,7 +150,7 @@ const getUserByEmail = async (email) => {
  * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
  */
 
-const createUser = async (userData) => {
+const createUser = (userData) => {
   const {
     username,
     email,
@@ -165,7 +165,7 @@ const createUser = async (userData) => {
     isGitHubUser,
   } = userData;
 
-  return await User.create({
+  return User.create({
     username,
     email,
     phone,
@@ -180,11 +180,11 @@ const createUser = async (userData) => {
 };
 
 const findOne = async (filter) => {
-  return await User.findOne(filter);
+  return User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return await User.findOneAndUpdate(filter, updateData, options);
+  return User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
