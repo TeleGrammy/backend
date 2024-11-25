@@ -1,7 +1,8 @@
 const AppError = require("../errors/appError");
+
 const User = require("../models/user");
 
-const AppError = require("../errors/appError");
+const mongoose = require("mongoose");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -217,14 +218,136 @@ const getUserById = async (id, select = "") => {
   return await User.findById(id).select(select);
 };
 
-const changeProfilePictureVisibilityByUserId = async (id, visibilityOption) => {
+const changeProfileVisibilityOptionsByUserId = async (
+  id,
+  visibilityOptions
+) => {
   return await findOneAndUpdate(
     {_id: id},
-    {profilePictureVisibility: visibilityOption},
+    {
+      profilePictureVisibility: visibilityOptions.profilePicture,
+      storiesVisibility: visibilityOptions.stories,
+      lastSeenVisibility: visibilityOptions.lastSeen,
+    },
     {new: true}
   );
 };
 
+/**
+ * Block or Unblock a user
+ * @memberof Service.Users
+ * @method changeBlockingStatus
+ * @async
+ * @param {String} blockerId - The ID of the user performing the action (the blocker).
+ * @param {String} blockedId - The ID of the user being blocked or unblocked.
+ * @param {String} action - The action: either 'block' or 'unblock'.
+ * @returns {null}
+ */
+const changeBlockingStatus = async (blockerId, blockedId, chatId, action) => {
+  if (action !== "block" && action !== "unblock") {
+    throw new Error("Invalid action. Use 'block' or 'unblock'", 400);
+  }
+
+  const blocker = await getUserById(blockerId);
+  if (!blocker) {
+    throw new Error("Blocker user not found", 404);
+  }
+
+  const contactIndex = blocker.contacts.findIndex(
+    (contact) => contact.contactId.toString() === blockedId
+  );
+
+  if (action === "block") {
+    if (contactIndex === -1) {
+      blocker.contacts.push({
+        contactId: blockedId,
+        chatId: chatId,
+        blockDetails: {
+          status: "blocked",
+          date: new Date(),
+        },
+      });
+    } else {
+      blocker.contacts[contactIndex].blockDetails.status = "blocked";
+      blocker.contacts[contactIndex].blockDetails.date = new Date();
+    }
+  } else if (action === "unblock") {
+    if (contactIndex !== -1) {
+      blocker.contacts[contactIndex].blockDetails.status = "not_blocked";
+      blocker.contacts[contactIndex].blockDetails.date = null;
+    } else {
+      throw new Error("This user is not in the blocker's contacts", 400);
+    }
+  }
+
+  await blocker.save();
+
+  return;
+};
+
+const getBlockedUsers = async (userId) => {
+  try {
+    console.log("Starting getBlockedUsers with userId:", userId);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log("User not found");
+      return [];
+    }
+
+    console.log("User's contacts:", user.contacts);
+
+    const result = await User.aggregate([
+      {
+        $match: {_id: new mongoose.Types.ObjectId(userId)},
+      },
+      {
+        $project: {
+          blockedContacts: {
+            $filter: {
+              input: "$contacts",
+              as: "contact",
+              cond: {$eq: ["$$contact.blockDetails.status", "blocked"]},
+            },
+          },
+        },
+      },
+      {
+        $unwind: "$blockedContacts",
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: {contactId: "$blockedContacts.contactId"},
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$contactId"],
+                },
+              },
+            },
+          ],
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$userDetails._id",
+          userName: "$userDetails.username", // Use "username" here
+        },
+      },
+    ]);
+
+    return result;
+  } catch (err) {
+    throw new Error("Failed to get blocked users", 500);
+  }
+};
 
 module.exports = {
   getUserByUUID,
@@ -239,5 +362,7 @@ module.exports = {
   findOneAndUpdate,
   findByIdAndUpdate,
   getUserById,
-  changeProfilePictureVisibilityByUserId,
+  changeProfileVisibilityOptionsByUserId,
+  changeBlockingStatus,
+  getBlockedUsers,
 };

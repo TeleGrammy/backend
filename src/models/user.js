@@ -7,7 +7,47 @@ const {phoneRegex} = require("../utils/regexFormat");
 const AppError = require("../errors/appError");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 
+const contactSchema = new mongoose.Schema({
+  contactId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+    required: true,
+  },
+  blockDetails: {
+    status: {
+      type: String,
+      enum: ["blocked", "not_blocked"],
+      default: "not_blocked",
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+  },
+});
+
 const userSchema = new mongoose.Schema({
+  publicKey: {
+    type: String,
+    unique: true,
+    required: false,
+    validate: {
+      validator: (value) => {
+        try {
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],
@@ -95,9 +135,11 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-  contacts: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
+  contacts: [contactSchema],
+  userChats: {
+    type: Map,
+    of: String,
+    default: new Map(),
   },
   pendingEmail: {
     type: String,
@@ -157,6 +199,18 @@ const userSchema = new mongoose.Schema({
     enum: ["EveryOne", "Contacts", "Nobody"],
     default: "EveryOne",
   },
+
+  storiesVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  lastSeenVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {
@@ -211,7 +265,7 @@ userSchema.pre(/Delete$/, async function (next) {
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("User not found", 404);
+    return next();
   }
 
   if (!doc.length) {
@@ -257,7 +311,10 @@ userSchema.pre("findOneAndUpdate", async function (next) {
   if (update.password) {
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
-    update.passwordConfirm = undefined;
+    update.passwordConfirm = await bcrypt.hash(
+      update.passwordConfirm,
+      saltRounds
+    );
     update.passwordModifiedAt = Date.now();
   }
   next();

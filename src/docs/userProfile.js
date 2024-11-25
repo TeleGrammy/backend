@@ -15,16 +15,16 @@
  *             properties:
  *               profilePicture:
  *                 type: string
- *                 enum: [Everyone, Contacts, Nobody]
+ *                 enum: [EveryOne, Contacts, Nobody]
  *               stories:
  *                 type: string
- *                 enum: [Everyone, Contacts, Nobody]
+ *                 enum: [Contacts, EveryOne, Nobody]
  *               lastSeen:
  *                 type: string
- *                 enum: [Everyone, Contacts, Nobody]
+ *                 enum: [Nobody, Contacts, EveryOne]
  *     responses:
- *       '200':
- *         description: Profile visibility settings updated successfully.
+ *       '201':
+ *         description: Profile visibility settings are updated successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -36,21 +36,26 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     profilePicture:
+ *                     profilePictureVisibility:
  *                       type: string
- *                     stories:
+ *                     storiesVisibility:
  *                       type: string
- *                     lastSeen:
+ *                     lastSeenVisibility:
  *                       type: string
+ *                 message:
+ *                   type: string
+ *                   example: Profile picture visibility option has been set
  *       '400':
- *         description: Invalid request data.
+ *         description: One of The passed visibility options is not a valid, please check them
+ *       '500':
+ *         description: An error has occurred while updating the profile picture's privacy settings
  * */
 /**
  * @swagger
- * /privacy/settings/blocked-users:
- *   post:
- *     summary: Block a user
- *     description: Block a specific user by ID.
+ * /privacy/settings/blocking-status/:action:
+ *   patch:
+ *     summary: Block or unblock a user
+ *     description: Block or unblock a specific user by his/her ID, and the action should be 'block' or 'unblock'
  *     tags:
  *       - Privacy Settings
  *     requestBody:
@@ -62,36 +67,11 @@
  *             properties:
  *               userId:
  *                 type: string
- *     responses:
- *       '200':
- *         description: User blocked successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *       '404':
- *         description: User not found.
- *   delete:
- *     summary: Unblock a user
- *     description: Unblock a specific user by ID.
- *     tags:
- *       - Privacy Settings
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
+ *               chatId:
  *                 type: string
  *     responses:
  *       '200':
- *         description: User unblocked successfully.
+ *         description: User blocked/unblocked successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -101,10 +81,16 @@
  *                   type: string
  *                   example: success
  *       '404':
- *         description: User not found.
+ *         description: (Blocker user not found) OR (This user is not in the blocker's contacts).
+ *       '500':
+ *         description: Invalid action. Use 'block' or 'unblock'.
+ * */
+/**
+ * @swagger
+ * /privacy/settings/get-blocked-users:
  *   get:
  *     summary: Get blocked users
- *     description: Retrieve a list of all blocked users.
+ *     description: Retrieve a list of all blocked users for the authenticated user.
  *     tags:
  *       - Privacy Settings
  *     responses:
@@ -119,15 +105,32 @@
  *                   type: string
  *                   example: success
  *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       userId:
- *                         type: string
- *                       username:
- *                         type: string
- *
+ *                   type: object
+ *                   properties:
+ *                     blockedUsers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           userId:
+ *                             type: string
+ *                             example: "671d44667e9678b9429b2ee0"
+ *                           username:
+ *                             type: string
+ *                             example: "john_doe"
+ *       '500':
+ *         description: Failed to get blocked users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get blocked users"
  */
 /**
  * @swagger
