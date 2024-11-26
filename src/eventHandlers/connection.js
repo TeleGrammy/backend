@@ -6,6 +6,8 @@ const {
   updateMessage,
   deleteMessage,
   forwardMessage,
+  updateDraftOfUserInChat,
+  pinMessage
   sendVoiceNote,
 } = require("./chat/message");
 const {ackEvent, sendMissedEvents} = require("./event");
@@ -13,12 +15,7 @@ const {updateTypingStatus} = require("./chat/typing");
 
 const {uploadVoiceNote} = require("../middlewares/AWS");
 
-exports.onConnection = async (socket, io) => {
-  console.log("User connected:", socket.id);
-
-  socket.userId = socket.user.id;
-  console.log("User id connected:", socket.userId);
-
+const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
   socket.join(`${socket.userId}`);
   // TODO : user should also handle the offset of the events sent for him only
@@ -27,6 +24,13 @@ exports.onConnection = async (socket, io) => {
   await Promise.all(
     user.contacts.map(async (contact) => {
       socket.join(`chat:${contact.chatId}`);
+      const draft = user.userDrafts.get(contact.chatId);
+      if (draft) {
+        io.to(`${socket.userId}`).emit("draft", {
+          chatId: contact.chatId,
+          draft,
+        });
+      }
       const offset = user.userChats.get(contact.chatId);
 
       await sendMissedEvents({
@@ -37,11 +41,23 @@ exports.onConnection = async (socket, io) => {
       });
     })
   );
+};
+
+exports.onConnection = async (socket, io) => {
+  console.log("User connected:", socket.id);
+
+  socket.userId = socket.user.id;
+  console.log("User id connected:", socket.userId);
+
+  await joinChatsOfUsers(io, socket);
 
   socket.on("message:send", sendMessage({io, socket}));
   socket.on("message:update", updateMessage({io, socket}));
   socket.on("message:delete", deleteMessage({io, socket}));
   socket.on("message:seen", updateMessageViewres({io, socket}));
+  socket.on("message:pin", pinMessage({io, socket}));
+
+  socket.on("draft", updateDraftOfUserInChat({io, socket}));
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
 

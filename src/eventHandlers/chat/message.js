@@ -1,8 +1,9 @@
 const messageService = require("../../services/messageService");
-
+const userService = require("../../services/userService");
 const {uploadVoiceNote} = require("../../middlewares/AWS");
 
 const {logThenEmit, createMessageData} = require("../utils/utilsFunc");
+const {Socket} = require("socket.io");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
@@ -117,6 +118,21 @@ module.exports.deleteMessage = function ({io, socket}) {
   };
 };
 
+module.exports.updateDraftOfUserInChat = function ({io, socket}) {
+  return async (payload) => {
+    try {
+      await userService.updateDraftOfUserInChat(
+        payload.chatId,
+        socket.userId,
+        payload.draft
+      );
+
+      io.to(`${socket.userId}`).emit("draft", payload);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
 module.exports.sendVoiceNote = function ({io, socket}) {
   console.log("Testing Send voice");
   return async (payload) => {

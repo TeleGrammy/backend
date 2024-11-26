@@ -2,6 +2,7 @@ const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
 const filterObject = require("../utils/utilitiesFunc");
+const User = require("../models/user");
 /**
  * Creates a new message.
  * @memberof Service.Message

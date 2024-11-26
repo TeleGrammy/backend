@@ -198,6 +198,17 @@ const ackEvent = async (id, chatId, offset) => {
 
   return user;
 };
+
+const updateDraftOfUserInChat = async (chatId, userId, draft) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  user.userDrafts.set(`${chatId}`, draft);
+  await user.save();
+  return user;
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -212,4 +223,5 @@ module.exports = {
   findByIdAndUpdate,
   getUserById,
   ackEvent,
+  updateDraftOfUserInChat,
 };

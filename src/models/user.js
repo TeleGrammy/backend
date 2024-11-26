@@ -130,6 +130,11 @@ const userSchema = new mongoose.Schema({
     of: String,
     default: new Map(),
   },
+  userDrafts: {
+    type: Map,
+    of: String,
+    default: new Map(),
+  },
   pendingEmail: {
     type: String,
     validate: [validator.isEmail, "Please provide a valid new email address"],
