@@ -290,9 +290,9 @@
  *           schema:
  *             type: object
  *             properties:
- *               addToGroups:
+ *               newPolicy:
  *                 type: string
- *                 enum: [Everyone, Admins]
+ *                 enum: [EveryOne, Admins]
  *     responses:
  *       '200':
  *         description: Group add permissions updated successfully.
@@ -307,10 +307,21 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     addToGroups:
+ *                     newPolicy:
  *                       type: string
  *       '400':
- *         description: Invalid request data.
+ *         description: Invalid action. The value of policy isn't valid, please check them
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: Invalid action. The value of policy isn't valid, please check them
  */
 /**
  * @swagger
