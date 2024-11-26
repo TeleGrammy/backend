@@ -23,7 +23,6 @@ class SnowflakeID {
   }
 
   nextId() {
-    console.log("here is next Id ");
     let timestamp = this.currentTimestamp();
 
     if (timestamp < this.lastTimestamp) {
@@ -33,7 +32,6 @@ class SnowflakeID {
           " milliseconds"
       );
     }
-    console.log(timestamp, this.lastTimestamp);
     if (timestamp === this.lastTimestamp) {
       this.sequence = (this.sequence + BigInt(1)) & BigInt(0xfff); // 4095 mask
 

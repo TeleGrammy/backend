@@ -1,5 +1,6 @@
 const messageService = require("../../services/messageService");
 const userService = require("../../services/userService");
+const chatService = require("../../services/chatService");
 const {uploadVoiceNote} = require("../../middlewares/AWS");
 
 const {logThenEmit, createMessageData} = require("../utils/utilsFunc");
@@ -128,6 +129,38 @@ module.exports.updateDraftOfUserInChat = function ({io, socket}) {
       );
 
       io.to(`${socket.userId}`).emit("draft", payload);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
+module.exports.pinMessage = function ({io, socket}) {
+  return async (payload) => {
+    try {
+      await chatService.pinMessage(payload.chatId, payload.messageId);
+      logThenEmit(
+        socket.userId,
+        "message:pin",
+        {...payload, userId: socket.userId},
+        socket.broadcast.to(`chat:${payload.chatId}`)
+      );
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
+module.exports.unpinMessage = function ({io, socket}) {
+  return async (payload) => {
+    try {
+      await chatService.unpinMessage(payload.chatId, payload.messageId);
+      logThenEmit(
+        socket.userId,
+        "message:unpin",
+        {...payload, userId: socket.userId},
+        socket.broadcast.to(`chat:${payload.chatId}`)
+      );
     } catch (err) {
       socket.emit("error", {message: err.message});
     }

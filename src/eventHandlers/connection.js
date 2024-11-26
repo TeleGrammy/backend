@@ -7,7 +7,8 @@ const {
   deleteMessage,
   forwardMessage,
   updateDraftOfUserInChat,
-  pinMessage
+  pinMessage,
+  unpinMessage,
   sendVoiceNote,
 } = require("./chat/message");
 const {ackEvent, sendMissedEvents} = require("./event");
@@ -56,6 +57,7 @@ exports.onConnection = async (socket, io) => {
   socket.on("message:delete", deleteMessage({io, socket}));
   socket.on("message:seen", updateMessageViewres({io, socket}));
   socket.on("message:pin", pinMessage({io, socket}));
+  socket.on("message:unpin", unpinMessage({io, socket}));
 
   socket.on("draft", updateDraftOfUserInChat({io, socket}));
   socket.on("event:ack", ackEvent({io, socket}));

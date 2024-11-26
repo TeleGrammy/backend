@@ -1,7 +1,7 @@
 // chatService.js
 const mongoose = require("mongoose");
 const Chat = require("../models/chat");
-
+const Message = require("../models/message");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -187,6 +187,12 @@ const restoreChat = async (chatId) => {
  */
 const pinMessage = async (chatId, messageId) => {
   try {
+    const message = await Message.findById(messageId);
+
+    if (!message) throw new Error("Message not found");
+    if (message.chatId != chatId) {
+      throw new Error("Message is not part of the provided chat");
+    }
     const chat = await Chat.findByIdAndUpdate(
       chatId,
       {$addToSet: {pinnedMessages: messageId}},
