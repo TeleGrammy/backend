@@ -211,6 +211,11 @@ const userSchema = new mongoose.Schema({
     enum: ["EveryOne", "Contacts", "Nobody"],
     default: "EveryOne",
   },
+
+  readReceipts: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {

@@ -244,13 +244,9 @@ const changeProfileVisibilityOptionsByUserId = async (
  * @returns {null}
  */
 const changeBlockingStatus = async (blockerId, blockedId, chatId, action) => {
-  if (action !== "block" && action !== "unblock") {
-    throw new Error("Invalid action. Use 'block' or 'unblock'", 400);
-  }
-
   const blocker = await getUserById(blockerId);
   if (!blocker) {
-    throw new Error("Blocker user not found", 404);
+    throw new AppError("Blocker user not found while searching", 404);
   }
 
   const contactIndex = blocker.contacts.findIndex(
@@ -276,26 +272,22 @@ const changeBlockingStatus = async (blockerId, blockedId, chatId, action) => {
       blocker.contacts[contactIndex].blockDetails.status = "not_blocked";
       blocker.contacts[contactIndex].blockDetails.date = null;
     } else {
-      throw new Error("This user is not in the blocker's contacts", 400);
+      throw new AppError(
+        "This user needed to block is not in the blocker's contacts",
+        400
+      );
     }
   }
 
-  await blocker.save();
-
-  return;
+  return await blocker.save();
 };
 
 const getBlockedUsers = async (userId) => {
   try {
-    console.log("Starting getBlockedUsers with userId:", userId);
-
-    const user = await User.findById(userId);
+    const user = await getUserById(userId);
     if (!user) {
-      console.log("User not found");
-      return [];
+      throw new AppError("User is not found while searching", 404);
     }
-
-    console.log("User's contacts:", user.contacts);
 
     const result = await User.aggregate([
       {
@@ -338,15 +330,27 @@ const getBlockedUsers = async (userId) => {
         $project: {
           _id: 0,
           userId: "$userDetails._id",
-          userName: "$userDetails.username", // Use "username" here
+          userName: "$userDetails.username",
         },
       },
     ]);
 
     return result;
   } catch (err) {
-    throw new Error("Failed to get blocked users", 500);
+    throw new AppError("Failed to get blocked users", 500);
   }
+};
+
+const setReadReceiptsStatus = async (userId, status) => {
+  const user = await getUserByID(userId);
+
+  if (!user) {
+    throw new AppError("User is not found while searching", 404);
+  }
+
+  user.readReceipts = status;
+
+  return await user.save();
 };
 
 module.exports = {
@@ -365,4 +369,5 @@ module.exports = {
   changeProfileVisibilityOptionsByUserId,
   changeBlockingStatus,
   getBlockedUsers,
+  setReadReceiptsStatus,
 };

@@ -14,6 +14,12 @@ router.patch(
 );
 
 router.patch(
+  "/read-receipts",
+  isAuth,
+  userPrivacyController.changeReadReceiptsStatus
+);
+
+router.patch(
   "/profile-visibility",
   isAuth,
   userPrivacyController.changeProfileVisibility
