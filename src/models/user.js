@@ -211,11 +211,16 @@ const userSchema = new mongoose.Schema({
     enum: ["EveryOne", "Contacts", "Nobody"],
     default: "EveryOne",
   },
+
+  readReceipts: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("User not found", 404);
+    return next();
   }
 
   if (!doc.length) {
