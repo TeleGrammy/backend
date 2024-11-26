@@ -1,5 +1,9 @@
 class SnowflakeID {
   constructor(workerId) {
+    if (workerId < 0 || workerId > 31) {
+      // Ensure workerId fits in 5 bits (0-31)
+      throw new Error("Worker ID must be between 0 and 31");
+    }
     this.workerId = BigInt(workerId);
     this.sequence = BigInt(0);
     this.lastTimestamp = BigInt(-1);
@@ -10,28 +14,40 @@ class SnowflakeID {
     return BigInt(Date.now());
   }
 
+  waitNextMillis(lastTimestamp) {
+    let timestamp = this.currentTimestamp();
+    while (timestamp <= lastTimestamp) {
+      timestamp = this.currentTimestamp();
+    }
+    return timestamp;
+  }
+
   nextId() {
+    console.log("here is next Id ");
     let timestamp = this.currentTimestamp();
 
-    // If we're in the same millisecond, increment the sequence
+    if (timestamp < this.lastTimestamp) {
+      throw new Error(
+        "Clock moved backwards. Refusing to generate id for " +
+          (this.lastTimestamp - timestamp) +
+          " milliseconds"
+      );
+    }
+    console.log(timestamp, this.lastTimestamp);
     if (timestamp === this.lastTimestamp) {
       this.sequence = (this.sequence + BigInt(1)) & BigInt(0xfff); // 4095 mask
 
-      // If the sequence overflows, wait for the next millisecond
       if (this.sequence === BigInt(0)) {
-        while (timestamp <= this.lastTimestamp) {
-          timestamp = this.currentTimestamp();
-        }
+        timestamp = this.waitNextMillis(this.lastTimestamp);
       }
     } else {
-      // New millisecond, reset sequence
       this.sequence = BigInt(0);
     }
 
     this.lastTimestamp = timestamp;
 
     const id =
-      ((timestamp - this.epoch) << BigInt(17)) | // Timestamp (35 bits)
+      ((timestamp - this.epoch) << BigInt(22)) | // Timestamp (41 bits)
       (this.workerId << BigInt(12)) | // Worker ID (5 bits)
       this.sequence; // Sequence (12 bits)
     return id;

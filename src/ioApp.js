@@ -5,9 +5,8 @@ const {onConnection} = require("./eventHandlers/connection");
 
 const AppError = require("./errors/appError");
 
-
 const createIoApp = (httpServer) => {
-  console.log("Setup Socket.IO")
+  console.log("Setup Socket.IO");
   const io = new Server(httpServer, {
     cors: {
       origin: "*", // Allow any origin for testing. Restrict this in production.

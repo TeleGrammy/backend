@@ -1,6 +1,8 @@
 const Event = require("../models/event");
+const getNextId = require("../utils/snowFlakeID");
 
 module.exports.create = async (eventData) => {
+  eventData.index = getNextId();
   const event = await Event.create(eventData);
   return event;
 };

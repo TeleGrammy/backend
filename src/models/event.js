@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const AppError = require("../errors/appError");
-const getNextId = require("../utils/snowFlakeID");
 
 const eventSchema = new mongoose.Schema({
   name: {
@@ -16,7 +15,6 @@ const eventSchema = new mongoose.Schema({
     type: "String",
     required: true,
     unique: true,
-    default: getNextId(),
   },
   payload: {
     type: Object,
