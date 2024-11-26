@@ -1,10 +1,10 @@
 const userService = require("../../services/userService");
 
 const Email = require("../../utils/mailingServcies");
+const catchAsync = require("../../utils/catchAsync");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
 const {filterObject, extractProfileInfo} = require("../../utils/utilitiesFunc");
 const AppError = require("../../errors/appError");
-const catchAsync = require("../../utils/catchAsync");
 
 exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const {email} = req.body;

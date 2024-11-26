@@ -87,6 +87,7 @@
  *      description: Resend the verification link to the user's email.
  *      tags:
  *        - User Registration
+ *        - User Registration
  *      requestBody:
  *        required: true
  *        content:
@@ -162,6 +163,69 @@
  *      responses:
  *        '200':
  *          description: User logged out from all devices successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      user:
+ *                        $ref: '#/components/schemas/user'
+ *                      accessToken:
+ *                        type: string
+ *                    required:
+ *                      - user
+ *                  message:
+ *                    type: string
+ *        '400':
+ *          description: Bad request.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '401':
+ *          description: The user is not authorized
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '404':
+ *          description: Not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '500':
+ *          description: Internal Error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  error:
+ *                    type: string
  */
 
 /**
@@ -226,8 +290,54 @@
  *      responses:
  *        '200':
  *          description: Password reset link sent successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  data:
+ *                    type: object
+ *                  message:
+ *                    type: string
+ *                example:
+ *                  status: success
+ *                  data: {}
+ *                  message: Sent Email successfully. (Valid for 20 minutes)
  *        '400':
  *          description: Bad request.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '404':
+ *          description: Not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '500':
+ *          description: Internal Error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  error:
+ *                    type: string
  */
 
 /**
@@ -251,8 +361,54 @@
  *      responses:
  *        '200':
  *          description: Reset token resent successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  data:
+ *                    type: object
+ *                  message:
+ *                    type: string
+ *                example:
+ *                  status: success
+ *                  data: {}
+ *                  message: Resend Email successfully. (Valid for 20 minutes)
  *        '400':
  *          description: Bad request.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '404':
+ *          description: Not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '500':
+ *          description: Internal Error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  error:
+ *                    type: string
  */
 
 /**
@@ -286,6 +442,80 @@
  *      responses:
  *        '200':
  *          description: Password reset successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      user:
+ *                        $ref: '#/components/schemas/user'
+ *                  message:
+ *                    type: string
  *        '400':
  *          description: Bad request.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '404':
+ *          description: Not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *        '500':
+ *          description: Internal Error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  error:
+ *                    type: string
+ */
+
+/**
+ * @swagger
+ *components:
+ *  schemas:
+ *    user:
+ *      type: object
+ *      properties:
+ *        _id:
+ *          type: string
+ *          description: The id of user
+ *        username:
+ *          type: string
+ *          description: The username used in the app
+ *        email:
+ *          type: string
+ *          format: email
+ *        phone:
+ *          type: string
+ *        picture:
+ *          type: string
+ *          format: url
+ *        status:
+ *          type: string
+ *        accessToken:
+ *          type: string
+ *        refreshToken:
+ *          type: string
  */

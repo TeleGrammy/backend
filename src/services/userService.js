@@ -1,4 +1,8 @@
+const AppError = require("../errors/appError");
+
 const User = require("../models/user");
+
+const mongoose = require("mongoose");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -15,7 +19,11 @@ const User = require("../models/user");
  * @returns {Promise<User|null>}          A promise that resolves to the user object if found, otherwise returns null.
  */
 const getUserByUUID = async (UUID, selectionFilter = {}) => {
-  return User.findOne({
+  if (!UUID) {
+    throw new AppError("An UUID is required", 500);
+  }
+
+  return await User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -51,6 +59,10 @@ const getUserByContactInfo = async (
  * @returns {Promise<User|null>} A promise that resolves to basic user information if found, otherwise returns null.
  */
 const getUserBasicInfoByUUID = async (UUID) => {
+  if (!UUID) {
+    throw new AppError("An UUID is required", 500);
+  }
+
   const userBasicInfo = {
     _id: 1,
     username: 1,
@@ -58,8 +70,10 @@ const getUserBasicInfoByUUID = async (UUID) => {
     phone: 1,
     sessions: 1,
     status: 1,
+    password: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
+    profilePictureVisibility: 1,
   };
 
   return getUserByUUID(UUID, userBasicInfo);
@@ -75,9 +89,16 @@ const getUserBasicInfoByUUID = async (UUID) => {
  */
 
 const getUserPasswordById = async (id) => {
-  const user = await User.findById(id).select("password");
+  if (!id) {
+    throw new AppError("User Id is required", 500);
+  }
 
-  return user ? user.password : null;
+  try {
+    const user = await User.findById(id).select("password");
+    return user ? user.password : null;
+  } catch (error) {
+    throw new AppError("Could not retrieve the user's password", 404);
+  }
 };
 
 /**
@@ -90,9 +111,16 @@ const getUserPasswordById = async (id) => {
  */
 
 const getUserId = async (UUID) => {
-  const user = await getUserByUUID(UUID);
+  if (!UUID) {
+    throw new AppError("A UUID is required", 500);
+  }
 
-  return user ? user.id : null;
+  try {
+    const user = await getUserByUUID(UUID);
+    return user ? user.id : null;
+  } catch (error) {
+    throw new AppError("Could not retrieve the user's Id", 404);
+  }
 };
 
 /**
@@ -105,7 +133,15 @@ const getUserId = async (UUID) => {
  */
 
 const getUserByEmail = async (email) => {
-  return User.findOne({email});
+  if (!email) {
+    throw new AppError("An email is required", 500);
+  }
+
+  try {
+    return await User.findOne({email});
+  } catch (error) {
+    throw new AppError("Could not retrieve the user's information", 404);
+  }
 };
 
 /**
@@ -130,10 +166,9 @@ const createUser = async (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
-    isFaceBookUser,
   } = userData;
 
-  return User.create({
+  return await User.create({
     username,
     email,
     phone,
@@ -144,7 +179,6 @@ const createUser = async (userData) => {
     refreshToken,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
-    ...(isFaceBookUser ? {faceBookId: id} : {}),
   });
 };
 
@@ -159,27 +193,162 @@ const createUser = async (userData) => {
  */
 
 const updateRefreshToken = async (id, newRefreshToken) => {
-  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
+  return await User.update(
+    {jwtRefreshToken: newRefreshToken},
+    {where: {_id: id}}
+  );
 };
 
 const findOne = async (filter) => {
-  return User.findOne(filter);
+  return await User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return User.findOneAndUpdate(filter, updateData, options);
+  return await User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
-  return User.findById(ID);
+  return await User.findById(ID);
 };
 
 const findByIdAndUpdate = async (id, updateData, options) => {
-  return User.findByIdAndUpdate(id, updateData, options);
+  return await User.findByIdAndUpdate(id, updateData, options);
 };
 const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+  return await User.findById(id).select(select);
 };
+
+const changeProfileVisibilityOptionsByUserId = async (
+  id,
+  visibilityOptions
+) => {
+  return await findOneAndUpdate(
+    {_id: id},
+    {
+      profilePictureVisibility: visibilityOptions.profilePicture,
+      storiesVisibility: visibilityOptions.stories,
+      lastSeenVisibility: visibilityOptions.lastSeen,
+    },
+    {new: true}
+  );
+};
+
+/**
+ * Block or Unblock a user
+ * @memberof Service.Users
+ * @method changeBlockingStatus
+ * @async
+ * @param {String} blockerId - The ID of the user performing the action (the blocker).
+ * @param {String} blockedId - The ID of the user being blocked or unblocked.
+ * @param {String} action - The action: either 'block' or 'unblock'.
+ * @returns {null}
+ */
+const changeBlockingStatus = async (blockerId, blockedId, chatId, action) => {
+  if (action !== "block" && action !== "unblock") {
+    throw new Error("Invalid action. Use 'block' or 'unblock'", 400);
+  }
+
+  const blocker = await getUserById(blockerId);
+  if (!blocker) {
+    throw new Error("Blocker user not found", 404);
+  }
+
+  const contactIndex = blocker.contacts.findIndex(
+    (contact) => contact.contactId.toString() === blockedId
+  );
+
+  if (action === "block") {
+    if (contactIndex === -1) {
+      blocker.contacts.push({
+        contactId: blockedId,
+        chatId: chatId,
+        blockDetails: {
+          status: "blocked",
+          date: new Date(),
+        },
+      });
+    } else {
+      blocker.contacts[contactIndex].blockDetails.status = "blocked";
+      blocker.contacts[contactIndex].blockDetails.date = new Date();
+    }
+  } else if (action === "unblock") {
+    if (contactIndex !== -1) {
+      blocker.contacts[contactIndex].blockDetails.status = "not_blocked";
+      blocker.contacts[contactIndex].blockDetails.date = null;
+    } else {
+      throw new Error("This user is not in the blocker's contacts", 400);
+    }
+  }
+
+  await blocker.save();
+
+  return;
+};
+
+const getBlockedUsers = async (userId) => {
+  try {
+    console.log("Starting getBlockedUsers with userId:", userId);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log("User not found");
+      return [];
+    }
+
+    console.log("User's contacts:", user.contacts);
+
+    const result = await User.aggregate([
+      {
+        $match: {_id: new mongoose.Types.ObjectId(userId)},
+      },
+      {
+        $project: {
+          blockedContacts: {
+            $filter: {
+              input: "$contacts",
+              as: "contact",
+              cond: {$eq: ["$$contact.blockDetails.status", "blocked"]},
+            },
+          },
+        },
+      },
+      {
+        $unwind: "$blockedContacts",
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: {contactId: "$blockedContacts.contactId"},
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$contactId"],
+                },
+              },
+            },
+          ],
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$userDetails._id",
+          userName: "$userDetails.username", // Use "username" here
+        },
+      },
+    ]);
+
+    return result;
+  } catch (err) {
+    throw new Error("Failed to get blocked users", 500);
+  }
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -193,4 +362,7 @@ module.exports = {
   findOneAndUpdate,
   findByIdAndUpdate,
   getUserById,
+  changeProfileVisibilityOptionsByUserId,
+  changeBlockingStatus,
+  getBlockedUsers,
 };
