@@ -34,6 +34,7 @@ module.exports.sendMessage = function ({io, socket}) {
         io.to(`${userId}`).emit("message:mention", message);
       });
 
+      // call the cb to acknowledge the message is sent to other users
       callback({
         status: "ok",
         data: {
@@ -41,8 +42,17 @@ module.exports.sendMessage = function ({io, socket}) {
         },
       });
 
-      // Update the message status to "sent" after acknowledgment
       await messageService.updateMessageStatus(message.id, "sent");
+
+      logThenEmit(
+        socket.userId,
+        "message:sent",
+        {
+          message,
+          chatId: message.senderId,
+        },
+        io.to(`${message.senderId}`)
+      );
     } catch (err) {
       socket.emit("error", {message: err.message});
     }
@@ -52,7 +62,7 @@ module.exports.sendMessage = function ({io, socket}) {
 module.exports.updateMessageViewres = function ({io, socket}) {
   return async (payload) => {
     try {
-      await messageService.updateChatViewers(
+      const message = await messageService.updateChatViewers(
         payload.chatId,
         payload.messageId,
         socket.userId
@@ -61,8 +71,8 @@ module.exports.updateMessageViewres = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:seen",
-        {...payload, viewerId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        {chatId: `${message.senderId._id}`, message},
+        io.to(`${message.senderId._id}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});

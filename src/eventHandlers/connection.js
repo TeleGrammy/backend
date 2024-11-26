@@ -21,6 +21,7 @@ exports.onConnection = async (socket, io) => {
 
   // user join it is own room
   socket.join(`${socket.userId}`);
+  // TODO : user should also handle the offset of the events sent for him only
 
   const user = await userService.getUserByID(socket.userId);
   await Promise.all(

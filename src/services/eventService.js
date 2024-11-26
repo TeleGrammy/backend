@@ -15,3 +15,11 @@ module.exports.getEvents = async (chatId, offset) => {
 
   return events;
 };
+
+module.exports.getEventsByIndex = async (chatId, offset) => {
+  const event = await Event.findOne({
+    chatId,
+    index: {$eq: offset},
+  });
+  return event;
+};

@@ -63,10 +63,15 @@ const messageSchema = new mongoose.Schema({
     ref: "User",
     default: [],
   },
+  recievers: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "User",
+    default: [],
+  },
   status: {
     type: String,
     enum: {
-      values: ["sending", "delivered", "seen", "failed"],
+      values: ["sending", "sent", "delivered", "seen", "failed"],
       message: "Status is not valid",
     },
     default: "sending",
@@ -98,6 +103,19 @@ messageSchema.methods.updateMessageViewer = async function (
   await this.save();
 };
 
+messageSchema.methods.updateMessageRecivers = async function (
+  recieverId,
+  numberOfMembersInChat
+) {
+  if (!this.recievers.includes(recieverId)) {
+    this.recievers.push(recieverId);
+  }
+  if (this.recievers.length >= numberOfMembersInChat - 1) {
+    this.status = "delivered";
+  }
+
+  await this.save();
+};
 messageSchema.pre("save", function (next) {
   if (this.messageType === "text" && !this.content) {
     return next(new Error("Text message must have text content."));

@@ -1,5 +1,7 @@
 const userService = require("../services/userService");
 const eventService = require("../services/eventService");
+const messageService = require("../services/messageService");
+const {logThenEmit} = require("./utils/utilsFunc");
 
 module.exports.ackEvent = function ({io, socket}) {
   return async (payload) => {
@@ -9,6 +11,27 @@ module.exports.ackEvent = function ({io, socket}) {
         payload.chatId,
         payload.eventIndex
       );
+      const event = await eventService.getEventsByIndex(
+        payload.chatId,
+        payload.eventIndex
+      );
+      if (event && event.name === "message:sent") {
+        const message = await messageService.updateMessageRecivers(
+          event.payload.chatId,
+          event.payload._id,
+          socket.userId
+        );
+        console.log(message);
+        logThenEmit(
+          socket.userId,
+          "message:delivered",
+          {
+            chatId: socket.userId,
+            message,
+          },
+          io.to(`${event.payload.senderId}`)
+        );
+      }
     } catch (err) {
       console.log(err);
       socket.emit("error", {message: err.message});

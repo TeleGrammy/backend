@@ -89,6 +89,38 @@ module.exports.updateChatViewers = async (chatId, messageId, viewerId) => {
       await mes.updateMessageViewer(viewerId, numberOfMembers);
     })
   );
+  return message;
+};
+module.exports.updateMessageRecivers = async (
+  chatId,
+  messageId,
+  recieverId
+) => {
+  const message = await this.getMessageById(messageId);
+  const lastMessageTimeStamp = message.timestamp;
+
+  // Find all messages in the chat up to the last message timestamp
+  const messages = await Message.find({
+    chatId,
+    timestamp: {
+      $lte: lastMessageTimeStamp,
+    },
+  });
+
+  // Retrieve the chat to get the number of participants
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+  const numberOfMembers = chat.participants.length;
+
+  // Update each message with the viewer information
+  await Promise.all(
+    messages.map(async (mes) => {
+      await mes.updateMessageRecivers(recieverId, numberOfMembers);
+    })
+  );
+  return message;
 };
 
 module.exports.updateMessage = async (payload) => {
