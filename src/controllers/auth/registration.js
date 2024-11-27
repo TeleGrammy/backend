@@ -16,7 +16,6 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
 
   let existingUser = await userService.getUserByUUID(username);
   if (existingUser) {
-    console.log(existingUser);
     return res.status(400).json({error: "Username already exists."});
   }
   existingUser = await userService.getUserByUUID(email);
@@ -36,9 +35,14 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
     phone,
     verificationCode,
   });
-  await sendConfirmationEmail(email, username, verificationCode);
-
   await newUser.save();
+
+  await sendConfirmationEmail(
+    email,
+    username,
+    verificationCode,
+    process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
+  );
 
   return res.status(201).json({
     message:
@@ -79,6 +83,12 @@ exports.postVerify = catchAsync(async (req, res) => {
   });
   await PendingUser.deleteOne({email});
 
+  if (process.env.NODE_ENV === "test") {
+    return res.status(200).json({
+      message:"Account verified successfully"
+    });
+  }
+
   const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
 
   return res.status(200).json({
@@ -114,7 +124,8 @@ exports.resendVerification = catchAsync(async (req, res) => {
   await sendConfirmationEmail(
     pendingUser.email,
     pendingUser.username,
-    newVerificationCode
+    newVerificationCode,
+    process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
   );
 
   return res

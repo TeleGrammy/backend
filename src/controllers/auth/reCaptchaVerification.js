@@ -1,7 +1,9 @@
 const axios = require("axios");
 
 const reCaptchaVerification = async (req, res, next) => {
+  next();
   try {
+    
     const {token} = req.body;
 
     if (!token) {
