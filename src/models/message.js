@@ -168,6 +168,17 @@ messageSchema.post(/^find/, (doc, next) => {
 
   next();
 });
+
+messageSchema.post("remove", function (doc) {
+  // TODO: put proper socket path and test this socket
+  // const io = require("SOCKET PATH");
+  // io.of("/messages").to(doc.chatId.toString()).emit("messageDeleted", {
+  //   messageId: doc._id,
+  //   chatId: doc.chatId,
+  // });
+  // console.log(`Notification sent for deleted message: ${doc._id}`);
+});
+
 messageSchema.index({chatId: 1, timestamp: -1});
 
 messageSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
