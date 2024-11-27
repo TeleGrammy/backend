@@ -78,7 +78,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [true, "Password Confirm is required"],
+    // required: [true, "Password Confirm is required"],
     validate: {
       validator(el) {
         return el === this.password;
@@ -360,11 +360,12 @@ userSchema.methods.unSetNewEmailInfo = async function () {
 };
 
 userSchema.methods.updateUserEmail = async function () {
-  if (!this.pendingEmail)
+  if (!this.pendingEmail) {
     throw new AppError(
       "Please make sure that you have provided a valid new email",
       404
     );
+  }
   this.email = this.pendingEmail;
   await this.unSetNewEmailInfo();
 };
