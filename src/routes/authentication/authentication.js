@@ -55,6 +55,7 @@ router
 
 router.post(
   "/register",
+  captchaController,
   registrationController.postRegistration
 );
 

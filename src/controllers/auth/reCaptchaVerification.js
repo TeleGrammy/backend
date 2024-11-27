@@ -1,10 +1,11 @@
 const axios = require("axios");
 
 const reCaptchaVerification = async (req, res, next) => {
-  next();
   try {
-    
-    const {token} = req.body;
+    if (process.env.NODE_ENV === "test") {
+      return next();
+    }
+      const {token} = req.body;
 
     if (!token) {
       return res
