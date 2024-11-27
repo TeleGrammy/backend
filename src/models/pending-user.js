@@ -3,7 +3,7 @@ const validator = require("validator");
 
 const {phoneRegex} = require("../utils/regexFormat");
 
-const pendignUserSchema = new mongoose.Schema({
+const pendingUserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],
@@ -71,6 +71,6 @@ const pendignUserSchema = new mongoose.Schema({
   },
 });
 
-const PendingUser = mongoose.model("PendingUsers", pendignUserSchema);
+const PendingUser = mongoose.model("PendingUsers", pendingUserSchema);
 
 module.exports = PendingUser;

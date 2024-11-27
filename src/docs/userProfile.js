@@ -15,16 +15,17 @@
  *             properties:
  *               profilePicture:
  *                 type: string
- *                 enum: [Everyone, Contacts, Nobody]
+ *                 enum: [EveryOne, Contacts, Nobody]
  *               stories:
  *                 type: string
- *                 enum: [Everyone, Contacts, Nobody]
+ *                 enum: [Contacts, EveryOne, Nobody]
  *               lastSeen:
  *                 type: string
- *                 enum: [Everyone, Contacts, Nobody]
+ *                 enum: [Nobody, Contacts, EveryOne]
+ *                 enum: [Nobody, Contacts, EveryOne]
  *     responses:
  *       '200':
- *         description: Profile visibility settings updated successfully.
+ *         description: Profile visibility settings are updated successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -36,21 +37,48 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     profilePicture:
+ *                     profilePictureVisibility:
  *                       type: string
- *                     stories:
+ *                     storiesVisibility:
  *                       type: string
- *                     lastSeen:
+ *                     lastSeenVisibility:
  *                       type: string
+ *                 message:
+ *                   type: string
+ *                   example: Profile picture visibility option has been set
  *       '400':
- *         description: Invalid request data.
+ *         description: Invalid action. One or more of the passed visibility options not valid, please check them
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: Invalid action. One or more of the passed visibility options not valid, please check them
+ *       '500':
+ *         description: An error has occurred while updating the profile picture's privacy settings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: An error has occurred while updating the profile picture's privacy settings
  * */
 /**
  * @swagger
- * /privacy/settings/blocked-users:
- *   post:
- *     summary: Block a user
- *     description: Block a specific user by ID.
+ * /privacy/settings/blocking-status/:action:
+ *   patch:
+ *     summary: Block or unblock a user
+ *     description: Block or unblock a specific user by his/her ID, and the action should be 'block' or 'unblock'
  *     tags:
  *       - Privacy Settings
  *     requestBody:
@@ -62,36 +90,11 @@
  *             properties:
  *               userId:
  *                 type: string
- *     responses:
- *       '200':
- *         description: User blocked successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *       '404':
- *         description: User not found.
- *   delete:
- *     summary: Unblock a user
- *     description: Unblock a specific user by ID.
- *     tags:
- *       - Privacy Settings
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
+ *               chatId:
  *                 type: string
  *     responses:
  *       '200':
- *         description: User unblocked successfully.
+ *         description: User blocked/unblocked successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -100,11 +103,52 @@
  *                 status:
  *                   type: string
  *                   example: success
+ *       '400':
+ *         description: Invalid action. Use 'block' or 'unblock', please check them -OR- This user needed to block is not in the blocker's contacts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: Invalid action. Use 'block' or 'unblock', please check them
  *       '404':
- *         description: User not found.
+ *         description: Blocker user not found while searching.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: Blocker user not found while searching
+ *       '500':
+ *         description: An error has occurred while updating the blocking status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: An error has occurred while updating the blocking status
+ * */
+/**
+ * @swagger
+ * /privacy/settings/get-blocked-users:
  *   get:
  *     summary: Get blocked users
- *     description: Retrieve a list of all blocked users.
+ *     description: Retrieve a list of all blocked users for the authenticated user.
  *     tags:
  *       - Privacy Settings
  *     responses:
@@ -119,15 +163,45 @@
  *                   type: string
  *                   example: success
  *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       userId:
- *                         type: string
- *                       username:
- *                         type: string
- *
+ *                   type: object
+ *                   properties:
+ *                     blockedUsers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           userId:
+ *                             type: string
+ *                             example: "671d44667e9678b9429b2ee0"
+ *                           username:
+ *                             type: string
+ *                             example: "john_doe"
+ *       '500':
+ *         description: Failed to get blocked users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to get blocked users"
+ *       '404':
+ *         description: User is not found while searching
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "User is not found while searching"
  */
 /**
  * @swagger
@@ -144,7 +218,7 @@
  *           schema:
  *             type: object
  *             properties:
- *               enabled:
+ *               isEnabled:
  *                 type: boolean
  *     responses:
  *       '200':
@@ -160,10 +234,47 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     enabled:
+ *                     isEnabled:
  *                       type: boolean
  *       '400':
- *         description: Invalid request data.
+ *         description: Invalid action. Enabling status should boolean values only, please check them
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: Invalid action. Enabling status should boolean values only, please check them
+ *       '404':
+ *         description: User is not found while searching
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "User is not found while searching"
+ *       '500':
+ *         description: An error has occurred while updating the read receipts settings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: An error has occurred while updating the read receipts settings
  */
 /**
  * @swagger
@@ -180,9 +291,9 @@
  *           schema:
  *             type: object
  *             properties:
- *               addToGroups:
+ *               newPolicy:
  *                 type: string
- *                 enum: [Everyone, Admins]
+ *                 enum: [EveryOne, Admins]
  *     responses:
  *       '200':
  *         description: Group add permissions updated successfully.
@@ -197,10 +308,21 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     addToGroups:
+ *                     newPolicy:
  *                       type: string
  *       '400':
- *         description: Invalid request data.
+ *         description: Invalid action. The value of policy isn't valid, please check them
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: Invalid action. The value of policy isn't valid, please check them
  */
 /**
  * @swagger
