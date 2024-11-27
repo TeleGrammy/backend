@@ -6,7 +6,7 @@ const userServices = require("../../services/userService");
 const mails = require("../../utils/mailTemplate");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
-const manageSessionForUser = require("../../utils/sessionManagement").default;
+const manageSessionForUser = require("../../utils/sessionManagement");
 
 const AppError = require("../../errors/appError");
 
@@ -144,7 +144,6 @@ const resendResetToken = catchAsync(async (req, res, next) => {
 });
 
 const logOutFromAllDevices = catchAsync(async (req, res, next) => {
-  console.log(1);
   const currentAccessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
     req.headers.authorization?.split(" ")[1] ||
