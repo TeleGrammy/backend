@@ -87,6 +87,17 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  selfDestructTime: {type: Number}, // Time-to-live in seconds
+  expiresAt: {type: Date}, // Exact expiration time for TTL
+});
+
+messageSchema.pre("save", function (next) {
+  if (this.selfDestructTime) {
+    this.expiresAt = new Date(
+      this.timestamp.getTime() + this.selfDestructTime * 1000
+    );
+  }
+  next();
 });
 
 messageSchema.methods.updateMessageViewer = async function (
@@ -159,9 +170,10 @@ messageSchema.post(/^find/, (doc, next) => {
 });
 messageSchema.index({chatId: 1, timestamp: -1});
 
+messageSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
+
 applySoftDeleteMiddleWare(messageSchema);
 
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;
-
