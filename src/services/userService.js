@@ -74,6 +74,10 @@ const getUserBasicInfoByUUID = async (UUID) => {
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
     profilePictureVisibility: 1,
+    storiesVisibility: 1,
+    lastSeenVisibility: 1,
+    readReceipts: 1,
+    contacts: 1,
   };
 
   return getUserByUUID(UUID, userBasicInfo);
@@ -218,10 +222,8 @@ const getUserById = async (id, select = "") => {
   return await User.findById(id).select(select);
 };
 
-const changeProfileVisibilityOptionsByUserId = async (
-  id,
-  visibilityOptions
-) => {
+const setProfileVisibilityOptionsByUserId = async (id) => {
+  visibilityOptions;
   return await findOneAndUpdate(
     {_id: id},
     {
@@ -243,7 +245,7 @@ const changeProfileVisibilityOptionsByUserId = async (
  * @param {String} action - The action: either 'block' or 'unblock'.
  * @returns {null}
  */
-const changeBlockingStatus = async (blockerId, blockedId, chatId, action) => {
+const setBlockingStatus = async (blockerId, blockedId, chatId, action) => {
   const blocker = await getUserById(blockerId);
   if (!blocker) {
     throw new AppError("Blocker user not found while searching", 404);
@@ -353,6 +355,18 @@ const setReadReceiptsStatus = async (userId, status) => {
   return await user.save();
 };
 
+const setWhoCanAddMe = async (userId, newPolicy) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new AppError("User is not found while searching", 404);
+  }
+
+  user.whoCanAddMe = newPolicy;
+
+  return await user.save();
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -361,13 +375,14 @@ module.exports = {
   getUserPasswordById,
   getUserId,
   getUserByID,
+  getUserById,
+  getBlockedUsers,
   createUser,
   findOne,
   findOneAndUpdate,
   findByIdAndUpdate,
-  getUserById,
-  changeProfileVisibilityOptionsByUserId,
-  changeBlockingStatus,
-  getBlockedUsers,
+  setProfileVisibilityOptionsByUserId,
+  setBlockingStatus,
   setReadReceiptsStatus,
+  setWhoCanAddMe,
 };

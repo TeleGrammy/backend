@@ -5,7 +5,9 @@ const isAuth = require("../../middlewares/isAuthenticated");
 
 const router = express.Router();
 
+router.get("/", isAuth, userPrivacyController.getPrivacySettings);
 router.get("/get-blocked-users", isAuth, userPrivacyController.getBlockedUsers);
+router.get("/get-contacts", isAuth, userPrivacyController.getContacts);
 
 router.post("/seed", userPrivacyController.executeSeed);
 

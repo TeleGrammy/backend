@@ -59,8 +59,26 @@ const getBlockedUsers = catchAsync(async (req, res, next) => {
   const blockedUsers = await userService.getBlockedUsers(userId);
 
   return res.status(200).json({
+    status: "success",
     data: {
       blockedUsers,
+    },
+  });
+});
+
+const getContacts = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+
+  const userContacts = await userService.getUserById(userId, "contacts -_id");
+
+  userContacts.contacts.forEach((contact) => {
+    delete contact._id;
+  });
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      contacts: userContacts.contacts,
     },
   });
 });
@@ -79,7 +97,7 @@ const changeBlockingStatus = catchAsync(async (req, res, next) => {
     );
   }
 
-  const updatedUser = await userService.changeBlockingStatus(
+  const updatedUser = await userService.setBlockingStatus(
     blockerUserId,
     blockedUserId,
     chatId,
@@ -128,7 +146,7 @@ const changeProfileVisibility = catchAsync(async (req, res, next) => {
     );
   }
 
-  const updatedUser = await userService.changeProfileVisibilityOptionsByUserId(
+  const updatedUser = await userService.setProfileVisibilityOptionsByUserId(
     userId,
     visibilityOptions
   );
@@ -192,6 +210,26 @@ const changeGroupControlStatus = catchAsync(async (req, res, next) => {
   });
 });
 
+const getPrivacySettings = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+
+  const userPrivacySettings = await userService.getUserById(
+    userId,
+    "profilePictureVisibility lastSeenVisibility storiesVisibility readReceipts whoCanAddMe -_id"
+  );
+
+  if (!userPrivacySettings) {
+    return next(new AppError("No privacy data has been retrieved", 500));
+  }
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      userPrivacySettings,
+    },
+  });
+});
+
 module.exports = {
   executeSeed,
   changeProfileVisibility,
@@ -199,4 +237,6 @@ module.exports = {
   changeReadReceiptsStatus,
   changeGroupControlStatus,
   getBlockedUsers,
+  getPrivacySettings,
+  getContacts,
 };
