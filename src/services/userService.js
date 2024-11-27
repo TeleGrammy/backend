@@ -245,7 +245,7 @@ const setProfileVisibilityOptionsByUserId = async (id) => {
  * @param {String} action - The action: either 'block' or 'unblock'.
  * @returns {null}
  */
-const setBlockingStatus = async (blockerId, blockedId, chatId, action) => {
+const setBlockingStatus = async (blockerId, blockedId, action) => {
   const blocker = await getUserById(blockerId);
   if (!blocker) {
     throw new AppError("Blocker user not found while searching", 404);
@@ -259,7 +259,6 @@ const setBlockingStatus = async (blockerId, blockedId, chatId, action) => {
     if (contactIndex === -1) {
       blocker.contacts.push({
         contactId: blockedId,
-        chatId: chatId,
         blockDetails: {
           status: "blocked",
           date: new Date(),

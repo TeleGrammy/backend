@@ -176,8 +176,6 @@
  *             properties:
  *               userId:
  *                 type: string
- *               chatId:
- *                 type: string
  *     responses:
  *       '200':
  *         description: User blocked/unblocked successfully.

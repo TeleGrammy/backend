@@ -86,7 +86,6 @@ const getContacts = catchAsync(async (req, res, next) => {
 const changeBlockingStatus = catchAsync(async (req, res, next) => {
   const blockedUserId = req.body.userId;
   const blockerUserId = req.user.id;
-  const {chatId} = req.body;
 
   const {action} = req.params;
 
@@ -100,7 +99,6 @@ const changeBlockingStatus = catchAsync(async (req, res, next) => {
   const updatedUser = await userService.setBlockingStatus(
     blockerUserId,
     blockedUserId,
-    chatId,
     action
   );
 
