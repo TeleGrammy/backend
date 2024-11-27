@@ -1,6 +1,8 @@
 const AppError = require("../errors/appError");
 const User = require("../models/user");
 
+const AppError = require("../errors/appError");
+
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users

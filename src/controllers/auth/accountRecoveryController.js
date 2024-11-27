@@ -26,7 +26,7 @@ const sendPasswordResetEmail = (req, user) => {
   sendEmail(msg);
 };
 
-exports.forgetPassword = catchAsync(async (req, res, next) => {
+const forgetPassword = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
   if (!email)
@@ -53,7 +53,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.resetPassword = catchAsync(async (req, res, next) => {
+const resetPassword = catchAsync(async (req, res, next) => {
   const {token} = req.params;
   const {password, passwordConfirm} = req.body;
 
@@ -104,7 +104,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.resendResetToken = catchAsync(async (req, res, next) => {
+const resendResetToken = catchAsync(async (req, res, next) => {
   const {email} = req.body;
 
   const user = await userServices.getUserByEmail(email);
@@ -145,7 +145,7 @@ exports.resendResetToken = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.logOutFromAllDevices = catchAsync(async (req, res, next) => {
+const logOutFromAllDevices = catchAsync(async (req, res, next) => {
   console.log(1);
   const currentAccessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
