@@ -5,8 +5,7 @@ const reCaptchaVerification = async (req, res, next) => {
     if (process.env.NODE_ENV === "test") {
       return next();
     }
-      const {token} = req.body;
-
+    const {token} = req.body;
     if (!token) {
       return res
         .status(400)
