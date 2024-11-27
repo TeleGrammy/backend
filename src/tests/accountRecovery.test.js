@@ -226,7 +226,7 @@ describe("PATCH /api/v1/auth/reset-password/{token}", () => {
 
     userService.findOne.mockResolvedValue(user);
     userService.findOneAndUpdate.mockResolvedValue(user);
-    manageSessionForUser.default.mockResolvedValue({
+    manageSessionForUser.mockResolvedValue({
       updatedUser: user,
       accessToken,
     });
@@ -423,7 +423,7 @@ describe("POST /api/v1/auth/logout-from-all-devices", () => {
 
     jwt.verify("validToken");
     userService.findOneAndUpdate.mockResolvedValue(user);
-    manageSessionForUser.default.mockResolvedValue({
+    manageSessionForUser.mockResolvedValue({
       updatedUser: user,
       accessToken,
     });

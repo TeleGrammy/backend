@@ -4,7 +4,7 @@ const sinon = require("sinon");
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
-const manageSessionForUser = require("../utils/sessionManagement").default;
+const manageSessionForUser = require("../utils/sessionManagement");
 const generateTokenModule = require("../utils/generateToken");
 const addAuthCookieModule = require("../utils/addAuthCookie");
 
