@@ -13,7 +13,7 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
   const {username, email, password, passwordConfirm, phone, publicKey} =
     req.body;
 
-  const verificationCode = generateConfirmationCode();
+  const verificationCode = generateConfirmationCode();w
 
   let existingUser = await userService.getUserByUUID(username);
   if (existingUser) {

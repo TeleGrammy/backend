@@ -18,13 +18,24 @@ const contactSchema = new mongoose.Schema({
     ref: "Chat",
     required: true,
   },
+  blockDetails: {
+    status: {
+      type: String,
+      enum: ["blocked", "not_blocked"],
+      default: "not_blocked",
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+  },
 });
 
 const userSchema = new mongoose.Schema({
   publicKey: {
     type: String,
     unique: true,
-    required: true,
+    required: false,
     validate: {
       validator: (value) => {
         try {
@@ -67,7 +78,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [true, "Password Confirm is required"],
+    // required: [true, "Password Confirm is required"],
     validate: {
       validator(el) {
         return el === this.password;
@@ -154,12 +165,6 @@ const userSchema = new mongoose.Schema({
     sparse: true,
   },
 
-  faceBookId: {
-    type: String,
-    unique: true,
-    sparse: true,
-  },
-
   gitHubId: {
     type: String,
     unique: true,
@@ -193,11 +198,84 @@ const userSchema = new mongoose.Schema({
   passwordResetTokenExpiresAt: Date,
   lastPasswordResetRequestAt: Date,
   loggedOutFromAllDevicesAt: {type: Date, default: null},
+
+  profilePictureVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  storiesVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  lastSeenVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  readReceipts: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    return next();
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
 });
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
     throw new AppError("User not found", 404);
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    return next();
   }
 
   if (!doc.length) {
@@ -243,7 +321,10 @@ userSchema.pre("findOneAndUpdate", async function (next) {
   if (update.password) {
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
-    update.passwordConfirm = undefined;
+    update.passwordConfirm = await bcrypt.hash(
+      update.passwordConfirm,
+      saltRounds
+    );
     update.passwordModifiedAt = Date.now();
   }
   next();
@@ -284,11 +365,12 @@ userSchema.methods.unSetNewEmailInfo = async function () {
 };
 
 userSchema.methods.updateUserEmail = async function () {
-  if (!this.pendingEmail)
+  if (!this.pendingEmail) {
     throw new AppError(
       "Please make sure that you have provided a valid new email",
       404
     );
+  }
   this.email = this.pendingEmail;
   await this.unSetNewEmailInfo();
 };

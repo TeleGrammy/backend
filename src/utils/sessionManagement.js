@@ -1,8 +1,8 @@
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
-const generateToken = require("../utils/generateToken");
-const addAuthCookie = require("../utils/addAuthCookie");
+const generateTokenModule = require("../utils/generateToken");
+const addAuthCookieModule = require("../utils/addAuthCookie");
 
 const manageSessionForUser = async (req, res, user) => {
   const currentDeviceType = req.headers["user-agent"];
@@ -15,12 +15,12 @@ const manageSessionForUser = async (req, res, user) => {
     loggedOutFromAllDevicesAt: user.loggedOutFromAllDevicesAt,
   };
 
-  const accessToken = generateToken(
+  const accessToken = generateTokenModule.default(
     userTokenedData,
     process.env.COOKIE_ACCESS_NAME
   );
 
-  const refreshToken = generateToken(
+  const refreshToken = generateTokenModule.default(
     userTokenedData,
     process.env.COOKIE_REFRESH_NAME
   );
@@ -50,9 +50,9 @@ const manageSessionForUser = async (req, res, user) => {
     {new: true}
   );
 
-  addAuthCookie(accessToken, res, true);
+  addAuthCookieModule.default(accessToken, res, true);
 
   return {updatedUser, accessToken};
 };
 
-module.exports = manageSessionForUser;
+module.exports.default = manageSessionForUser;
