@@ -12,4 +12,12 @@ router
 router
   .route("/:groupId/participants")
   .delete(isAuthenticated, groupController.leaveGroup);
+
+router
+  .route("/:groupId/admins/:userId")
+  .patch(isAuthenticated, groupController.addAdmin);
+router
+  .route("/:groupId/users/:userId")
+  .patch(isAuthenticated, groupController.addMember);
+
 module.exports = router;
