@@ -30,7 +30,21 @@ const storage = multerS3({
     cb(null, {fieldName: file.fieldname});
   },
   key: (req, file, cb) => {
-    const fileName = `media/${file.fieldname}/${Date.now().toString()}-${file.originalname}`;
+    let folder = "";
+    if (file.fieldname === "picture") {
+      folder = "userProfilesPictures";
+    } else if (file.fieldname === "story") {
+      folder = "stories";
+    } else if (file.fieldname === "audio") {
+      folder = "audio";
+    } else if (file.fieldname === "media") {
+      folder = "media";
+    } else if (file.fieldname === "document") {
+      folder = "document";
+    } else if (file.fieldname === "sticker") {
+      folder = "sticker";
+    }
+    const fileName = `media/${folder}/${Date.now().toString()}-${file.originalname}`;
     cb(null, fileName);
   },
   contentDisposition: "inline", // Ensure files are displayed in the browser
@@ -39,21 +53,26 @@ const storage = multerS3({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 1024 * 1024 * 5, // 5MB
+    fileSize: 1024 * 1024 * 100, // 100MB
   },
   fileFilter: (req, file, cb) => {
     if (
       !file.originalname.match(
-        /\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov|wav|mp3)$/i
+        /\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov|wav|mp3|ogg)$/i
       )
     ) {
-      return cb(new Error("Invalid file format"), false);
+      cb(new Error("Invalid file format"), false);
+      return;
     }
-    return cb(null, true);
+    cb(null, true);
   },
 });
 exports.uploadUserPicture = upload.single("picture");
 exports.uploadStory = upload.single("story");
+exports.uploadAudio = upload.single("audio");
+exports.uploadMedia = upload.single("media");
+exports.uploadDocument = upload.single("document");
+exports.uploadSticker = upload.single("sticker");
 
 const getMimeType = (key) => {
   return mime.lookup(key) || "application/octet-stream";
