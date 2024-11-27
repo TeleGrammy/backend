@@ -1,16 +1,18 @@
 const request = require("supertest");
-const app = require("../../app"); // Ensure this points to your Express app
-const PendingUser = require("../../models/pending-user");
-const userService = require("../../services/userService");
-const {generateConfirmationCode} = require("../../utils/codeGenerator");
-const {sendConfirmationEmail} = require("../../utils/mailingServcies");
+const app = require("../app"); // Ensure this points to your Express app
+const PendingUser = require("../models/pending-user");
+const userService = require("../services/userService");
+const {generateConfirmationCode} = require("../utils/codeGenerator");
+const {sendConfirmationEmail} = require("../utils/mailingServcies");
 
 
 // Mock dependencies
-jest.mock("../../models/pending-user"); 
-jest.mock("../../services/userService");
-jest.mock("../../utils/codeGenerator");
-jest.mock("../../utils/mailingServcies");
+jest.mock("../models/pending-user"); 
+jest.mock("../services/userService");
+jest.mock("../utils/codeGenerator");
+jest.mock("../utils/mailingServcies");
+jest.mock("../utils/sessionManagement", () => jest.fn());
+
 
 describe("User Registration and Verification Controller", () => {
   beforeEach(() => {
@@ -20,11 +22,11 @@ describe("User Registration and Verification Controller", () => {
   describe("POST /api/v1/auth/register", () => {
     it("should register a new user and send a verification email", async () => {
       const mockUser = {
-        username: "testuser",
-        email: "test@example.com",
+        username: "testinguser",
+        email: "testinguser@example.com",
         password: "password123",
         passwordConfirm: "password123",
-        phone: "1234567890",
+        phone: "+201004321321",
       };
 
       generateConfirmationCode.mockReturnValue("123456");
@@ -35,7 +37,6 @@ describe("User Registration and Verification Controller", () => {
       const res = await request(app)
         .post("/api/v1/auth/register")
         .send(mockUser);
-
       expect(res.status).toBe(201);
       expect(res.body.message).toBe(
         "Registration successful. Please check your email for the verification code."
@@ -44,7 +45,9 @@ describe("User Registration and Verification Controller", () => {
       expect(sendConfirmationEmail).toHaveBeenCalledWith(
         mockUser.email,
         mockUser.username,
-        "123456"
+        "123456",
+        process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
+
       );
     });
   });
@@ -135,7 +138,8 @@ describe("User Registration and Verification Controller", () => {
       expect(sendConfirmationEmail).toHaveBeenCalledWith(
         mockUser.email,
         mockUser.username,
-        "654321"
+        "654321",
+        process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
       );
     });
 
