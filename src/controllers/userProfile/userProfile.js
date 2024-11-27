@@ -1,11 +1,10 @@
 const userService = require("../../services/userService");
 
 const Email = require("../../utils/mailingServcies");
-const catchAsync = require("../../utils/catchAsync");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
 const {filterObject} = require("../../utils/utilitiesFunc");
-
 const AppError = require("../../errors/appError");
+const catchAsync = require("../../utils/catchAsync");
 
 exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const {email} = req.body;
@@ -164,35 +163,5 @@ exports.updateUserActivity = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data,
-  });
-});
-exports.profilePictureVisibility = catchAsync(async (req, res, next) => {
-  const visibilityOption = req.body.visibility;
-  const userId = req.user.id;
-
-  if (!["EveryOne", "Contacts", "Nobody"].includes(visibilityOption)) {
-    return next(
-      new AppError("The visibility option is not a valid option", 400)
-    );
-  }
-
-  const updatedUser = await userService.changeProfilePictureVisibilityByUserId(
-    userId,
-    visibilityOption
-  );
-
-  if (!updatedUser) {
-    return next(
-      new AppError(
-        "An error has occurred while updating the profile picture's privacy"
-      )
-    );
-  }
-
-  return res.status(201).json({
-    data: {
-      currentVisibility: updatedUser.profilePictureVisibility,
-    },
-    message: "Profile picture visibility option has been set",
   });
 });

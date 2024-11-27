@@ -87,7 +87,6 @@
  *      description: Resend the verification link to the user's email.
  *      tags:
  *        - User Registration
- *        - User Registration
  *      requestBody:
  *        required: true
  *        content:
