@@ -109,6 +109,7 @@
  *               lastSeen:
  *                 type: string
  *                 enum: [Nobody, Contacts, EveryOne]
+ *                 enum: [Nobody, Contacts, EveryOne]
  *     responses:
  *       '200':
  *         description: Profile visibility settings are updated successfully.
