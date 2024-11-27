@@ -184,22 +184,15 @@ const changeGroupControlStatus = catchAsync(async (req, res, next) => {
     );
   }
 
-  const adminMemberShips = await memberShipService.getAdminMemberShips(userId);
+  const updatedUser = await userService.setWhoCanAddMe(userId, newPolicy);
 
-  const groupIds = adminMemberShips
-    .filter((memberShip) => memberShip.entityType === "Group")
-    .map((memberShip) => memberShip.entityId);
-
-  const channelIds = adminMemberShips
-    .filter((memberShip) => memberShip.entityType === "Channel")
-    .map((memberShip) => memberShip.entityId);
-
-  if (channelIds.length > 0) {
-    await channelService.changeChannelsPolicy(channelIds, newPolicy);
-  }
-
-  if (groupIds.length > 0) {
-    await groupService.changeGroupsPolicy(groupIds, newPolicy);
+  if (!updatedUser) {
+    return next(
+      new AppError(
+        "An error has occurred while updating the user's adding policy",
+        500
+      )
+    );
   }
 
   return res.status(200).json({

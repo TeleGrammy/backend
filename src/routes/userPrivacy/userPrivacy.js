@@ -11,7 +11,6 @@ router.get("/get-contacts", isAuth, userPrivacyController.getContacts);
 
 router.post("/seed", userPrivacyController.executeSeed);
 
-router.post("/seed", userPrivacyController.executeSeed);
 
 router.patch(
   "/blocking-status/:action",

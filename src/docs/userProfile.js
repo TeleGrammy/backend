@@ -109,7 +109,6 @@
  *               lastSeen:
  *                 type: string
  *                 enum: [Nobody, Contacts, EveryOne]
- *                 enum: [Nobody, Contacts, EveryOne]
  *     responses:
  *       '200':
  *         description: Profile visibility settings are updated successfully.
@@ -365,9 +364,9 @@
  */
 /**
  * @swagger
- * /privacy/settings/group-control:
+ * /privacy/settings/adding-policy:
  *   patch:
- *     summary: Control group add permissions
+ *     summary: Control who can add the user into group/channels
  *     description: Control who can add the user to groups or channels.
  *     tags:
  *       - Privacy Settings
@@ -410,6 +409,19 @@
  *                 message:
  *                   type: string
  *                   example: Invalid action. The value of policy isn't valid, please check them
+ *       '500':
+ *         description: An error has occurred while updating the user's adding policy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: An error has occurred while updating the user's adding policy
  */
 /**
  * @swagger
