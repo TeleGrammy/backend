@@ -19,6 +19,8 @@ module.exports.createMessageData = async (payload, userId) => {
     content: payload.content || "",
     mentions: payload.mentions || [],
     replyOn: payload.replyOn || null,
+    mediaUrl: payload.mediaUrl || "",
+    selfDestructTime: payload.selfDestructTime || undefined,
   };
 
   return messageData;

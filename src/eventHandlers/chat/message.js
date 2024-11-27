@@ -90,7 +90,7 @@ module.exports.updateMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:updated",
-        message,
+        message._doc,
         io.to(`chat:${message.chatId}`)
       );
     } catch (err) {
@@ -110,7 +110,7 @@ module.exports.deleteMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:deleted",
-        message,
+        message._doc,
         socket.broadcast.to(`chat:${message.chatId}`)
       );
     } catch (err) {

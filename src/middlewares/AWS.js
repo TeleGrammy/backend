@@ -30,21 +30,7 @@ const storage = multerS3({
     cb(null, {fieldName: file.fieldname});
   },
   key: (req, file, cb) => {
-    let folder = "";
-    if (file.fieldname === "picture") {
-      folder = "userProfilesPictures";
-    } else if (file.fieldname === "story") {
-      folder = "stories";
-    } else if (file.fieldname === "audio") {
-      folder = "audio";
-    } else if (file.fieldname === "media") {
-      folder = "media";
-    } else if (file.fieldname === "document") {
-      folder = "document";
-    } else if (file.fieldname === "sticker") {
-      folder = "sticker";
-    }
-    const fileName = `media/${folder}/${Date.now().toString()}-${file.originalname}`;
+    const fileName = `media/${file.fieldname}/${Date.now().toString()}-${file.originalname}`;
     cb(null, fileName);
   },
   contentDisposition: "inline", // Ensure files are displayed in the browser
@@ -58,7 +44,7 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     if (
       !file.originalname.match(
-        /\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov|wav|mp3|ogg)$/i
+        /\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov|wav|mp3|ogg|pdf|doc|docx|odt|rtf|txt|pdf|xls|xlsx|ods|ppt|pptx|odp|html|htm|csv|zip)$/i
       )
     ) {
       cb(new Error("Invalid file format"), false);

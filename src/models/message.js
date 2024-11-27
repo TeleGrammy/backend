@@ -49,10 +49,7 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  duration: {
-    type: Number,
-    default: undefined,
-  },
+
   mentions: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "User",
@@ -150,14 +147,6 @@ messageSchema.pre("save", function (next) {
     );
   }
 
-  if (this.messageType === "audio" || this.messageType === "voice_note") {
-    if (!this.duration) {
-      return next(
-        new Error(`${this.messageType} message must have a duration.`)
-      );
-    }
-  }
-
   return next();
 });
 
@@ -188,3 +177,4 @@ applySoftDeleteMiddleWare(messageSchema);
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;
+
