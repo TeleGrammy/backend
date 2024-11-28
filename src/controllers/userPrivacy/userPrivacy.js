@@ -59,8 +59,26 @@ const getBlockedUsers = catchAsync(async (req, res, next) => {
   const blockedUsers = await userService.getBlockedUsers(userId);
 
   return res.status(200).json({
+    status: "success",
     data: {
       blockedUsers,
+    },
+  });
+});
+
+const getContacts = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+
+  const userContacts = await userService.getUserById(userId, "contacts -_id");
+
+  userContacts.contacts.forEach((contact) => {
+    delete contact._id;
+  });
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      contacts: userContacts.contacts,
     },
   });
 });
@@ -68,7 +86,6 @@ const getBlockedUsers = catchAsync(async (req, res, next) => {
 const changeBlockingStatus = catchAsync(async (req, res, next) => {
   const blockedUserId = req.body.userId;
   const blockerUserId = req.user.id;
-  const {chatId} = req.body;
 
   const {action} = req.params;
 
@@ -79,10 +96,9 @@ const changeBlockingStatus = catchAsync(async (req, res, next) => {
     );
   }
 
-  const updatedUser = await userService.changeBlockingStatus(
+  const updatedUser = await userService.setBlockingStatus(
     blockerUserId,
     blockedUserId,
-    chatId,
     action
   );
 
@@ -128,7 +144,7 @@ const changeProfileVisibility = catchAsync(async (req, res, next) => {
     );
   }
 
-  const updatedUser = await userService.changeProfileVisibilityOptionsByUserId(
+  const updatedUser = await userService.setProfileVisibilityOptionsByUserId(
     userId,
     visibilityOptions
   );
@@ -166,28 +182,41 @@ const changeGroupControlStatus = catchAsync(async (req, res, next) => {
     );
   }
 
-  const adminMemberShips = await memberShipService.getAdminMemberShips(userId);
+  const updatedUser = await userService.setWhoCanAddMe(userId, newPolicy);
 
-  const groupIds = adminMemberShips
-    .filter((memberShip) => memberShip.entityType === "Group")
-    .map((memberShip) => memberShip.entityId);
-
-  const channelIds = adminMemberShips
-    .filter((memberShip) => memberShip.entityType === "Channel")
-    .map((memberShip) => memberShip.entityId);
-
-  if (channelIds.length > 0) {
-    await channelService.changeChannelsPolicy(channelIds, newPolicy);
-  }
-
-  if (groupIds.length > 0) {
-    await groupService.changeGroupsPolicy(groupIds, newPolicy);
+  if (!updatedUser) {
+    return next(
+      new AppError(
+        "An error has occurred while updating the user's adding policy",
+        500
+      )
+    );
   }
 
   return res.status(200).json({
     status: "success",
     data: {
       newPolicy,
+    },
+  });
+});
+
+const getPrivacySettings = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+
+  const userPrivacySettings = await userService.getUserById(
+    userId,
+    "profilePictureVisibility lastSeenVisibility storiesVisibility readReceipts whoCanAddMe -_id"
+  );
+
+  if (!userPrivacySettings) {
+    return next(new AppError("No privacy data has been retrieved", 500));
+  }
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      userPrivacySettings,
     },
   });
 });
@@ -199,4 +228,6 @@ module.exports = {
   changeReadReceiptsStatus,
   changeGroupControlStatus,
   getBlockedUsers,
+  getPrivacySettings,
+  getContacts,
 };

@@ -220,6 +220,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+
+  whoCanAddMe: {
+    type: String,
+    enum: ["EveryOne", "Admins"],
+    default: "EveryOne",
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {

@@ -1,5 +1,92 @@
 /**
  * @swagger
+ * /privacy/settings/get-settings:
+ *   get:
+ *    summary: Get all profile settings
+ *    description: Get all profile settings related to the user navigation the application.
+ *    tags:
+ *      - Privacy Settings
+ *    responses:
+ *      '200':
+ *         description: Getting user's privacy settings is done successfully.
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: success
+ *                data:
+ *                  type: object
+ *                  properties:
+ *                    userPrivacySettings:
+ *                      type: object
+ *                      properties:
+ *                        profilePictureVisibility:
+ *                          type: string
+ *                        storiesVisibility:
+ *                          type: string
+ *                        lastSeenVisibility:
+ *                          type: string
+ *                        readReceipts:
+ *                          type: string
+ *                        whoCanAddMe:
+ *                          type: string
+ *
+ *      '500':
+ *         description: No privacy data has been retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: No privacy data has been retrieved
+ */
+/**
+ * @swagger
+ * /privacy/settings/get-contacts:
+ *   get:
+ *    summary: Get all contacts
+ *    description: Get all contacts related to the user navigation the application.
+ *    tags:
+ *      - Privacy Settings
+ *    responses:
+ *      '200':
+ *         description: Getting user's contacts is done successfully.
+ *         content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: success
+ *                data:
+ *                  type: object
+ *                  properties:
+ *                    contacts:
+ *                      type: object
+ *                      properties:
+ *                        contactId:
+ *                          type: string
+ *                        chatId:
+ *                          type: string
+ *                        blockDetails:
+ *                          type: object
+ *                          properties:
+ *                           status:
+ *                            type: string
+ *                           date:
+ *                            type: string
+ */
+/**
+ * @swagger
  * /privacy/settings/profile-visibility:
  *   patch:
  *     summary: Set profile visibility
@@ -88,8 +175,6 @@
  *             type: object
  *             properties:
  *               userId:
- *                 type: string
- *               chatId:
  *                 type: string
  *     responses:
  *       '200':
@@ -277,9 +362,9 @@
  */
 /**
  * @swagger
- * /privacy/settings/group-control:
+ * /privacy/settings/adding-policy:
  *   patch:
- *     summary: Control group add permissions
+ *     summary: Control who can add the user into group/channels
  *     description: Control who can add the user to groups or channels.
  *     tags:
  *       - Privacy Settings
@@ -322,6 +407,19 @@
  *                 message:
  *                   type: string
  *                   example: Invalid action. The value of policy isn't valid, please check them
+ *       '500':
+ *         description: An error has occurred while updating the user's adding policy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: An error has occurred while updating the user's adding policy
  */
 /**
  * @swagger
