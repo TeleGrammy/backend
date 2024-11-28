@@ -222,8 +222,7 @@ const getUserById = async (id, select = "") => {
   return await User.findById(id).select(select);
 };
 
-const setProfileVisibilityOptionsByUserId = async (id) => {
-  visibilityOptions;
+const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
   return await findOneAndUpdate(
     {_id: id},
     {
