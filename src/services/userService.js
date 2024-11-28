@@ -23,7 +23,7 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
     throw new AppError("An UUID is required", 500);
   }
 
-  return await User.findOne({
+  return User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -157,7 +157,7 @@ const getUserByEmail = async (email) => {
  * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
  */
 
-const createUser = async (userData) => {
+const createUser = (userData) => {
   const {
     username,
     email,
@@ -356,8 +356,6 @@ const setReadReceiptsStatus = async (userId, status) => {
 
   return await user.save();
 };
-
-
 
 const setWhoCanAddMe = async (userId, newPolicy) => {
   const user = await getUserById(userId);

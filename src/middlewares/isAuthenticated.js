@@ -26,7 +26,7 @@ module.exports = catchAsync(async (req, res, next) => {
 
   const currentDeviceType = req.headers["user-agent"];
 
-  let accessToken =
+  const accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
     req.headers["Authorization"]?.replace("Bearer ", "") ||
     req.headers["authorization"]?.replace("Bearer ", "");
@@ -54,7 +54,7 @@ module.exports = catchAsync(async (req, res, next) => {
           currentSessionData.refreshToken,
           process.env.JWT_SECRET
         );
-      } catch (error) {
+      } catch (err) {
         return next(
           new AppError("Invalid refresh token, please log in again", 401)
         );
@@ -101,8 +101,8 @@ module.exports = catchAsync(async (req, res, next) => {
           currentDeviceType,
           newSession
         );
-      } catch (error) {
-        return next(error);
+      } catch (err) {
+        return next(err);
       }
 
       addAuthCookieModule.default(newAccessToken, res, true);
@@ -110,9 +110,8 @@ module.exports = catchAsync(async (req, res, next) => {
       req.user.currentSession = currentSessionData;
 
       return next();
-    } else {
-      return next(new AppError("Invalid access token", 401));
     }
+    return next(new AppError("Invalid access token", 401));
   }
 
   const user = await userService.getUserBasicInfoByUUID(
