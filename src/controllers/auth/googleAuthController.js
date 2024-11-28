@@ -50,16 +50,13 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const {accessToken} = await manageSessionForUserModule.default(
-        req,
-        res,
-        existingUser
-      );
+      const {updatedUser, accessToken} =
+        await manageSessionForUserModule.default(req, res, existingUser);
 
       return res
         .status(300)
         .redirect(
-          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}`
+          process.env.FRONTEND_LOGIN_CALLBACK + `?accessToken=${accessToken}`
         );
     }
   )(req, res);

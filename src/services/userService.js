@@ -170,8 +170,10 @@ const createUser = (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
+    isFaceBookUser,
+    publicKey,
   } = userData;
-
+  console.log(publicKey);
   return User.create({
     username,
     email,
@@ -181,6 +183,7 @@ const createUser = (userData) => {
     picture,
     accessToken,
     refreshToken,
+    publicKey,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
   });
@@ -204,11 +207,11 @@ const updateRefreshToken = async (id, newRefreshToken) => {
 };
 
 const findOne = async (filter) => {
-  return User.findOne(filter);
+  return await User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return User.findOneAndUpdate(filter, updateData, options);
+  return await User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
@@ -222,7 +225,8 @@ const getUserById = async (id, select = "") => {
   return await User.findById(id).select(select);
 };
 
-const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
+const setProfileVisibilityOptionsByUserId = async (id) => {
+  visibilityOptions;
   return await findOneAndUpdate(
     {_id: id},
     {
@@ -365,6 +369,32 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
   return await user.save();
 };
 
+const ackEvent = async (id, chatId, offset) => {
+  const user = await User.findById(id);
+
+  // Check if the user already has a chat entry and if the new offset is greater than the current one
+  const currentOffset = user.userChats
+    ? user.userChats.get(`${chatId}`)
+    : undefined;
+
+  if (currentOffset === undefined || offset > currentOffset) {
+    user.userChats.set(`${chatId}`, offset);
+  }
+  await user.save();
+
+  return user;
+};
+
+const updateDraftOfUserInChat = async (chatId, userId, draft) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  user.userDrafts.set(`${chatId}`, draft);
+  await user.save();
+  return user;
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -383,4 +413,6 @@ module.exports = {
   setBlockingStatus,
   setReadReceiptsStatus,
   setWhoCanAddMe,
+  ackEvent,
+  updateDraftOfUserInChat,
 };

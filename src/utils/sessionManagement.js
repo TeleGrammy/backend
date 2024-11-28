@@ -1,8 +1,8 @@
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
-const generateTokenModule = require("./generateToken");
-const addAuthCookieModule = require("./addAuthCookie");
+const generateTokenModule = require("../utils/generateToken");
+const addAuthCookieModule = require("../utils/addAuthCookie");
 
 const manageSessionForUser = async (req, res, user) => {
   const currentDeviceType = req.headers["user-agent"];

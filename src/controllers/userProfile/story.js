@@ -111,7 +111,7 @@ exports.checkAuthorization = catchAsync(async (req, res, next) => {
   if (story.userId.toString() !== req.user.id) {
     return next(new AppError("User not authorized to view this story", 403));
   }
-  return next();
+  next();
 });
 
 exports.deleteStory = catchAsync(async (req, res, next) => {

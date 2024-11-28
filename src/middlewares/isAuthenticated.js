@@ -28,8 +28,8 @@ module.exports = catchAsync(async (req, res, next) => {
 
   const accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
-    req.headers.Authorization?.replace("Bearer ", "") ||
-    req.headers.authorization?.replace("Bearer ", "");
+    req.headers["Authorization"]?.replace("Bearer ", "") ||
+    req.headers["authorization"]?.replace("Bearer ", "");
 
   if (!accessToken) {
     return next(new AppError("Not authorized access, Please login!", 401));
