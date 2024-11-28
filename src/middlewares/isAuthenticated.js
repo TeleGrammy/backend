@@ -23,6 +23,7 @@ module.exports = catchAsync(async (req, res, next) => {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
   }
+
   const currentDeviceType = req.headers["user-agent"];
 
   const accessToken =
@@ -139,5 +140,5 @@ module.exports = catchAsync(async (req, res, next) => {
 
   req.user = decodedAccessToken;
   req.user.currentSession = currentSession;
-  return next();
+  next();
 });

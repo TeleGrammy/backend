@@ -15,7 +15,6 @@
       "post": {
         "summary": "create a story",
         "description": "create a story",
-        "tags": ["Stories"],
         "operationId": "createAStory",
         "requestBody": {
           "content": {
@@ -154,7 +153,6 @@
       "get": {
         "summary": "get user stories",
         "description": "get user stories",
-        "tags": ["Stories"],
         "operationId": "getUserStories",
         "responses": {
           "200": {
@@ -414,23 +412,11 @@
         }
       }
     },
-    "/api/v1/user/stories/story/{storyId}": {
+    "/api/v1/user/stories/story/67227562459605c4acca9f25": {
       "get": {
-        "summary": "get story by id",
-        "description": "get user story by it's id",
-        "tags": ["Stories"],
+        "summary": "get user story by id",
+        "description": "get user story by id",
         "operationId": "getUserStoryById",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "storyId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the requested story"
-          }
-        ],
         "responses": {
           "200": {
             "description": "get user story by id",
@@ -545,23 +531,11 @@
         }
       }
     },
-    "/api/v1/user/stories/{storyId}/view": {
+    "/api/v1/user/stories/672216f65cc712ef5640af68/view": {
       "patch": {
         "summary": "update story viewers",
         "description": "update story viewers",
-        "tags": ["Stories"],
         "operationId": "updateStoryViewers",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "storyId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the story required to update it's viewers"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -706,23 +680,11 @@
         }
       }
     },
-    "/api/v1/user/stories/{userId}": {
+    "/api/v1/user/stories/671d3c3fa99c593917b9c977": {
       "get": {
         "summary": "get stories of user by userid",
         "description": "get stories of user by userid",
-        "tags": ["Stories"],
         "operationId": "getStoriesOfUserByUserid",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the user requiered to get it's stories"
-          }
-        ],
         "responses": {
           "200": {
             "description": "get stories of user by userid",
@@ -872,7 +834,6 @@
       "get": {
         "summary": "get stories of contacts of the user",
         "description": "get stories of contacts of the user",
-        "tags": ["Stories"],
         "operationId": "getStoriesOfContactsOfTheUser",
         "parameters": [
           {
@@ -1021,23 +982,11 @@
         }
       }
     },
-    "/api/v1/user/stories/{storyId}": {
+    "/api/v1/user/stories/672209a2c1960a698f8022e4": {
       "delete": {
         "summary": "delete user story",
         "description": "delete user story",
-        "tags": ["Stories"],
         "operationId": "deleteUserStory",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "storyId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the story requested to be deleted"
-          }
-        ],
         "responses": {
           "200": {
             "description": "delete user story",
@@ -1198,5 +1147,6 @@
         }
       }
     }
-  }
+  },
+  "tags": []
 }

@@ -16,7 +16,6 @@
       "get": {
         "summary": "get User Info",
         "description": "get User Info",
-        "tags": ["User Profile"],
         "operationId": "getUserInfo",
         "responses": {
           "200": {
@@ -226,7 +225,6 @@
       "patch": {
         "summary": "update User Info",
         "description": "update User Info",
-        "tags": ["User Profile"],
         "operationId": "updateUserInfo",
         "requestBody": {
           "content": {
@@ -569,7 +567,6 @@
       "delete": {
         "summary": "delete User pic",
         "description": "delete User pic",
-        "tags": ["User Profile"],
         "operationId": "deleteUserPic",
         "responses": {
           "200": {
@@ -779,7 +776,6 @@
       "patch": {
         "summary": "update User pic",
         "description": "update User pic",
-        "tags": ["User Profile"],
         "operationId": "updateUserPic",
         "requestBody": {
           "content": {
@@ -1076,9 +1072,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "User not found."
           }
         }
       }
@@ -1087,7 +1080,6 @@
       "patch": {
         "summary": "updateUserEmail",
         "description": "updateUserEmail",
-        "tags": ["User Profile"],
         "operationId": "updateuseremail",
         "requestBody": {
           "content": {
@@ -1198,7 +1190,6 @@
       "patch": {
         "summary": "request new confirmation code",
         "description": "request new confirmation code",
-        "tags": ["User Profile"],
         "operationId": "requestNewConfirmationCode",
         "requestBody": {
           "content": {
@@ -1213,66 +1204,7 @@
         },
         "responses": {
           "200": {
-            "description": "New email confirmed successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string"
-                        },
-                        "username": {
-                          "type": "string"
-                        },
-                        "screenName": {
-                          "type": "string"
-                        },
-                        "email": {
-                          "type": "string"
-                        },
-                        "phone": {
-                          "type": "string"
-                        },
-                        "bio": {
-                          "type": "string"
-                        },
-                        "pictureURL": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "status": "success",
-                  "data": {
-                    "_id": "fgs554445dsf",
-                    "username": "test12",
-                    "screenName": "test test",
-                    "email": "example@test.com",
-                    "phone": "0101010100",
-                    "bio": "Lover of tech, coffee, and adventure. Always curious. 🌍",
-                    "pictureURL": "http://testdgffg"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Duplicate field value."
-          },
-          "401": {
-            "description": "Invalid confirmation code."
-          },
-          "404": {
-            "description": "User Or New email not found ."
+            "description": ""
           }
         }
       }
@@ -1281,7 +1213,6 @@
       "delete": {
         "summary": "delete user bio",
         "description": "delete user bio",
-        "tags": ["User Profile"],
         "operationId": "deleteUserBio",
         "responses": {
           "200": {
@@ -1486,61 +1417,6 @@
               }
             }
           }
-        }
-      }
-    },
-    "/privacy/settings/profile-visibility": {
-      "patch": {
-        "summary": "Set profile visibility",
-        "description": "Control who can see profile picture, stories, and last seen.",
-        "tags": ["Privacy Settings"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "profilePicture": {
-                    "type": "string",
-                    "enum": ["Everyone", "Contacts", "Nobody"]
-                  },
-                  "stories": {
-                    "type": "string",
-                    "enum": ["Everyone", "Contacts", "Nobody"]
-                  },
-                  "lastSeen": {
-                    "type": "string",
-                    "enum": ["Everyone", "Contacts", "Nobody"]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Profile visibility settings updated successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {"type": "string", "example": "success"},
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "profilePicture": {"type": "string"},
-                        "stories": {"type": "string"},
-                        "lastSeen": {"type": "string"}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {"description": "Invalid request data."}
         }
       }
     },
