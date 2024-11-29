@@ -80,12 +80,12 @@ const userSchema = new mongoose.Schema({
   passwordConfirm: {
     type: String,
     // required: [true, "Password Confirm is required"],
-    validate: {
-      validator(el) {
-        return el === this.password;
-      },
-      message: "Password and passwordConfirm are different.",
-    },
+    // validate: {
+    //   validator(el) {
+    //     return el === this.password;
+    //   },
+    //   message: "Password and passwordConfirm are different.",
+    // },
   },
 
   phone: {
@@ -362,16 +362,18 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
   }
+  console.log("WHY");
 
   this.passwordModifiedAt = Date.now();
   return next();
 });
 
 userSchema.pre("save", async function (next) {
+  console.log("WHY");
   if (this.isModified("password")) {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
-    this.passwordConfirm = undefined;
+    this.passwordConfirm = this.password;
   }
   next();
 });
@@ -379,12 +381,14 @@ userSchema.pre("save", async function (next) {
 userSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
   if (update.password) {
+    console.log(update.password, " + ", update.passwordConfirm);
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
-    update.passwordConfirm = await bcrypt.hash(
-      update.passwordConfirm,
-      saltRounds
-    );
+    update.passwordConfirm = update.password;
+    console.log(update.password === update.passwordConfirm);
+    console.log(update.password);
+    console.log(update.passwordConfirm);
+
     update.passwordModifiedAt = Date.now();
   }
   next();
