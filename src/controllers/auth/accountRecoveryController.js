@@ -90,7 +90,11 @@ const resetPassword = catchAsync(async (req, res, next) => {
     }
   );
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(
+    req,
+    res,
+    user
+  );
   updatedUser.password = undefined;
 
   return res.status(200).json({
@@ -159,7 +163,7 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
     {new: true}
   );
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(req, res, user);
   updatedUser.password = undefined;
 
   res.status(200).json({

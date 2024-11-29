@@ -105,7 +105,7 @@ describe("Auth Controller - Google Authentication", () => {
       expect(res.status.calledWith(300)).to.be.true;
       expect(res.redirect.calledOnce).to.be.true;
       expect(res.redirect.firstCall.args[0]).to.deep.equal(
-        process.env.FRONTEND_LOGIN_CALLBACK
+        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token`
       );
     });
 
@@ -141,7 +141,7 @@ describe("Auth Controller - Google Authentication", () => {
       expect(res.status.calledWith(300)).to.be.true;
       expect(res.redirect.calledOnce).to.be.true;
       expect(res.redirect.firstCall.args[0]).to.deep.equal(
-        process.env.FRONTEND_LOGIN_CALLBACK
+        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token`
       );
     });
   });

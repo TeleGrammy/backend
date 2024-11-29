@@ -13,7 +13,7 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
   const {username, email, password, passwordConfirm, phone, publicKey} =
     req.body;
 
-  const verificationCode = generateConfirmationCode();w
+  const verificationCode = generateConfirmationCode();
 
   let existingUser = await userService.getUserByUUID(username);
   if (existingUser) {
@@ -81,13 +81,13 @@ exports.postVerify = catchAsync(async (req, res) => {
     password: pendingUser.password,
     passwordConfirm: pendingUser.passwordConfirm,
     phone: pendingUser.phone,
-    publicKey: pendingUser._doc.publicKey,
+    publicKey: pendingUser.publicKey,
   });
   await PendingUser.deleteOne({email});
 
   if (process.env.NODE_ENV === "test") {
     return res.status(200).json({
-      message:"Account verified successfully"
+      message: "Account verified successfully",
     });
   }
 
