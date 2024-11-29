@@ -1,4 +1,5 @@
 const {default: mongoose} = require("mongoose");
+
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
@@ -52,7 +53,9 @@ module.exports.fetchChatMessages = (chatId, skip, limit) => {
     .sort({timestamp: -1}) // Sort messages by latest first
     .skip(skip)
     .limit(limit)
-    .select("content senderId messageType timestamp") // Only fetch relevant fields
+    .select(
+      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
+    ) // Only fetch relevant fields
     .populate("senderId mentions", "username"); // Populate sender details (only username)
 };
 

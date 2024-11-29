@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 const jwt = require("jsonwebtoken");
 
 const AppError = require("../errors/appError");
@@ -23,12 +24,13 @@ module.exports = catchAsync(async (req, res, next) => {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
   }
+
   const currentDeviceType = req.headers["user-agent"];
 
   const accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
-    req.headers.Authorization?.replace("Bearer ", "") ||
-    req.headers.authorization?.replace("Bearer ", "");
+    req.headers["Authorization"]?.replace("Bearer ", "") ||
+    req.headers["authorization"]?.replace("Bearer ", "");
 
   if (!accessToken) {
     return next(new AppError("Not authorized access, Please login!", 401));

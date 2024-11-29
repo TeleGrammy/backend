@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
+const AppError = require("../errors/appError");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -29,7 +30,7 @@ const createChat = async (chatData) => {
  * @param {String} chatId - The ID of the chat to retrieve.
  * @returns {Promise<Chat|null>} - A promise that resolves to the chat document if found, otherwise null.
  */
-const getChatById = async (chatId, userId) => {
+const getChatById = async (chatId) => {
   try {
     const chat = await Chat.findById(chatId)
       .populate("lastMessage pinnedMessages")
@@ -37,7 +38,6 @@ const getChatById = async (chatId, userId) => {
         path: "participants.userId",
         select: "username email phone picture screenName lastSeen status",
       });
-    if (!chat) throw new Error("Chat not found");
 
     return chat;
   } catch (error) {
@@ -71,7 +71,10 @@ const getUserChats = async (userId, skip, limit) => {
       .select(
         "name isGroup isChannel createdAt participants lastMessage pinnedMessages"
       )
-      .populate("participants.userId", "username")
+      .populate(
+        "participants.userId",
+        "username email phone picture screenName lastSeen status"
+      )
       .populate({
         path: "lastMessage",
         select: "content senderId messageType status timestamp mediaUrl",
@@ -300,6 +303,54 @@ const createOneToOneChat = async (userId1, userId2) => {
   }
 };
 
+const getChatOfChannel = async (channelId) => {
+  if (!mongoose.Types.ObjectId.isValid(channelId)) {
+    throw new AppError("Invalid channelId provided", 400);
+  }
+
+  const chat = await Chat.findOne({
+    channelId,
+    isChannel: true,
+    deleted: {$ne: true},
+  }).populate("participants.userId lastMessage pinnedMessages");
+
+  if (!chat) {
+    throw new AppError("Chat not found", 404);
+  }
+
+  return chat;
+};
+
+const changeUserRole = async (chatId, userId, newRole) => {
+  const currentChat = await getChatById(chatId);
+
+  if (!currentChat) {
+    throw new AppError("Chat not found", 404);
+  }
+
+  const currentUser = currentChat.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 404);
+  }
+
+  currentUser.role = newRole;
+
+  const updatedChat = await Chat.findByIdAndUpdate(
+    chatId,
+    {participants: currentChat.participants},
+    {new: true, runValidators: true}
+  );
+
+  if (!updatedChat) {
+    throw new AppError("Failed to update the chat", 500);
+  }
+
+  return updatedChat;
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -314,5 +365,6 @@ module.exports = {
   unpinMessage,
   createOneToOneChat,
   countUserChats,
+  getChatOfChannel,
+  changeUserRole,
 };
-

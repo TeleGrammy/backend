@@ -74,7 +74,11 @@ const resetPassword = catchAsync(async (req, res, next) => {
   if (user.passwordResetTokenExpiresAt < Date.now()) {
     return next(new AppError("The reset token is expired.", 400));
   }
-
+  if (password !== passwordConfirm) {
+    return next(
+      new AppError("Password and passwordConfirm are different.", 400)
+    );
+  }
   await userServices.findOneAndUpdate(
     {email: user.email},
     {

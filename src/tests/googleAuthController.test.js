@@ -1,5 +1,6 @@
-/* eslint-disable*/
-
+/* eslint-disable node/no-unpublished-require */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
 const {expect} = require("chai");
 const sinon = require("sinon");
 const passport = require("passport");
@@ -63,7 +64,7 @@ describe("Auth Controller - Google Authentication", () => {
 
     it("should return an error if authentication fails", async () => {
       authenticateStub.callsFake((strategy, options, callback) => {
-        return (req, res, next) => {
+        return (_req, _res, _next) => {
           callback(new AppError("Authentication failed", 401), null);
         };
       });
@@ -87,7 +88,7 @@ describe("Auth Controller - Google Authentication", () => {
       };
 
       authenticateStub.callsFake((strategy, options, callback) => {
-        return (req, res, next) => {
+        return (_req, _res, _next) => {
           callback(null, user);
         };
       });
@@ -120,7 +121,7 @@ describe("Auth Controller - Google Authentication", () => {
       };
 
       authenticateStub.callsFake((strategy, options, callback) => {
-        return (req, res, next) => {
+        return (_req, _res, _next) => {
           callback(null, user);
         };
       });

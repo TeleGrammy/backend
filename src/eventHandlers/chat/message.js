@@ -1,4 +1,3 @@
-require("socket.io");
 const messageService = require("../../services/messageService");
 const userService = require("../../services/userService");
 const chatService = require("../../services/chatService");
@@ -21,6 +20,7 @@ module.exports.sendMessage = function ({io, socket}) {
           messageData.chatId
         );
       }
+
       const message = await messageService.createMessage(messageData);
 
       logThenEmit(
@@ -85,6 +85,7 @@ module.exports.updateMessageViewres = function ({io, socket}) {
 module.exports.updateMessage = function ({io, socket}) {
   return async (payload) => {
     try {
+      // eslint-disable-next-line no-param-reassign
       payload.senderId = socket.userId;
       const message = await messageService.updateMessage(payload);
       logThenEmit(
@@ -166,6 +167,23 @@ module.exports.unpinMessage = function ({io, socket}) {
     }
   };
 };
+module.exports.sendVoiceNote = function ({io, socket}) {
+  console.log("Testing Send voice");
+  return async (payload) => {
+    console.log("Inside Testing Send voice");
+
+    const {file} = payload; // The audio file sent from the client
+    console.log(file);
+    try {
+      const url = await uploadVoiceNote(file);
+      console.log(url);
+      socket.broadcast.emit("message:send_voicenote", url);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
 module.exports.sendVoiceNote = function ({io, socket}) {
   console.log("Testing Send voice");
   return async (payload) => {

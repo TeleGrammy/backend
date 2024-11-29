@@ -360,7 +360,6 @@
  *                   type: string
  *                   example: An error has occurred while updating the read receipts settings
  */
-
 /**
  * @swagger
  * /privacy/settings/adding-policy:
@@ -422,83 +421,78 @@
  *                   type: string
  *                   example: An error has occurred while updating the user's adding policy
  */
-
 /**
  * @swagger
- *  /user/profile/email:
- *    patch:
- *      summary: updateUserEmail
- *      description: updateUserEmail
- *      tags:
- *        - User Profile
- *      operationId: updateuseremail
- *      requestBody:
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                email:
- *                  type: string
- *                  example: alibahr313@gmail.com
- *            examples:
- *              updateUserEmail:
- *                value:
- *                  email: alibahr313@gmail.com
- *      responses:
- *        '202':
- *          description: updateUserEmail
- *          headers:
- *            Access-Control-Allow-Credentials:
- *              schema:
- *                type: string
- *                example: 'true'
- *            Access-Control-Allow-Origin:
- *              schema:
- *                type: string
- *                example: '*'
- *            Connection:
- *              schema:
- *                type: string
- *                example: keep-alive
- *            Content-Length:
- *              schema:
- *                type: string
- *                example: '62'
- *            Date:
- *              schema:
- *                type: string
- *                example: Wed, 30 Oct 2024 18:32:20 GMT
- *            ETag:
- *              schema:
- *                type: string
- *                example: W/"3e-cr2oMZmXo6WMgn7ThlDoM4NH4ls"
- *            Keep-Alive:
- *              schema:
- *                type: string
- *                example: timeout=5
- *            X-Powered-By:
- *              schema:
- *                type: string
- *                example: Express
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: please confirm your new email
- *                  status:
- *                    type: string
- *                    example: pending
- *              examples:
- *                updateUserEmail:
- *                  value:
- *                    message: please confirm your new email
- *                    status: pending
- *      security:
- *        - {}
+ * /api/v1/user/profile/email:
+ *   patch:
+ *     summary: updateUserEmail
+ *     description: updateUserEmail
+ *     operationId: updateuseremail
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: alibahr313@gmail.com
+ *           examples:
+ *             updateUserEmail:
+ *               value:
+ *                 email: alibahr313@gmail.com
+ *     responses:
+ *       '202':
+ *         description: updateUserEmail
+ *         headers:
+ *           Access-Control-Allow-Credentials:
+ *             schema:
+ *               type: string
+ *               example: 'true'
+ *           Access-Control-Allow-Origin:
+ *             schema:
+ *               type: string
+ *               example: '*'
+ *           Connection:
+ *             schema:
+ *               type: string
+ *               example: keep-alive
+ *           Content-Length:
+ *             schema:
+ *               type: string
+ *               example: '62'
+ *           Date:
+ *             schema:
+ *               type: string
+ *               example: Wed, 30 Oct 2024 18:32:20 GMT
+ *           ETag:
+ *             schema:
+ *               type: string
+ *               example: W/"3e-cr2oMZmXo6WMgn7ThlDoM4NH4ls"
+ *           Keep-Alive:
+ *             schema:
+ *               type: string
+ *               example: timeout=5
+ *           X-Powered-By:
+ *             schema:
+ *               type: string
+ *               example: Express
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: please confirm your new email
+ *                 status:
+ *                   type: string
+ *                   example: pending
+ *             examples:
+ *               updateUserEmail:
+ *                 value:
+ *                   message: please confirm your new email
+ *                   status: pending
  */
 
 /**

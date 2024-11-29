@@ -67,16 +67,16 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
   const userId = req.user.id; // User ID passed as query parameter
 
   const page = parseInt(req.query.page, 10) || 1; // Default to page 1
-  const limit = parseInt(req.query.limit, 10) || 50; // Default to 10 items per page
+  const limit = parseInt(req.query.limit, 10) || 50; // Default to 50 items per page
   const skip = (page - 1) * limit;
 
-  // Query to find all chats where the user is a participant
   const chats = await chatService.getUserChats(userId, skip, limit);
 
   // Count total documents for pagination info
   const totalChats = await chatService.countUserChats(userId);
 
   return res.status(200).json({
+    userId,
     totalChats,
     currentPage: page,
     totalPages: Math.ceil(totalChats / limit),

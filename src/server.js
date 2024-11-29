@@ -6,7 +6,10 @@ const httpServer = createServer(app); // app is passed here
 require("./ioApp")(httpServer);
 
 mongoose
-  .connect(process.env.DB_HOST)
+  .connect(process.env.DB_HOST, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("Database Connection succeeded");
     httpServer.listen(

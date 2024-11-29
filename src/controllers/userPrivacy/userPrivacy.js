@@ -4,17 +4,6 @@ const catchAsync = require("../../utils/catchAsync");
 
 const AppError = require("../../errors/appError");
 
-const {seedData} = require("../../models/seeds/memberShipSeed");
-
-const executeSeed = catchAsync(async (req, res, next) => {
-  seedData().catch(console.error);
-
-  return res.status(200).json({
-    status: "success",
-    message: "seed is inserted successfully",
-  });
-});
-
 const changeReadReceiptsStatus = catchAsync(async (req, res, next) => {
   const {isEnabled} = req.body;
   const userId = req.user.id;
@@ -69,6 +58,7 @@ const getContacts = catchAsync(async (req, res, next) => {
   const userContacts = await userService.getUserById(userId, "contacts -_id");
 
   userContacts.contacts.forEach((contact) => {
+    // eslint-disable-next-line no-param-reassign
     delete contact._id;
   });
 
@@ -219,7 +209,6 @@ const getPrivacySettings = catchAsync(async (req, res, next) => {
 });
 
 module.exports = {
-  executeSeed,
   changeProfileVisibility,
   changeBlockingStatus,
   changeReadReceiptsStatus,
