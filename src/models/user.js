@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema({
     validate: {
       validator: (value) => {
         try {
+          // eslint-disable-next-line node/no-unsupported-features/node-builtins
           crypto.createPublicKey(value);
           return true;
         } catch (err) {
@@ -230,7 +231,8 @@ const userSchema = new mongoose.Schema({
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    return next();
+    next();
+    return;
   }
 
   if (!doc.length) {
@@ -255,7 +257,8 @@ userSchema.pre(/Delete$/, async function (next) {
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("User not found", 404);
+    next();
+    return;
   }
 
   if (!doc.length) {
@@ -280,7 +283,8 @@ userSchema.pre(/Delete$/, async function (next) {
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    return next();
+    next();
+    return;
   }
 
   if (!doc.length) {
@@ -305,7 +309,8 @@ userSchema.pre(/Delete$/, async function (next) {
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    return next();
+    next();
+    return;
   }
 
   if (!doc.length) {

@@ -1,5 +1,14 @@
 const router = require("express").Router();
-const chatController = require("../../controllers/chat/chat");
+const {
+  getChat,
+  getChatById,
+  getAllChats,
+  fetchContacts,
+} = require("../../controllers/chat/chat");
 
-router.get("/get-chat", chatController.getChat);
+router.get("/chat/:id", getChatById);
+router.get("/user-chat", getChat);
+router.get("/all-chats", getAllChats);
+router.post("/fetch-contacts", fetchContacts);
+
 module.exports = router;
