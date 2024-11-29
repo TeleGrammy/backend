@@ -62,7 +62,7 @@ app.use("/api/v1/auth", authenticationRouter);
 app.use("/api/v1/user/profile", userProfileRouter);
 app.use("/api/v1/user/stories", storyRouter);
 
-app.use("/api/v1/messaging/upload",isAuthenticated, mediaRouter);
+app.use("/api/v1/messaging/upload", isAuthenticated, mediaRouter);
 app.use("/api/v1/privacy/settings", userPrivacyRouter);
 app.use("/api/v1/chats", isAuthenticated, chatRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
