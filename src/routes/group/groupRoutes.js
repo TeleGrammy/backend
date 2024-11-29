@@ -40,4 +40,8 @@ router
 router
   .route("/:groupId/mute-notification")
   .patch(isAuthenticated, groupController.muteNotification);
+
+router
+  .route("/:groupId/members/:memberId/permissions")
+  .patch(isAuthenticated, groupController.updateMemberPermission);
 module.exports = router;
