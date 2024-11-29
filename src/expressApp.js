@@ -19,8 +19,10 @@ const userProfileRouter = require("./routes/userProfile/userProfile");
 const userPrivacyRouter = require("./routes/userPrivacy/userPrivacy");
 const storyRouter = require("./routes/userProfile/story");
 const mediaRouter = require("./routes/messaging/media");
+const chatRouter = require("./routes/chat/chat");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
+const isAuthenticated = require("./middlewares/isAuthenticated");
 
 const app = express();
 
@@ -62,7 +64,7 @@ app.use("/api/v1/user/stories", storyRouter);
 
 app.use("/api/v1/messaging/upload", mediaRouter);
 app.use("/api/v1/privacy/settings", userPrivacyRouter);
-
+app.use("/api/v1/chats", isAuthenticated, chatRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(globalErrorHandler);

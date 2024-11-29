@@ -31,13 +31,7 @@ const chatSchema = new mongoose.Schema({
   pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
 });
 
-chatSchema.post(/^find/, (doc, next) => {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("Chat not found", 404);
-  }
 
-  next();
-});
 applySoftDeleteMiddleWare(chatSchema);
 
 const Chat = mongoose.model("Chat", chatSchema);

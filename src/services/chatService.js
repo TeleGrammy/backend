@@ -29,12 +29,16 @@ const createChat = async (chatData) => {
  * @param {String} chatId - The ID of the chat to retrieve.
  * @returns {Promise<Chat|null>} - A promise that resolves to the chat document if found, otherwise null.
  */
-const getChatById = async (chatId) => {
+const getChatById = async (chatId, userId) => {
   try {
-    const chat = await Chat.findById(chatId).populate(
-      "participants.userId lastMessage pinnedMessages"
-    );
+    const chat = await Chat.findById(chatId)
+      .populate("lastMessage pinnedMessages")
+      .populate({
+        path: "participants.userId",
+        select: "username email phone picture screenName lastSeen status",
+      });
     if (!chat) throw new Error("Chat not found");
+
     return chat;
   } catch (error) {
     throw new Error(`Error retrieving chat: ${error.message}`);
@@ -58,17 +62,49 @@ const getChatsByIds = async (chatIds) => {
  * @param {String} userId - The ID of the user whose chats to retrieve.
  * @returns {Promise<Array<Chat>|null>} - A promise that resolves to an array of chats if found, otherwise null.
  */
-const getUserChats = async (userId) => {
+const getUserChats = async (userId, skip, limit) => {
   try {
-    const chats = await Chat.find({"participants.userId": userId}).populate(
-      "participants.userId lastMessage pinnedMessages"
-    );
+    const chats = await Chat.find({"participants.userId": userId})
+      .skip(skip)
+      .limit(limit)
+      .sort({createdAt: -1})
+      .select(
+        "name isGroup isChannel createdAt participants lastMessage pinnedMessages"
+      )
+      .populate("participants.userId", "username")
+      .populate({
+        path: "lastMessage",
+        select: "content senderId messageType status timestamp mediaUrl",
+        populate: {
+          path: "senderId",
+          select: "username",
+        },
+      })
+      .populate({
+        path: "pinnedMessages",
+        select: "content senderId messageType status timestamp mediaUrl",
+        populate: {
+          path: "senderId",
+          select: "username",
+        },
+      });
     return chats;
   } catch (error) {
     throw new Error(`Error retrieving user chats: ${error.message}`);
   }
 };
 
+const countUserChats = async (userId) => {
+  try {
+    const totalChats = await Chat.countDocuments({
+      "participants.userId": userId,
+    });
+
+    return totalChats;
+  } catch (error) {
+    throw new Error(`Error counting user chats: ${error.message}`);
+  }
+};
 /**
  * Updates the last message in a chat.
  * @memberof Service.Chat
@@ -190,7 +226,7 @@ const pinMessage = async (chatId, messageId) => {
     const message = await Message.findById(messageId);
 
     if (!message) throw new Error("Message not found");
-    if (message.chatId != chatId) {
+    if (message.chatId !== chatId) {
       throw new Error("Message is not part of the provided chat");
     }
     const chat = await Chat.findByIdAndUpdate(
@@ -234,7 +270,12 @@ const unpinMessage = async (chatId, messageId) => {
 const createOneToOneChat = async (userId1, userId2) => {
   try {
     let chat = await Chat.findOne({
-      participants: {$all: [{userId: userId1}, {userId: userId2}], $size: 2},
+      participants: {
+        $all: [
+          {$elemMatch: {userId: new mongoose.Types.ObjectId(userId1)}},
+          {$elemMatch: {userId: new mongoose.Types.ObjectId(userId2)}},
+        ],
+      },
       isGroup: false,
       isChannel: false,
     }).populate("participants.userId", "username email phone status");
@@ -272,5 +313,5 @@ module.exports = {
   pinMessage,
   unpinMessage,
   createOneToOneChat,
+  countUserChats,
 };
-
