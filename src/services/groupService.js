@@ -28,6 +28,16 @@ const findGroupById = (groupId) => {
   return Group.findById(groupId);
 };
 
+const findGroupByIdWithPopulatedMembersAndAdmins = (groupId) => {
+  return Group.findById(groupId)
+    .populate({
+      path: "admins.adminId",
+    })
+    .populate({
+      path: "members.memberId",
+    });
+};
+
 const createAdmin = (memberData, newPermission, superAdminId, customTitle) => {
   const admin = new GroupAdmin({
     adminId: memberData.memberId,
@@ -59,4 +69,5 @@ module.exports = {
   createAdmin,
   createMember,
   findAndUpdateGroup,
+  findGroupByIdWithPopulatedMembersAndAdmins,
 };

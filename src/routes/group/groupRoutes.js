@@ -28,4 +28,12 @@ router
 router
   .route("/:groupId/group-type")
   .patch(isAuthenticated, groupController.updateGroupType);
+
+router
+  .route("/:groupId/members")
+  .get(isAuthenticated, groupController.membersList);
+
+router
+  .route("/:groupId/admins")
+  .get(isAuthenticated, groupController.adminsList);
 module.exports = router;

@@ -2,6 +2,22 @@ const groupService = require("../../services/groupService");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
+const getListOfParticipants = (tempMembers) => {
+  const members = [];
+  tempMembers.forEach((member) => {
+    const memberData = member.adminId || member.memberId;
+    const data = {
+      id: memberData._id,
+      username: memberData.username,
+      picture: memberData.picture,
+      lastSeen: memberData.lastSeen,
+      customTitle: member.customTitle,
+    };
+    members.push(data);
+  });
+  return members;
+};
+
 const addNewGroup = catchAsync(async (req, res, next) => {
   const {groupName} = req.body;
   const userId = req.user.id;
@@ -302,6 +318,66 @@ const updateGroupType = catchAsync(async (req, res, next) => {
   });
 });
 
+const membersList = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const participantId = req.user.id;
+
+  const group =
+    await groupService.findGroupByIdWithPopulatedMembersAndAdmins(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  const participantData =
+    group.admins.find((admin) => admin.adminId.equals(participantId)) ||
+    group.members.find((member) => member.memberId.equals(participantId));
+
+  if (!participantData)
+    throw new AppError(
+      "Forbidden Action. You are not member of that group",
+      403
+    );
+
+  const members = getListOfParticipants(group.admins.concat(group.members));
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      count: members.length,
+      members,
+    },
+    message: "The list of members is retrieved successfully.",
+  });
+});
+
+const adminsList = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const participantId = req.user.id;
+
+  const group =
+    await groupService.findGroupByIdWithPopulatedMembersAndAdmins(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  const participantData =
+    group.admins.find((admin) => admin.adminId.equals(participantId)) ||
+    group.members.find((member) => member.memberId.equals(participantId));
+
+  if (!participantData)
+    throw new AppError(
+      "Forbidden Action. You are not member of that group",
+      403
+    );
+
+  const admins = getListOfParticipants(group.admins);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      count: admins.length,
+      admins,
+    },
+    message: "The list of admins is retrieved successfully.",
+  });
+});
+
 module.exports = {
   addNewGroup,
   findGroup,
@@ -312,4 +388,6 @@ module.exports = {
   addMember,
   updateGroupLimit,
   updateGroupType,
+  membersList,
+  adminsList,
 };
