@@ -6,7 +6,7 @@ const userServices = require("../../services/userService");
 const mails = require("../../utils/mailTemplate");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
-const manageSessionForUser = require("../../utils/sessionManagement").default;
+const manageSessionForUser = require("../../utils/sessionManagement");
 
 const AppError = require("../../errors/appError");
 
@@ -47,9 +47,8 @@ const forgetPassword = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: "success",
-    data: {
-      message: `Sent Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
-    },
+    data: {},
+    message: `Sent Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
   });
 });
 
@@ -91,7 +90,11 @@ const resetPassword = catchAsync(async (req, res, next) => {
     }
   );
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(
+    req,
+    res,
+    user
+  );
   updatedUser.password = undefined;
 
   return res.status(200).json({
@@ -139,9 +142,8 @@ const resendResetToken = catchAsync(async (req, res, next) => {
 
   return res.status(200).json({
     status: "success",
-    data: {
-      message: `Resend Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
-    },
+    data: {},
+    message: `Resend Email successfully. (Valid for ${process.env.RESET_PASSWORD_TOKEN_DURATION} minutes)`,
   });
 });
 
@@ -161,7 +163,7 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
     {new: true}
   );
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(req, res, user);
   updatedUser.password = undefined;
 
   res.status(200).json({
@@ -175,7 +177,7 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
 });
 
 const redirectResetPage = catchAsync(async (req, res, next) => {
-  const resetURL = `${process.env.SET_PASSWORD_URL}?token=${req.params.token}`;
+  const resetURL = `${process.env.SET_PASSWORD_URL}/${req.params.token}`;
   res.redirect(resetURL);
 });
 

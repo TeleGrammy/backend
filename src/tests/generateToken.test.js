@@ -1,6 +1,6 @@
+/* eslint-disable node/no-unpublished-require */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-expressions */
-
 const sinon = require("sinon");
 const {expect} = require("chai");
 

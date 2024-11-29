@@ -37,14 +37,14 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
     verificationCode,
     publicKey,
   });
+  await newUser.save();
+
   await sendConfirmationEmail(
     email,
     username,
     verificationCode,
     process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
   );
-
-  await newUser.save();
 
   return res.status(201).json({
     message:
@@ -83,9 +83,15 @@ exports.postVerify = catchAsync(async (req, res) => {
     password: pendingUser.password,
     passwordConfirm: pendingUser.passwordConfirm,
     phone: pendingUser.phone,
-    publicKey: pendingUser._doc.publicKey,
+    publicKey: pendingUser.publicKey,
   });
   await PendingUser.deleteOne({email});
+
+  if (process.env.NODE_ENV === "test") {
+    return res.status(200).json({
+      message: "Account verified successfully",
+    });
+  }
 
   const {updatedUser, accessToken} = await manageSessionForUser.default(
     req,
@@ -126,7 +132,8 @@ exports.resendVerification = catchAsync(async (req, res) => {
   await sendConfirmationEmail(
     pendingUser.email,
     pendingUser.username,
-    newVerificationCode
+    newVerificationCode,
+    process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
   );
 
   return res

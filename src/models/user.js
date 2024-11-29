@@ -333,6 +333,31 @@ userSchema.pre(/Delete$/, async function (next) {
   next();
 });
 
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    next();
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
 userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
