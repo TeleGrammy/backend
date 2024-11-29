@@ -14,10 +14,6 @@ router
   .delete(isAuthenticated, groupController.removeAdmin);
 
 router
-  .route("/:groupId/users/:userId")
-  .patch(isAuthenticated, groupController.addMember);
-
-router
   .route("/:groupId/size")
   .patch(isAuthenticated, groupController.updateGroupLimit);
 
