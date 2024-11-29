@@ -131,6 +131,52 @@ const addAdmin = catchAsync(async (req, res, next) => {
   });
 });
 
+const removeAdmin = catchAsync(async (req, res, next) => {
+  const adminId = req.params.userId;
+  const {groupId} = req.params;
+  const participantId = req.user.id;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  const participantData = group.admins.find((participant) =>
+    participant.adminId.equals(participantId)
+  );
+  if (!participantData)
+    throw new AppError(
+      "Unauthorized Action. The user does not have permission to remove an admin from admin list.",
+      403
+    );
+  const index = group.admins.findIndex((admin) =>
+    admin.adminId.equals(adminId)
+  );
+
+  if (index === -1)
+    throw new AppError("User not found in administrator list", 404);
+
+  if (
+    group.admins[index].superAdminId.toString() !== participantId &&
+    participantId !== group.ownerId.toString()
+  )
+    throw new AppError("Insufficient Permission.", 403);
+
+  const member = groupService.createMember(
+    group.admins[index].adminId.toString()
+  );
+  group.admins.splice(index, 1);
+  group.members.push(member);
+
+  await group.save();
+  res.status(200).json({
+    status: "success",
+    data: {
+      group,
+    },
+    message:
+      "The user removed successfully from administrator list and added to members list.",
+  });
+});
+
 const addMember = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const {userId} = req.params;
@@ -202,11 +248,68 @@ const findGroup = catchAsync(async (req, res, next) => {
   res.status(200).json(group);
 });
 
+const updateGroupLimit = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const {groupSize} = req.body;
+  const participantId = req.user.id;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  if (group.ownerId.toString() !== participantId)
+    throw new AppError(
+      "Insufficient Permission. This feature is restricted to the owner of the group",
+      403
+    );
+
+  if (group.admins.length + group.members.length > groupSize)
+    throw new AppError(
+      "The new size of the group is not allowed. The group contains participant greater than the new size",
+      400
+    );
+
+  group.groupSizeLimit = groupSize;
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {group},
+    message: "The group size is updated successfully",
+  });
+});
+
+const updateGroupType = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const {groupType} = req.body;
+  const participantId = req.user.id;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  if (participantId !== group.ownerId.toString())
+    throw new AppError(
+      "Forbidden Action. The user is not the owner of the group",
+      403
+    );
+
+  group.groupType = groupType;
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {group},
+    message: "The group type is updated successfully",
+  });
+});
+
 module.exports = {
   addNewGroup,
   findGroup,
   leaveGroup,
   deleteGroup,
   addAdmin,
+  removeAdmin,
   addMember,
+  updateGroupLimit,
+  updateGroupType,
 };

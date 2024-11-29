@@ -47,10 +47,16 @@ const createMember = (memberId) => {
   return member;
 };
 
+const findAndUpdateGroup = (groupId, newData, options) => {
+  const group = Group.findByIdAndUpdate(groupId, newData, options);
+  return group;
+};
+
 module.exports = {
   createGroup,
   findGroupById,
   deleteGroup,
   createAdmin,
   createMember,
+  findAndUpdateGroup,
 };

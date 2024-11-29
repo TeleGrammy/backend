@@ -15,9 +15,17 @@ router
 
 router
   .route("/:groupId/admins/:userId")
-  .patch(isAuthenticated, groupController.addAdmin);
+  .patch(isAuthenticated, groupController.addAdmin)
+  .delete(isAuthenticated, groupController.removeAdmin);
 router
   .route("/:groupId/users/:userId")
   .patch(isAuthenticated, groupController.addMember);
 
+router
+  .route("/:groupId/size")
+  .patch(isAuthenticated, groupController.updateGroupLimit);
+
+router
+  .route("/:groupId/group-type")
+  .patch(isAuthenticated, groupController.updateGroupType);
 module.exports = router;
