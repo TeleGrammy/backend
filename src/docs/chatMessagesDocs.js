@@ -135,6 +135,8 @@
  *              schema:
  *                type: object
  *                properties:
+ *                  userId:
+ *                    type: string
  *                  totalChats:
  *                    type: integer
  *                  currentPage:
