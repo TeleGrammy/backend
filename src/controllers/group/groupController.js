@@ -336,7 +336,7 @@ const membersList = catchAsync(async (req, res, next) => {
       403
     );
 
-  const members = getListOfParticipants(group.admins.concat(group.members));
+  const members = getListOfParticipants([...group.members, ...group.admins]);
 
   res.status(200).json({
     status: "success",
@@ -378,6 +378,36 @@ const adminsList = catchAsync(async (req, res, next) => {
   });
 });
 
+const muteNotification = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const {mute} = req.body;
+  const {muteUntil} = req.body;
+  const participantId = req.user.id;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  const participantData =
+    group.members.find(
+      (member) => member.memberId.toString() === participantId
+    ) ||
+    group.admins.find((admin) => admin.adminId.toString() === participantId);
+
+  if (!participantData) throw new AppError("User not found in the group", 404);
+
+  participantData.mute = mute;
+
+  participantData.muteUntil = muteUntil;
+
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {user: participantData},
+    message: "The user is updated successfully.",
+  });
+});
+
 module.exports = {
   addNewGroup,
   findGroup,
@@ -390,4 +420,5 @@ module.exports = {
   updateGroupType,
   membersList,
   adminsList,
+  muteNotification,
 };

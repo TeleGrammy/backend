@@ -94,7 +94,7 @@ const adminSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
-  AdminAt: {
+  adminAt: {
     type: Date,
     default: Date.now(),
   },

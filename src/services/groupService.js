@@ -62,6 +62,29 @@ const findAndUpdateGroup = (groupId, newData, options) => {
   return group;
 };
 
+const updateParticipant = (
+  groupId,
+  arrayField,
+  userField,
+  userFilter,
+  newData,
+  options
+) => {
+  const user = Group.findByIdAndUpdate(
+    {
+      _id: groupId,
+      [`${userField}`]: userFilter,
+    },
+    {
+      $set: {
+        [`${arrayField}`]: newData,
+      },
+    },
+    options
+  );
+  return user;
+};
+
 module.exports = {
   createGroup,
   findGroupById,
@@ -70,4 +93,5 @@ module.exports = {
   createMember,
   findAndUpdateGroup,
   findGroupByIdWithPopulatedMembersAndAdmins,
+  updateParticipant,
 };

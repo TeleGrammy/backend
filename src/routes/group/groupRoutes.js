@@ -36,4 +36,8 @@ router
 router
   .route("/:groupId/admins")
   .get(isAuthenticated, groupController.adminsList);
+
+router
+  .route("/:groupId/mute-notification")
+  .patch(isAuthenticated, groupController.muteNotification);
 module.exports = router;
