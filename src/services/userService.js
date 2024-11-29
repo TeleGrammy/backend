@@ -364,18 +364,6 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
   return user.save();
 };
 
-const setWhoCanAddMe = async (userId, newPolicy) => {
-  const user = await getUserById(userId);
-
-  if (!user) {
-    throw new AppError("User is not found while searching", 404);
-  }
-
-  user.whoCanAddMe = newPolicy;
-
-  return await user.save();
-};
-
 const ackEvent = async (id, chatId, offset) => {
   const user = await User.findById(id);
 
