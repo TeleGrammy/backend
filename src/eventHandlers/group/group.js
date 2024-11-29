@@ -1,6 +1,7 @@
 const AppError = require("../../errors/appError");
 const groupService = require("../../services/groupService");
 const handleSocketError = require("../../errors/handleSocketError");
+const {logThenEmit} = require("../utils/utilsFunc");
 
 const addMember = ({io, socket}) => {
   return async (data) => {
@@ -73,6 +74,17 @@ const addMember = ({io, socket}) => {
           index === -1 ? null : group.leftMembers[index].leftAt;
 
         group.members.push(newMember);
+        // TODO : should be updated to use the chat Id  after creation the chat  of type group
+        logThenEmit(
+          participantId,
+          "group:newMember",
+          {
+            chatId: groupId,
+            addedBy: participantId,
+            newMember: newMember._doc,
+          },
+          socket.to(`group:${groupId}`)
+        );
       });
 
       await group.save();
@@ -111,8 +123,25 @@ const leaveGroup = ({io, socket}) => {
 
       if (totalMembers === 0) {
         await groupService.deleteGroup(groupId);
+        logThenEmit(
+          userId,
+          "group:deleted",
+          {
+            chatId: groupId,
+          },
+          socket.to(`group:${groupId}`)
+        );
       } else {
         await group.save();
+        logThenEmit(
+          userId,
+          "group:memberLeaved",
+          {
+            chatId: groupId,
+            memberId: userId,
+          },
+          socket.to(`group:${groupId}`)
+        );
       }
     } catch (err) {
       handleSocketError(socket, err);
@@ -137,6 +166,14 @@ const deleteGroup = ({io, socket}) => {
         );
 
       await groupService.deleteGroup(groupId);
+      logThenEmit(
+        userId,
+        "group:deleted",
+        {
+          chatId: groupId,
+        },
+        socket.to(`group:${groupId}`)
+      );
     } catch (err) {
       handleSocketError(socket, err);
     }
@@ -185,6 +222,16 @@ const removeParticipant = ({io, socket}) => {
       else group.members.splice(index, 1);
 
       await group.save();
+      logThenEmit(
+        userId,
+        "group:memberRemoved",
+        {
+          chatId: groupId,
+          removedBy: participantId,
+          memberId: userId,
+        },
+        socket.to(`group:${groupId}`)
+      );
     } catch (err) {
       handleSocketError(socket, err);
     }
