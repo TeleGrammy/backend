@@ -3,7 +3,7 @@ const validator = require("validator");
 
 const {phoneRegex} = require("../utils/regexFormat");
 
-const pendignUserSchema = new mongoose.Schema({
+const pendingUserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],
@@ -69,8 +69,25 @@ const pendignUserSchema = new mongoose.Schema({
     required: true,
     default: new Date(Date.now() + 10 * 60 * 1000),
   },
+  publicKey: {
+    type: String,
+    unique: true,
+    required: false,
+    validate: {
+      validator: (value) => {
+        try {
+          // eslint-disable-next-line node/no-unsupported-features/node-builtins
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
 });
 
-const PendingUser = mongoose.model("PendingUsers", pendignUserSchema);
+const PendingUser = mongoose.model("PendingUsers", pendingUserSchema);
 
 module.exports = PendingUser;

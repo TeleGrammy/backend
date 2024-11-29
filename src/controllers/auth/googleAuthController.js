@@ -19,6 +19,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
     "google",
     {failureRedirect: "/login"},
     async (err, user) => {
+      console.log("GOOGLE user:", user);
       if (err || !user) {
         return next(new AppError("Authentication failed", 401));
       }

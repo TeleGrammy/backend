@@ -1,3 +1,4 @@
+/* eslint-disable node/no-unpublished-require */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-expressions */
 
@@ -16,8 +17,7 @@ const userService = require("../services/userService");
 chai.use(chaiAsPromised);
 
 describe("User Service Test Suites", function () {
-  this.timeout(5000);
-  afterEach(() => {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -312,6 +312,7 @@ describe("User Service Test Suites", function () {
         picture: "profile.jpg",
         accessToken: "accessToken12345@",
         refreshToken: "refreshToken12345@",
+        publicKey: "123456",
       };
 
       const createStub = sinon.stub(User, "create").resolves(userData);
