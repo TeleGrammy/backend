@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
+
 const sinon = require("sinon");
 const {expect} = require("chai");
 

@@ -12,7 +12,8 @@ exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const user = await userService.findOne({_id: req.user.id});
 
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   // Update pendingEmail and create confirmation code
   const confirmationCode = generateConfirmationCode();
@@ -33,7 +34,8 @@ exports.updateUserEmail = catchAsync(async (req, res, next) => {
 exports.requestNewConfirmationCode = catchAsync(async (req, res, next) => {
   const user = await userService.findOne({_id: req.user.id});
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   // Update pendingEmail and create confirmation code
   const confirmationCode = generateConfirmationCode();
@@ -57,7 +59,8 @@ exports.confirmNewEmail = catchAsync(async (req, res, next) => {
 
   const user = await userService.getUserById(req.user.id);
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   await user.verifyConfirmationCode(confirmationCode);
 
@@ -72,7 +75,8 @@ exports.confirmNewEmail = catchAsync(async (req, res, next) => {
 exports.getUserProfileInformation = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id);
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   const profile = extractProfileInfo(user);
 
@@ -97,7 +101,8 @@ exports.updateUserProfileInformation = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
 
   const profile = extractProfileInfo(user);
@@ -115,7 +120,8 @@ exports.deleteUserBio = catchAsync(async (req, res, next) => {
     {new: true, runValidators: true}
   );
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
 
   const profile = extractProfileInfo(user);
@@ -128,12 +134,14 @@ exports.deleteUserBio = catchAsync(async (req, res, next) => {
 exports.updateUserPicture = catchAsync(async (req, res, next) => {
   const photo = req.file;
   if (!photo) {
-    return next(new AppError("No photo uploaded", 400));
+    next(new AppError("No photo uploaded", 400));
+    return;
   }
 
   const user = await userService.getUserById(req.user.id);
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   await user.updatePictureKey(photo.key);
 
@@ -147,7 +155,8 @@ exports.updateUserPicture = catchAsync(async (req, res, next) => {
 exports.deleteUserPicture = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id, "+pictureKey");
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   await user.deleteUserPicture();
 
@@ -164,7 +173,8 @@ exports.deleteUserPicture = catchAsync(async (req, res, next) => {
 exports.getUserActivity = catchAsync(async (req, res, next) => {
   const user = await userService.getUserById(req.user.id);
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   const data = {
     status: user.status,
@@ -186,7 +196,8 @@ exports.updateUserActivity = catchAsync(async (req, res, next) => {
     {new: true, runValidators: true}
   );
   if (!user) {
-    return next(new AppError("User not found", 404));
+    next(new AppError("User not found", 404));
+    return;
   }
   const data = {
     status: user.status,
