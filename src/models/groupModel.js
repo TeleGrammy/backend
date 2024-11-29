@@ -25,45 +25,44 @@ const memberSchema = new mongoose.Schema({
   permissions: {
     sendMessages: {
       type: Boolean,
+      default: true,
     },
     sendMedia: {
-      type: {
-        photos: {
-          type: Boolean,
-          default: true,
-        },
-        videos: {
-          type: Boolean,
-          default: true,
-        },
-        files: {
-          type: Boolean,
-          default: true,
-        },
-        music: {
-          type: Boolean,
-          default: true,
-        },
-        voiceMessages: {
-          type: Boolean,
-          default: true,
-        },
-        videoMessages: {
-          type: Boolean,
-          default: true,
-        },
-        stickers: {
-          type: Boolean,
-          default: true,
-        },
-        polls: {
-          type: Boolean,
-          default: true,
-        },
-        embedLinks: {
-          type: Boolean,
-          default: true,
-        },
+      photos: {
+        type: Boolean,
+        default: true,
+      },
+      videos: {
+        type: Boolean,
+        default: true,
+      },
+      files: {
+        type: Boolean,
+        default: true,
+      },
+      music: {
+        type: Boolean,
+        default: true,
+      },
+      voiceMessages: {
+        type: Boolean,
+        default: true,
+      },
+      videoMessages: {
+        type: Boolean,
+        default: true,
+      },
+      stickers: {
+        type: Boolean,
+        default: true,
+      },
+      polls: {
+        type: Boolean,
+        default: true,
+      },
+      embedLinks: {
+        type: Boolean,
+        default: true,
       },
     },
     addUsers: {
