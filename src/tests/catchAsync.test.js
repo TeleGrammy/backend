@@ -1,10 +1,15 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
+
 const {expect} = require("chai");
 const sinon = require("sinon");
 
 const catchAsync = require("../utils/catchAsync");
 
 describe("catchAsync Utility Function", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
 
   beforeEach(() => {
     req = {};

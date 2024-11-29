@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// eslint-disable-next-line node/no-unpublished-require
 const supertest = require("supertest");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -9,7 +10,6 @@ const AppError = require("../errors/appError");
 const manageSessionForUser = require("../utils/sessionManagement");
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
-const catchAsync = require("../utils/catchAsync");
 
 jest.mock("jsonwebtoken");
 jest.mock("../services/userService");

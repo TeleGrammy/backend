@@ -157,7 +157,7 @@ const getUserByEmail = async (email) => {
  * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
  */
 
-const createUser = async (userData) => {
+const createUser = (userData) => {
   const {
     username,
     email,
@@ -362,6 +362,18 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
   user.whoCanAddMe = newPolicy;
 
   return user.save();
+};
+
+const setWhoCanAddMe = async (userId, newPolicy) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new AppError("User is not found while searching", 404);
+  }
+
+  user.whoCanAddMe = newPolicy;
+
+  return await user.save();
 };
 
 const ackEvent = async (id, chatId, offset) => {
