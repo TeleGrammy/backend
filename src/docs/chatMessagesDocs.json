@@ -12,90 +12,13 @@
     }
   ],
   "paths": {
-    "/chats/": {
+    "/chats/chat/{id}": {
       "get": {
-        "summary": "Get all chats",
-        "description": "List all chats for the logged in user",
-        "tags": ["Chats"],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "integer",
-              "default": 1,
-              "minimum": 1
-            },
-            "description": "Pagination for chats."
-          }
+        "summary": "Get chat details and messages by chat ID",
+        "description": "Fetch chat details and its messages, with pagination support.",
+        "tags": [
+          "Chats"
         ],
-        "responses": {
-          "200": {
-            "description": "Retrieved the chats successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "lastMessage": {
-                            "type": "object",
-                            "properties": {
-                              "sender": {
-                                "type": "string"
-                              },
-                              "content": {
-                                "type": "string"
-                              },
-                              "messageType": {
-                                "type": "string"
-                              },
-                              "timeStamp": {
-                                "type": "string"
-                              },
-                              "status": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "picture": {
-                            "type": "string"
-                          },
-                          "isMuted": {
-                            "type": "boolean"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request."
-          }
-        }
-      }
-    },
-    "/chats/{id}": {
-      "get": {
-        "summary": "Get chat messages and metadata",
-        "description": "List messages of the current chat",
-        "tags": ["Chats"],
         "parameters": [
           {
             "in": "path",
@@ -104,7 +27,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Conversation identifier."
+            "description": "Unique identifier for the chat."
           },
           {
             "in": "query",
@@ -114,201 +37,181 @@
               "default": 1,
               "minimum": 1
             },
-            "description": "Pagination for messages."
+            "description": "Page number for message pagination."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "minimum": 1
+            },
+            "description": "Number of messages per page."
           }
         ],
         "responses": {
           "200": {
-            "description": "Retrieved the chats successfully.",
+            "description": "Successfully retrieved chat details and messages.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {
+                    "chat": {
+                      "type": "object"
+                    },
+                    "messages": {
+                      "type": "object",
+                      "properties": {
+                        "totalMessages": {
+                          "type": "integer"
+                        },
+                        "currentPage": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        },
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "content": {
+                                "type": "string"
+                              },
+                              "senderId": {
+                                "type": "string"
+                              },
+                              "messageType": {
+                                "type": "string"
+                              },
+                              "timestamp": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. User is not a participant in the chat."
+          },
+          "404": {
+            "description": "Chat not found."
+          }
+        }
+      }
+    },
+    "/chats/user-chat": {
+      "get": {
+        "summary": "Create or retrieve one-to-one chat",
+        "description": "Create or retrieve a one-to-one chat with a receiver specified by their UUID.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "receiver",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUID of the receiver."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat successfully retrieved or created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
                       "type": "string"
                     },
                     "participants": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "username": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "string"
-                          }
-                        }
+                        "type": "object"
                       }
                     },
-                    "chatName": {
+                    "createdAt": {
                       "type": "string",
-                      "example": "SWE-Project F2024"
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Receiver UUID is required."
+          },
+          "404": {
+            "description": "Receiver not found."
+          }
+        }
+      }
+    },
+    "/chats/all-chats": {
+      "get": {
+        "summary": "Get all chats for the user",
+        "description": "Retrieve all chats the authenticated user is participating in, with pagination support.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number for pagination."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1
+            },
+            "description": "Number of chats per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved all chats.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalChats": {
+                      "type": "integer"
                     },
-                    "picture": {
-                      "type": "string",
-                      "example": "https://telegrammy-general-s3.s3.us-east-1.amazonaws.com/media/1729268699315-cropped-pexels-photo-6424615-3.jpeg"
+                    "currentPage": {
+                      "type": "integer"
                     },
-                    "conversationType": {
-                      "type": "string",
-                      "example": "channel"
+                    "totalPages": {
+                      "type": "integer"
                     },
-                    "permissions": {
-                      "type": "object",
-                      "properties": {
-                        "canChat": {
-                          "type": "boolean"
-                        },
-                        "canSendMedia": {
-                          "type": "boolean"
-                        },
-                        "canEditMsg": {
-                          "type": "boolean"
-                        },
-                        "canDeleteMsg": {
-                          "type": "boolean"
-                        },
-                        "canDownload": {
-                          "type": "boolean"
-                        }
-                      }
-                    },
-                    "isChatAdmin": {
-                      "type": "boolean"
-                    },
-                    "messages": {
+                    "chats": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "messageType": {
-                            "type": "string"
-                          },
-                          "sender": {
-                            "type": "object",
-                            "properties": {
-                              "username": {
-                                "type": "string"
-                              },
-                              "picture": {
-                                "type": "string"
-                              },
-                              "id": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "content": {
-                            "type": "string"
-                          },
-                          "timestamp": {
-                            "type": "string"
-                          },
-                          "sentList": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "userId": {
-                                  "type": "string"
-                                },
-                                "username": {
-                                  "type": "string"
-                                },
-                                "timestamp": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "deliveredList": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "userId": {
-                                  "type": "string"
-                                },
-                                "username": {
-                                  "type": "string"
-                                },
-                                "timestamp": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "seenList": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "userId": {
-                                  "type": "string"
-                                },
-                                "username": {
-                                  "type": "string"
-                                },
-                                "timestamp": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "mentionList": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "userId": {
-                                  "type": "string"
-                                },
-                                "username": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "isForwarded": {
-                            "type": "boolean"
-                          },
-                          "repliedTo": {
-                            "type": "object",
-                            "properties": {
-                              "sender": {
-                                "type": "string"
-                              },
-                              "messageId": {
-                                "type": "string"
-                              },
-                              "content": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "media": {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string"
-                              },
-                              "filesize": {
-                                "type": "integer",
-                                "description": "file size in MegaBytes"
-                              },
-                              "url": {
-                                "type": "string"
-                              },
-                              "thumbnail": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
+                        "type": "object"
                       }
                     }
                   }
@@ -316,228 +219,18 @@
               }
             }
           },
-          "400": {
-            "description": "Bad request."
+          "404": {
+            "description": "User not found."
           }
         }
       }
     },
-    "/chats/messages": {
+    "/chats/fetch-contacts": {
       "post": {
-        "summary": "Send a new message to a chat",
-        "description": "Send a message over a chat with an optional media. Should be done with formBody();",
-        "tags": ["Chats"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "description": "message content or caption for media",
-                    "example": "Hey guys this is my first message here!"
-                  },
-                  "media": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "An optional media file to upload"
-                  },
-                  "chatId": {
-                    "type": "string",
-                    "description": "ID of the chat you send the message to"
-                  },
-                  "replyingTo": {
-                    "type": "string",
-                    "description": "ID of the message you are replying to (optional)"
-                  },
-                  "mentionList": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "userId": {
-                          "type": "string"
-                        },
-                        "username": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Message sent successfully."
-          },
-          "400": {
-            "description": "Bad request."
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "You are not authorized to send messages over this chat"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/chats/messages/{messageId}": {
-      "patch": {
-        "summary": "Edit a message",
-        "description": "Edits a message sent by the current authenticated user.",
-        "tags": ["Chats"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "messageId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "message identifier to be edited."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "description": "message content or caption for media",
-                    "example": "Hey guys this is my first message here!"
-                  },
-                  "media": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "An optional media file to upload"
-                  },
-                  "chatId": {
-                    "type": "string",
-                    "description": "ID of the chat you send the message to"
-                  },
-                  "replyingTo": {
-                    "type": "string",
-                    "description": "ID of the message you are replying to (optional)"
-                  },
-                  "mentionList": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "userId": {
-                          "type": "string"
-                        },
-                        "username": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Message edited successfully."
-          },
-          "400": {
-            "description": "Bad request."
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "You are not authorized to send messages over this chat"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "deletes a message",
-        "description": "deletes a message sent by the current authenticated user.",
-        "tags": ["Chats"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "messageId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "message identifier to be edited."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "deleted successfully."
-          },
-          "400": {
-            "description": "Bad request."
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "You are not authorized to delete messages over this chat"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/chats/{chatId}": {
-      "patch": {
-        "summary": "mutes notifications for a chat",
-        "description": "mutes notifications of a chat for the currently authenticated user.",
-        "tags": ["Chats"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "chatId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "message identifier to be edited."
-          }
+        "summary": "Fetch or create chats for a list of contacts",
+        "description": "Given a list of contact UUIDs, fetch or create one-to-one chats for the user with each contact.",
+        "tags": [
+          "Chats"
         ],
         "requestBody": {
           "required": true,
@@ -546,11 +239,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "mute": {
-                    "type": "boolean"
-                  },
-                  "duration": {
-                    "type": "string"
+                  "contacts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of contact UUIDs."
                   }
                 }
               }
@@ -559,10 +253,28 @@
         },
         "responses": {
           "200": {
-            "description": "notification subscribed/unsubscribe operation success!"
+            "description": "Successfully fetched or created chats.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "chats": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "chatCount": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad request."
+            "description": "Contacts are required as a non-empty array."
           }
         }
       }
@@ -571,4 +283,3 @@
   "components": {},
   "tags": []
 }
-

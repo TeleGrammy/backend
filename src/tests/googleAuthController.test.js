@@ -1,4 +1,4 @@
-/* eslint-disable*/
+/* eslint-disable */
 
 const {expect} = require("chai");
 const sinon = require("sinon");
@@ -16,7 +16,9 @@ const {
 } = require("../controllers/auth/googleAuthController");
 
 describe("Auth Controller - Google Authentication", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
 
   beforeEach(() => {
     req = {body: {}, query: {}, cookies: {}, user: {}};
@@ -102,7 +104,7 @@ describe("Auth Controller - Google Authentication", () => {
       expect(res.status.calledWith(300)).to.be.true;
       expect(res.redirect.calledOnce).to.be.true;
       expect(res.redirect.firstCall.args[0]).to.deep.equal(
-        process.env.FRONTEND_LOGIN_CALLBACK
+        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token`
       );
     });
 
@@ -138,7 +140,7 @@ describe("Auth Controller - Google Authentication", () => {
       expect(res.status.calledWith(300)).to.be.true;
       expect(res.redirect.calledOnce).to.be.true;
       expect(res.redirect.firstCall.args[0]).to.deep.equal(
-        process.env.FRONTEND_LOGIN_CALLBACK
+        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token`
       );
     });
   });

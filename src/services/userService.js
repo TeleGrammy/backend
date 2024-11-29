@@ -1,6 +1,9 @@
-const User = require("../models/user");
+const mongoose = require("mongoose");
 
 const AppError = require("../errors/appError");
+
+const User = require("../models/user");
+
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -71,6 +74,11 @@ const getUserBasicInfoByUUID = async (UUID) => {
     password: 1,
     registrationDate: 1,
     loggedOutFromAllDevicesAt: 1,
+    profilePictureVisibility: 1,
+    storiesVisibility: 1,
+    lastSeenVisibility: 1,
+    readReceipts: 1,
+    contacts: 1,
   };
 
   return getUserByUUID(UUID, userBasicInfo);
@@ -163,8 +171,9 @@ const createUser = (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
+    publicKey,
   } = userData;
-
+  console.log(publicKey);
   return User.create({
     username,
     email,
@@ -174,9 +183,24 @@ const createUser = (userData) => {
     picture,
     accessToken,
     refreshToken,
+    publicKey,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
   });
+};
+
+/**
+ *  Retrieves the user by his id.
+ * @memberof Service.Users
+ * @method updateRefreshToken
+ * @async
+ * @param {String} [id]       - User's id.
+ * @param {String} [newRefreshToken] - Storing a new refresh token (while invalidating the old one) helps to prevent replay attacks and also offers the ability to sign out all users who had access to the old refresh token.
+ * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
+ */
+
+const updateRefreshToken = async (id, newRefreshToken) => {
+  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
 };
 
 const findOne = async (filter) => {
@@ -197,6 +221,176 @@ const findByIdAndUpdate = async (id, updateData, options) => {
 const getUserById = async (id, select = "") => {
   return User.findById(id).select(select);
 };
+
+const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
+  return findOneAndUpdate(
+    {_id: id},
+    {
+      profilePictureVisibility: visibilityOptions.profilePicture,
+      storiesVisibility: visibilityOptions.stories,
+      lastSeenVisibility: visibilityOptions.lastSeen,
+    },
+    {new: true}
+  );
+};
+
+/**
+ * Block or Unblock a user
+ * @memberof Service.Users
+ * @method changeBlockingStatus
+ * @async
+ * @param {String} blockerId - The ID of the user performing the action (the blocker).
+ * @param {String} blockedId - The ID of the user being blocked or unblocked.
+ * @param {String} action - The action: either 'block' or 'unblock'.
+ * @returns {null}
+ */
+const setBlockingStatus = async (blockerId, blockedId, action) => {
+  const blocker = await getUserById(blockerId);
+  if (!blocker) {
+    throw new AppError("Blocker user not found while searching", 404);
+  }
+
+  const contactIndex = blocker.contacts.findIndex(
+    (contact) => contact.contactId.toString() === blockedId
+  );
+
+  if (action === "block") {
+    if (contactIndex === -1) {
+      blocker.contacts.push({
+        contactId: blockedId,
+        blockDetails: {
+          status: "blocked",
+          date: new Date(),
+        },
+      });
+    } else {
+      blocker.contacts[contactIndex].blockDetails.status = "blocked";
+      blocker.contacts[contactIndex].blockDetails.date = new Date();
+    }
+  } else if (action === "unblock") {
+    if (contactIndex !== -1) {
+      blocker.contacts[contactIndex].blockDetails.status = "not_blocked";
+      blocker.contacts[contactIndex].blockDetails.date = null;
+    } else {
+      throw new AppError(
+        "This user needed to block is not in the blocker's contacts",
+        400
+      );
+    }
+  }
+
+  return blocker.save();
+};
+
+const getBlockedUsers = async (userId) => {
+  try {
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new AppError("User is not found while searching", 404);
+    }
+
+    const result = await User.aggregate([
+      {
+        $match: {_id: new mongoose.Types.ObjectId(userId)},
+      },
+      {
+        $project: {
+          blockedContacts: {
+            $filter: {
+              input: "$contacts",
+              as: "contact",
+              cond: {$eq: ["$$contact.blockDetails.status", "blocked"]},
+            },
+          },
+        },
+      },
+      {
+        $unwind: "$blockedContacts",
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: {contactId: "$blockedContacts.contactId"},
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$contactId"],
+                },
+              },
+            },
+          ],
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$userDetails._id",
+          userName: "$userDetails.username",
+        },
+      },
+    ]);
+
+    return result;
+  } catch (err) {
+    throw new AppError("Failed to get blocked users", 500);
+  }
+};
+
+const setReadReceiptsStatus = async (userId, status) => {
+  const user = await getUserByID(userId);
+
+  if (!user) {
+    throw new AppError("User is not found while searching", 404);
+  }
+
+  user.readReceipts = status;
+
+  return user.save();
+};
+
+const setWhoCanAddMe = async (userId, newPolicy) => {
+  const user = await getUserById(userId);
+
+  if (!user) {
+    throw new AppError("User is not found while searching", 404);
+  }
+
+  user.whoCanAddMe = newPolicy;
+
+  return user.save();
+};
+
+const ackEvent = async (id, chatId, offset) => {
+  const user = await User.findById(id);
+
+  // Check if the user already has a chat entry and if the new offset is greater than the current one
+  const currentOffset = user.userChats
+    ? user.userChats.get(`${chatId}`)
+    : undefined;
+
+  if (currentOffset === undefined || offset > currentOffset) {
+    user.userChats.set(`${chatId}`, offset);
+  }
+  await user.save();
+
+  return user;
+};
+
+const updateDraftOfUserInChat = async (chatId, userId, draft) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  user.userDrafts.set(`${chatId}`, draft);
+  await user.save();
+  return user;
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -205,9 +399,17 @@ module.exports = {
   getUserPasswordById,
   getUserId,
   getUserByID,
+  getUserById,
+  getBlockedUsers,
   createUser,
   findOne,
   findOneAndUpdate,
   findByIdAndUpdate,
-  getUserById,
+  setProfileVisibilityOptionsByUserId,
+  setBlockingStatus,
+  setReadReceiptsStatus,
+  setWhoCanAddMe,
+  ackEvent,
+  updateDraftOfUserInChat,
+  updateRefreshToken,
 };

@@ -9,7 +9,7 @@ const scheduleCronJobs = () => {
       const now = new Date();
       const expiredStories = await Story.find({expiresAt: {$lte: now}});
 
-      expiredStories.forEach(async (story) => {
+      expiredStories.forEach(async story => {
         try {
           if (story.mediaKey) await deleteFile(story.mediaKey);
         } catch (e) {

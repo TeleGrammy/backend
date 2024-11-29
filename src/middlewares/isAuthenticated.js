@@ -139,5 +139,5 @@ module.exports = catchAsync(async (req, res, next) => {
 
   req.user = decodedAccessToken;
   req.user.currentSession = currentSession;
-  return next();
+  next();
 });

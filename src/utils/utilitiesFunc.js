@@ -7,3 +7,16 @@ exports.filterObject = (object, ...allowedFields) => {
   });
   return filtered;
 };
+
+exports.extractProfileInfo = (user) => {
+  return this.filterObject(
+    user,
+    "screenName",
+    "username",
+    "bio",
+    "email",
+    "phone",
+    "picture",
+    "status"
+  );
+};

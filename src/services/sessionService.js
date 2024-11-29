@@ -16,7 +16,7 @@ const Session = require("../models/session");
 
 const createSession = async (sessionData) => {
   const {ip, deviceType, refreshToken, userId} = sessionData;
-  return Session.create({ip, deviceType, refreshToken, userId});
+  return await Session.create({ip, deviceType, refreshToken, userId});
 };
 
 /**
@@ -30,7 +30,7 @@ const createSession = async (sessionData) => {
  */
 
 const getSessionByIpAndDeviceType = async (requestIp, requestDeviceType) => {
-  return Session.findOne({
+  return await Session.findOne({
     where: {ip: requestIp, deviceType: requestDeviceType},
   });
 };
@@ -44,7 +44,7 @@ const getSessionByIpAndDeviceType = async (requestIp, requestDeviceType) => {
  * @returns {Promise<Session|null>}              A promise that resolves to the session's information if found,, otherwise returns null.
  */
 const findSessionByUserIdAndDevice = async (userId, currentDeviceType) => {
-  return Session.findOne({userId, deviceType: currentDeviceType});
+  return await Session.findOne({userId: userId, deviceType: currentDeviceType});
 };
 
 /**
@@ -62,8 +62,8 @@ const findSessionByUserIdAndUpdate = async (
   currentDeviceType,
   newSession
 ) => {
-  return Session.findOneAndUpdate(
-    {userId, deviceType: currentDeviceType},
+  return await Session.findOneAndUpdate(
+    {userId: userId, deviceType: currentDeviceType},
     {
       $set: {
         ip: newSession.ip,
@@ -85,7 +85,7 @@ const findSessionByUserIdAndUpdate = async (
  */
 
 const deleteSession = async (sessionId, currentDeviceType) => {
-  return Session.deleteOne({
+  return await Session.deleteOne({
     _id: sessionId,
     deviceType: currentDeviceType,
   });
@@ -98,3 +98,4 @@ module.exports = {
   findSessionByUserIdAndDevice,
   deleteSession,
 };
+

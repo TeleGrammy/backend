@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
-const AppError = require("../errors/appError");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -151,12 +150,18 @@ messageSchema.pre("save", function (next) {
 });
 
 messageSchema.post(/^find/, (doc, next) => {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("Message not found", 404);
-  }
-
   next();
 });
+
+// messageSchema.post("remove", function (doc) {
+//   // TODO: put proper socket path and test this socket
+//   // const io = require("SOCKET PATH");
+//   // io.of("/messages").to(doc.chatId.toString()).emit("messageDeleted", {
+//   //   messageId: doc._id,
+//   //   chatId: doc.chatId,
+//   // });
+//   // console.log(`Notification sent for deleted message: ${doc._id}`);
+// });
 
 messageSchema.index({chatId: 1, timestamp: -1});
 
