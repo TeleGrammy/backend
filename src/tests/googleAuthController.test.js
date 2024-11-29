@@ -1,5 +1,6 @@
-/* eslint-disable*/
-
+/* eslint-disable node/no-unpublished-require */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
 const {expect} = require("chai");
 const sinon = require("sinon");
 const passport = require("passport");
@@ -16,7 +17,9 @@ const {
 } = require("../controllers/auth/googleAuthController");
 
 describe("Auth Controller - Google Authentication", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
 
   beforeEach(() => {
     req = {body: {}, query: {}, cookies: {}, user: {}};

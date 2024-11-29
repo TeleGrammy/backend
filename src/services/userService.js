@@ -4,6 +4,8 @@ const AppError = require("../errors/appError");
 
 const User = require("../models/user");
 
+const AppError = require("../errors/appError");
+
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -203,11 +205,11 @@ const updateRefreshToken = async (id, newRefreshToken) => {
 };
 
 const findOne = async (filter) => {
-  return User.findOne(filter);
+  return await User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return User.findOneAndUpdate(filter, updateData, options);
+  return await User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
