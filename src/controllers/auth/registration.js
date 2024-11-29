@@ -65,7 +65,9 @@ exports.postVerify = catchAsync(async (req, res) => {
   const pendingUser = await PendingUser.findOne({email});
 
   if (!pendingUser) {
-    return res.status(404).json({message: "User not found"});
+    return res
+      .status(404)
+      .json({message: "User not found or it might be verified already"});
   }
 
   if (pendingUser.verificationCode !== verificationCode) {
@@ -91,7 +93,11 @@ exports.postVerify = catchAsync(async (req, res) => {
     });
   }
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(
+    req,
+    res,
+    user
+  );
 
   return res.status(200).json({
     data: {
