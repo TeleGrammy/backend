@@ -28,6 +28,9 @@
  *                 message:
  *                   type: string
  *                   example: "Audio uploaded successfully"
+ *                 mediakey:
+ *                   type: string
+ *                   example: "media/audio/test.ogg"
  *                 signedUrl:
  *                   type: string
  *                   example: "https://example.com/audio/123456"
@@ -63,6 +66,9 @@
  *                 message:
  *                   type: string
  *                   example: "Media uploaded successfully"
+ *                 mediakey:
+ *                   type: string
+ *                   example: "media/media/test.jpg"
  *                 signedUrl:
  *                   type: string
  *                   example: "https://example.com/media/123456"
@@ -98,6 +104,9 @@
  *                 message:
  *                   type: string
  *                   example: "Document uploaded successfully"
+ *                 mediakey:
+ *                   type: string
+ *                   example: "media/document/test.pdf"
  *                 signedUrl:
  *                   type: string
  *                   example: "https://example.com/document/123456"
@@ -133,6 +142,9 @@
  *                 message:
  *                   type: string
  *                   example: "Sticker uploaded successfully"
+ *                 mediakey:
+ *                   type: string
+ *                   example: "media/sticker/test.png"
  *                 signedUrl:
  *                   type: string
  *                   example: "https://example.com/sticker/123456"

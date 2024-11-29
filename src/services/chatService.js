@@ -29,7 +29,7 @@ const createChat = async (chatData) => {
  * @param {String} chatId - The ID of the chat to retrieve.
  * @returns {Promise<Chat|null>} - A promise that resolves to the chat document if found, otherwise null.
  */
-const getChatById = async (chatId, userId) => {
+const getChatById = async (chatId) => {
   try {
     const chat = await Chat.findById(chatId)
       .populate("lastMessage pinnedMessages")
@@ -37,7 +37,6 @@ const getChatById = async (chatId, userId) => {
         path: "participants.userId",
         select: "username email phone picture screenName lastSeen status",
       });
-    if (!chat) throw new Error("Chat not found");
 
     return chat;
   } catch (error) {

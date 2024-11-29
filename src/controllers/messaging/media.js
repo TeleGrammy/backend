@@ -15,6 +15,7 @@ exports.uploadAudioHandler = catchAsync(async (req, res, next) => {
   res.send({
     message: "Audio uploaded successfully",
     signedUrl,
+    mediaKey,
   });
 });
 
@@ -31,6 +32,7 @@ exports.uploadMediaHandler = catchAsync(async (req, res, next) => {
   res.send({
     message: "Media uploaded successfully",
     signedUrl,
+    mediaKey,
   });
 });
 
@@ -47,6 +49,7 @@ exports.uploadDocumentHandler = catchAsync(async (req, res, next) => {
   res.send({
     message: "Document uploaded successfully",
     signedUrl,
+    mediaKey,
   });
 });
 
@@ -63,5 +66,6 @@ exports.uploadStickerHandler = catchAsync(async (req, res, next) => {
   res.send({
     message: "Sticker uploaded successfully",
     signedUrl,
+    mediaKey,
   });
 });

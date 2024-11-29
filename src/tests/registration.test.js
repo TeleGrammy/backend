@@ -109,7 +109,9 @@ describe("User Registration and Verification Controller", () => {
       });
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe("User not found");
+      expect(res.body.message).toBe(
+        "User not found or it might be verified already"
+      );
     });
   });
 
