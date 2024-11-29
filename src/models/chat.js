@@ -6,6 +6,11 @@ const participantSchema = new mongoose.Schema({
   userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
   joinedAt: {type: Date, default: Date.now},
   draft_message: {type: String, default: ""},
+  role: {
+    type: String,
+    enum: ["Creator", "Admin", "Member","Subscriber", "Peer"],
+    required: true,
+  },
 });
 
 const chatSchema = new mongoose.Schema({
@@ -29,13 +34,13 @@ const chatSchema = new mongoose.Schema({
   },
   lastMessage: {type: mongoose.Schema.Types.ObjectId, ref: "Message"},
   pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
+  deleted: {type: Boolean, default: false},
 });
 
-chatSchema.post(/^find/, (doc, next) => {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("Chat not found", 404);
+chatSchema.post(/^find/, function (docs, next) {
+  if (!docs || (Array.isArray(docs) && docs.length === 0)) {
+    return next(new AppError("Chat not found", 404));
   }
-
   next();
 });
 applySoftDeleteMiddleWare(chatSchema);
@@ -43,4 +48,3 @@ applySoftDeleteMiddleWare(chatSchema);
 const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;
-

@@ -19,6 +19,7 @@ const userProfileRouter = require("./routes/userProfile/userProfile");
 const userPrivacyRouter = require("./routes/userPrivacy/userPrivacy");
 const storyRouter = require("./routes/userProfile/story");
 const mediaRouter = require("./routes/messaging/media");
+const channelRouter = require("./routes/channel/channel");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 
@@ -33,17 +34,7 @@ cronJobs();
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost",
-        "https://localhost",
-        "http://telegrammy.tech",
-        "https://telegrammy.tech",
-      ];
-      if (origin && allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+      callback(null, true);
     },
     credentials: true,
   })
@@ -72,6 +63,7 @@ app.use("/api/v1/user/stories", storyRouter);
 
 app.use("/api/v1/messaging/upload", mediaRouter);
 app.use("/api/v1/privacy/settings", userPrivacyRouter);
+app.use("/api/v1/channels", channelRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 

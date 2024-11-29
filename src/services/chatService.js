@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
+const AppError = require("../errors/appError");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -259,6 +260,54 @@ const createOneToOneChat = async (userId1, userId2) => {
   }
 };
 
+const getChatOfChannel = async (channelId) => {
+  if (!mongoose.Types.ObjectId.isValid(channelId)) {
+    throw new AppError("Invalid channelId provided", 400);
+  }
+
+  const chat = await Chat.findOne({
+    channelId,
+    isChannel: true,
+    deleted: {$ne: true},
+  }).populate("participants.userId lastMessage pinnedMessages");
+
+  if (!chat) {
+    throw new AppError("Chat not found", 404);
+  }
+
+  return chat;
+};
+
+const changeUserRole = async (chatId, userId, newRole) => {
+  const currentChat = await getChatById(chatId);
+
+  if (!currentChat) {
+    throw new AppError("Chat not found", 404);
+  }
+
+  const currentUser = currentChat.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 404);
+  }
+
+  currentUser.role = newRole;
+
+  const updatedChat = await Chat.findByIdAndUpdate(
+    chatId,
+    {participants: currentChat.participants},
+    {new: true, runValidators: true}
+  );
+
+  if (!updatedChat) {
+    throw new AppError("Failed to update the chat", 500);
+  }
+
+  return updatedChat;
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -272,5 +321,6 @@ module.exports = {
   pinMessage,
   unpinMessage,
   createOneToOneChat,
+  getChatOfChannel,
+  changeUserRole,
 };
-
