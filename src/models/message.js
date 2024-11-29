@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
-const AppError = require("../errors/appError");
+const {generateSignedUrl} = require("../middlewares/AWS");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -80,6 +80,9 @@ const messageSchema = new mongoose.Schema({
   mediaUrl: {
     type: String,
   },
+  mediaKey: {
+    type: String,
+  },
   timestamp: {
     type: Date,
     default: Date.now,
@@ -124,6 +127,18 @@ messageSchema.methods.updateMessageRecivers = async function (
 
   await this.save();
 };
+
+messageSchema.methods.generateSignedUrl = async function () {
+  try {
+    if (this.mediaKey) {
+      this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
+    }
+  } catch (err) {
+    console.error(`Error generating url for story ${this._id}:`, err);
+    this.mediaUrl = null;
+  }
+};
+
 messageSchema.pre("save", function (next) {
   if (this.messageType === "text" && !this.content) {
     return next(new Error("Text message must have text content."));
@@ -150,23 +165,32 @@ messageSchema.pre("save", function (next) {
   return next();
 });
 
-messageSchema.post(/^find/, (doc, next) => {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("Message not found", 404);
+// this middleware is responsible for creating signed URLs to the retreived stories from the database
+messageSchema.post(/^find/, async function (docs, next) {
+  if (!docs || (Array.isArray(docs) && docs.length === 0)) {
+    return next();
   }
 
-  next();
+  const documents = Array.isArray(docs) ? docs : [docs];
+  console.log(documents);
+  await Promise.all(
+    documents.map(async (doc) => {
+      await doc.generateSignedUrl();
+    })
+  );
+
+  return next();
 });
 
-messageSchema.post("remove", function (doc) {
-  // TODO: put proper socket path and test this socket
-  // const io = require("SOCKET PATH");
-  // io.of("/messages").to(doc.chatId.toString()).emit("messageDeleted", {
-  //   messageId: doc._id,
-  //   chatId: doc.chatId,
-  // });
-  // console.log(`Notification sent for deleted message: ${doc._id}`);
-});
+// messageSchema.post("remove", function (doc) {
+//   // TODO: put proper socket path and test this socket
+//   // const io = require("SOCKET PATH");
+//   // io.of("/messages").to(doc.chatId.toString()).emit("messageDeleted", {
+//   //   messageId: doc._id,
+//   //   chatId: doc.chatId,
+//   // });
+//   // console.log(`Notification sent for deleted message: ${doc._id}`);
+// });
 
 messageSchema.index({chatId: 1, timestamp: -1});
 
@@ -177,4 +201,3 @@ applySoftDeleteMiddleWare(messageSchema);
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;
-

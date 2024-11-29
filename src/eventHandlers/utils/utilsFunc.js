@@ -20,6 +20,7 @@ module.exports.createMessageData = async (payload, userId) => {
     mentions: payload.mentions || [],
     replyOn: payload.replyOn || null,
     mediaUrl: payload.mediaUrl || "",
+    mediaKey: payload.mediaKey || "",
     selfDestructTime: payload.selfDestructTime || undefined,
   };
 

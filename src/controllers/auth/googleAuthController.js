@@ -19,6 +19,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
     "google",
     {failureRedirect: "/login"},
     async (err, user) => {
+      console.log("GOOGLE user:", user);
       if (err || !user) {
         return next(new AppError("Authentication failed", 401));
       }
@@ -50,13 +51,16 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const {updatedUser, accessToken} =
-        await manageSessionForUserModule.default(req, res, existingUser);
+      const {accessToken} = await manageSessionForUserModule.default(
+        req,
+        res,
+        existingUser
+      );
 
       return res
         .status(300)
         .redirect(
-          process.env.FRONTEND_LOGIN_CALLBACK + `?accessToken=${accessToken}`
+          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}`
         );
     }
   )(req, res);

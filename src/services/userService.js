@@ -1,8 +1,9 @@
+const mongoose = require("mongoose");
+
 const AppError = require("../errors/appError");
 
 const User = require("../models/user");
 
-const mongoose = require("mongoose");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -170,7 +171,6 @@ const createUser = (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
-    isFaceBookUser,
     publicKey,
   } = userData;
   console.log(publicKey);
@@ -200,34 +200,30 @@ const createUser = (userData) => {
  */
 
 const updateRefreshToken = async (id, newRefreshToken) => {
-  return await User.update(
-    {jwtRefreshToken: newRefreshToken},
-    {where: {_id: id}}
-  );
+  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
 };
 
 const findOne = async (filter) => {
-  return await User.findOne(filter);
+  return User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return await User.findOneAndUpdate(filter, updateData, options);
+  return User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
-  return await User.findById(ID);
+  return User.findById(ID);
 };
 
 const findByIdAndUpdate = async (id, updateData, options) => {
-  return await User.findByIdAndUpdate(id, updateData, options);
+  return User.findByIdAndUpdate(id, updateData, options);
 };
 const getUserById = async (id, select = "") => {
-  return await User.findById(id).select(select);
+  return User.findById(id).select(select);
 };
 
-const setProfileVisibilityOptionsByUserId = async (id) => {
-  visibilityOptions;
-  return await findOneAndUpdate(
+const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
+  return findOneAndUpdate(
     {_id: id},
     {
       profilePictureVisibility: visibilityOptions.profilePicture,
@@ -283,7 +279,7 @@ const setBlockingStatus = async (blockerId, blockedId, action) => {
     }
   }
 
-  return await blocker.save();
+  return blocker.save();
 };
 
 const getBlockedUsers = async (userId) => {
@@ -354,7 +350,7 @@ const setReadReceiptsStatus = async (userId, status) => {
 
   user.readReceipts = status;
 
-  return await user.save();
+  return user.save();
 };
 
 const setWhoCanAddMe = async (userId, newPolicy) => {
@@ -366,7 +362,7 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
 
   user.whoCanAddMe = newPolicy;
 
-  return await user.save();
+  return user.save();
 };
 
 const ackEvent = async (id, chatId, offset) => {
@@ -415,4 +411,5 @@ module.exports = {
   setWhoCanAddMe,
   ackEvent,
   updateDraftOfUserInChat,
+  updateRefreshToken,
 };

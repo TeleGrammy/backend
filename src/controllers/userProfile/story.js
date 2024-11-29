@@ -21,7 +21,7 @@ exports.createStory = catchAsync(async (req, res, next) => {
     mediaKey,
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     status: "success",
     data: story,
   });
@@ -60,7 +60,7 @@ exports.addStoryOwnerId = catchAsync(async (req, res, next) => {
     return next(new AppError("Story not found", 404));
   }
   req.storyOwnerId = story.userId;
-  next();
+  return next();
 });
 
 exports.inContacts = catchAsync(async (req, res, next) => {
@@ -80,7 +80,7 @@ exports.inContacts = catchAsync(async (req, res, next) => {
       new AppError("You are not authorized to view this stories", 403)
     );
   }
-  next();
+  return next();
 });
 exports.getUserStories = catchAsync(async (req, res, next) => {
   const storiesOwnerId = req.storyOwnerId;
@@ -96,7 +96,7 @@ exports.getStory = catchAsync(async (req, res, next) => {
   if (!story) {
     return next(new AppError("Story not found", 404));
   }
-  res.json({
+  return res.json({
     status: "success",
     data: story,
   });
@@ -111,7 +111,7 @@ exports.checkAuthorization = catchAsync(async (req, res, next) => {
   if (story.userId.toString() !== req.user.id) {
     return next(new AppError("User not authorized to view this story", 403));
   }
-  next();
+  return next();
 });
 
 exports.deleteStory = catchAsync(async (req, res, next) => {
@@ -128,7 +128,7 @@ exports.updateStoryViewers = catchAsync(async (req, res, next) => {
   if (!story) {
     return next(new AppError("Story not found", 404));
   }
-  res.status(200).json({
+  return res.status(200).json({
     status: "success",
     data: {story},
   });

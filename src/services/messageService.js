@@ -3,6 +3,7 @@ const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
 const filterObject = require("../utils/utilitiesFunc");
 const User = require("../models/user");
+const {default: mongoose} = require("mongoose");
 /**
  * Creates a new message.
  * @memberof Service.Message
@@ -46,6 +47,21 @@ module.exports.getMessagesByChatId = async (chatId) => {
   return messages;
 };
 
+module.exports.fetchChatMessages = (chatId, skip, limit) => {
+  // Fetch messages related to this chat with pagination
+  return Message.find({chatId: new mongoose.Types.ObjectId(chatId)})
+    .sort({timestamp: -1}) // Sort messages by latest first
+    .skip(skip)
+    .limit(limit)
+    .select(
+      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
+    ) // Only fetch relevant fields
+    .populate("senderId mentions", "username"); // Populate sender details (only username)
+};
+
+module.exports.countChatMessages = (chatId) => {
+  return Message.countDocuments({chatId: new mongoose.Types.ObjectId(chatId)});
+};
 /**
  * Updates the status of a message.
  * @memberof Service.Message
