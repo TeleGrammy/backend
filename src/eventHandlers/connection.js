@@ -9,12 +9,10 @@ const {
   updateDraftOfUserInChat,
   pinMessage,
   unpinMessage,
-  sendVoiceNote,
 } = require("./chat/message");
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
 
-const {uploadVoiceNote} = require("../middlewares/AWS");
 
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
