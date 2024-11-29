@@ -10,6 +10,12 @@ const {
 } = require("./chat/message");
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
+const {
+  addMember,
+  leaveGroup,
+  deleteGroup,
+  removeParticipant,
+} = require("./group/group");
 
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
@@ -72,6 +78,11 @@ exports.onConnection = async (socket, io) => {
       callback({status: "success", message: "Voice note received"});
     }
   });
+
+  socket.on("addingGroupMember", addMember({io, socket}));
+  socket.on("leavingGroup", leaveGroup({io, socket}));
+  socket.on("removingGroup", deleteGroup({io, socket}));
+  socket.on("removingParticipant", removeParticipant({io, socket}));
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
