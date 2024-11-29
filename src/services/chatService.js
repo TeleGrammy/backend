@@ -71,10 +71,7 @@ const getUserChats = async (userId, skip, limit) => {
       .select(
         "name isGroup isChannel createdAt participants lastMessage pinnedMessages"
       )
-      .populate(
-        "participants.userId",
-        "username email phone picture screenName lastSeen status"
-      )
+      .populate("participants.userId", "username")
       .populate({
         path: "lastMessage",
         select: "content senderId messageType status timestamp mediaUrl",
