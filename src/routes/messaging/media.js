@@ -1,7 +1,5 @@
 const express = require("express");
 
-const isAuth = require("../../middlewares/isAuthenticated");
-
 const {
   uploadDocument,
   uploadAudio,
@@ -17,10 +15,9 @@ const {
 } = require("../../controllers/messaging/media");
 
 const router = express.Router();
-router.post("/audio", isAuth, uploadAudio, uploadAudioHandler);
+router.post("/audio", uploadAudio, uploadAudioHandler);
 router.post("/media", uploadMedia, uploadMediaHandler);
-router.post("/document", isAuth, uploadDocument, uploadDocumentHandler);
-router.post("/sticker", isAuth, uploadSticker, uploadStickerHandler);
+router.post("/document", uploadDocument, uploadDocumentHandler);
+router.post("/sticker", uploadSticker, uploadStickerHandler);
 
 module.exports = router;
-

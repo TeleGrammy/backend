@@ -364,7 +364,6 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
   return user.save();
 };
 
-
 const ackEvent = async (id, chatId, offset) => {
   const user = await User.findById(id);
 
