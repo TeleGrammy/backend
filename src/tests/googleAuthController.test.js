@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable*/
 
 const {expect} = require("chai");
 const sinon = require("sinon");
