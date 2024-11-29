@@ -1,32 +1,14 @@
-const mongoose = require("mongoose")
-
 const AppError = require("../errors/appError");
 
 const Channel = require("../models/channel");
 
-const createChannel = async (channelData) => {
-  const newChannel = new Channel(channelData);
-
-  return await newChannel.save();
-};
-
-const getChannelInformation = async (channelId) => {
-  if (!mongoose.Types.ObjectId.isValid(channelId)) {
-    throw new AppError("Invalid channelId provided", 400);
-  }
-  return await Channel.findOne({_id: channelId});
-};
-
-const deleteChannel = async (channelId) => {
-  return await Channel.findOneAndUpdate(
-    {_id: channelId},
-    {deleted: true},
-    {new: true}
+const changeChannelsPolicy = async (channelIds, newPolicy) => {
+  return await Channel.updateMany(
+    {_id: {$in: channelIds}},
+    {$set: {addingMembersPolicy: newPolicy}}
   );
 };
 
 module.exports = {
-  createChannel,
-  deleteChannel,
-  getChannelInformation,
+  changeChannelsPolicy,
 };

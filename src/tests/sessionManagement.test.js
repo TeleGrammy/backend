@@ -11,9 +11,7 @@ const generateTokenModule = require("../utils/generateToken");
 const addAuthCookieModule = require("../utils/addAuthCookie");
 
 describe("manageSessionForUser Function Test Suites", () => {
-  let req;
-  let res;
-  let user;
+  let req, res, user;
 
   beforeEach(() => {
     req = {

@@ -6,11 +6,6 @@ const participantSchema = new mongoose.Schema({
   userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
   joinedAt: {type: Date, default: Date.now},
   draft_message: {type: String, default: ""},
-  role: {
-    type: String,
-    enum: ["Creator", "Admin", "Member","Subscriber", "Peer"],
-    required: true,
-  },
 });
 
 const chatSchema = new mongoose.Schema({
@@ -34,11 +29,12 @@ const chatSchema = new mongoose.Schema({
   },
   lastMessage: {type: mongoose.Schema.Types.ObjectId, ref: "Message"},
   pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
-  deleted: {type: Boolean, default: false},
 });
+
 
 applySoftDeleteMiddleWare(chatSchema);
 
 const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;
+
