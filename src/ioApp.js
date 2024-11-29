@@ -1,9 +1,6 @@
 const jwt = require("jsonwebtoken");
 const {Server} = require("socket.io");
-const socketConfig = require("./config/socketConfig");
 const {onConnection} = require("./eventHandlers/connection");
-
-const AppError = require("./errors/appError");
 
 const createIoApp = (httpServer) => {
   console.log("Setup Socket.IO");

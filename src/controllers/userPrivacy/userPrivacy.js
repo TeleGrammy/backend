@@ -1,6 +1,4 @@
 const userService = require("../../services/userService");
-const channelService = require("../../services/channelService");
-const groupService = require("../../services/groupService");
 
 const catchAsync = require("../../utils/catchAsync");
 
@@ -60,6 +58,7 @@ const getContacts = catchAsync(async (req, res, next) => {
   const userContacts = await userService.getUserById(userId, "contacts -_id");
 
   userContacts.contacts.forEach((contact) => {
+    // eslint-disable-next-line no-param-reassign
     delete contact._id;
   });
 

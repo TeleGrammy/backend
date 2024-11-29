@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const {Schema} = mongoose;
 
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
@@ -26,7 +27,7 @@ channelSchema.post(/^find/, function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
     return next(new AppError("Chat not found", 404));
   }
-  next();
+  return next();
 });
 applySoftDeleteMiddleWare(channelSchema);
 

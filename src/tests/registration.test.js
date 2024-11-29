@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // eslint-disable-next-line node/no-unpublished-require
 const request = require("supertest");
-const app = require("../app"); // Ensure this points to your Express app
+const app = require("../expressApp"); // Ensure this points to your Express app
 const PendingUser = require("../models/pending-user");
 const userService = require("../services/userService");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
