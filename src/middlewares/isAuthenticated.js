@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 const jwt = require("jsonwebtoken");
 
 const AppError = require("../errors/appError");
@@ -8,20 +9,25 @@ const generateToken = require("../utils/generateToken").default;
 const addAuthCookieModule = require("../utils/addAuthCookie").default;
 const isLoggedOutModule = require("../utils/isLoggedOut");
 
-
 const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
 module.exports = catchAsync(async (req, res, next) => {
-  const allowedOrigins = ["http://localhost:5173", "https://localhost:5173", "http://telegrammy.tech", "https://telegrammy.tech" ];
-  const origin = req.headers.origin;
-  if(allowedOrigins.includes(origin)){
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://localhost:5173",
+    "http://telegrammy.tech",
+    "https://telegrammy.tech",
+  ];
+  const {origin} = req.headers;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
   }
+
   const currentDeviceType = req.headers["user-agent"];
 
-  let accessToken =
+  const accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
     req.headers["Authorization"]?.replace("Bearer ", "") ||
     req.headers["authorization"]?.replace("Bearer ", "");
@@ -49,7 +55,7 @@ module.exports = catchAsync(async (req, res, next) => {
           currentSessionData.refreshToken,
           process.env.JWT_SECRET
         );
-      } catch (error) {
+      } catch (err) {
         return next(
           new AppError("Invalid refresh token, please log in again", 401)
         );
@@ -96,8 +102,8 @@ module.exports = catchAsync(async (req, res, next) => {
           currentDeviceType,
           newSession
         );
-      } catch (error) {
-        return next(error);
+      } catch (err) {
+        return next(err);
       }
 
       addAuthCookieModule.default(newAccessToken, res, true);
@@ -105,9 +111,8 @@ module.exports = catchAsync(async (req, res, next) => {
       req.user.currentSession = currentSessionData;
 
       return next();
-    } else {
-      return next(new AppError("Invalid access token", 401));
     }
+    return next(new AppError("Invalid access token", 401));
   }
 
   const user = await userService.getUserBasicInfoByUUID(

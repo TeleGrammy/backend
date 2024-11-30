@@ -74,7 +74,11 @@ const resetPassword = catchAsync(async (req, res, next) => {
   if (user.passwordResetTokenExpiresAt < Date.now()) {
     return next(new AppError("The reset token is expired.", 400));
   }
-
+  if (password !== passwordConfirm) {
+    return next(
+      new AppError("Password and passwordConfirm are different.", 400)
+    );
+  }
   await userServices.findOneAndUpdate(
     {email: user.email},
     {
@@ -90,7 +94,11 @@ const resetPassword = catchAsync(async (req, res, next) => {
     }
   );
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(
+    req,
+    res,
+    user
+  );
   updatedUser.password = undefined;
 
   return res.status(200).json({
@@ -159,7 +167,11 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
     {new: true}
   );
 
-  const {updatedUser, accessToken} = await manageSessionForUser(req, res, user);
+  const {updatedUser, accessToken} = await manageSessionForUser.default(
+    req,
+    res,
+    user
+  );
   updatedUser.password = undefined;
 
   res.status(200).json({

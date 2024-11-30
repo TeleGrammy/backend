@@ -1,4 +1,6 @@
+/* eslint-disable node/no-unpublished-require */
 /* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
 const supertest = require("supertest");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -9,7 +11,6 @@ const AppError = require("../errors/appError");
 const manageSessionForUser = require("../utils/sessionManagement");
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
-const catchAsync = require("../utils/catchAsync");
 
 jest.mock("jsonwebtoken");
 jest.mock("../services/userService");
@@ -226,7 +227,7 @@ describe("PATCH /api/v1/auth/reset-password/{token}", () => {
 
     userService.findOne.mockResolvedValue(user);
     userService.findOneAndUpdate.mockResolvedValue(user);
-    manageSessionForUser.mockResolvedValue({
+    manageSessionForUser.default.mockResolvedValue({
       updatedUser: user,
       accessToken,
     });
@@ -423,7 +424,7 @@ describe("POST /api/v1/auth/logout-from-all-devices", () => {
 
     jwt.verify("validToken");
     userService.findOneAndUpdate.mockResolvedValue(user);
-    manageSessionForUser.mockResolvedValue({
+    manageSessionForUser.default.mockResolvedValue({
       updatedUser: user,
       accessToken,
     });

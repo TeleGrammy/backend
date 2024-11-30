@@ -1,3 +1,6 @@
+/* eslint-disable node/no-unpublished-require */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
 const {expect} = require("chai");
 const sinon = require("sinon");
 const mongoose = require("mongoose");
@@ -10,7 +13,9 @@ const sessionService = require("../services/sessionService");
 const logout = require("../controllers/auth/logout");
 
 describe("Logout Function Tests", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
 
   beforeEach(() => {
     req = {

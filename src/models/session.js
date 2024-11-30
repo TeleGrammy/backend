@@ -22,6 +22,6 @@ const sessionSchema = new mongoose.Schema({
 
 sessionSchema.index({userId: 1}); // For fast search to the userId for the related session
 
-const Session = new mongoose.model("Session", sessionSchema);
+const Session = mongoose.model("Session", sessionSchema);
 
 module.exports = Session;

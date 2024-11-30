@@ -5,15 +5,15 @@
     "plugin:prettier/recommended"
   ],
   "plugins": ["prettier"],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
   "rules": {
     "linebreak-style": ["error", "windows"],
     "no-console": "warn",
     "no-unused-vars": ["error", {"argsIgnorePattern": "req|res|next|err"}],
     "no-underscore-dangle": "off",
-    "func-names": "off",
-    "parserOptions": {
-      "ecmaVersion": 2020,
-      "sourceType": "module"
-    }
+    "func-names": "off"
   }
 }

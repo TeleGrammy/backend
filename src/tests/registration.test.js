@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+// eslint-disable-next-line node/no-unpublished-require
 const request = require("supertest");
 const app = require("../app"); // Ensure this points to your Express app
 const PendingUser = require("../models/pending-user");
@@ -5,14 +7,12 @@ const userService = require("../services/userService");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {sendConfirmationEmail} = require("../utils/mailingServcies");
 
-
 // Mock dependencies
-jest.mock("../models/pending-user"); 
+jest.mock("../models/pending-user");
 jest.mock("../services/userService");
 jest.mock("../utils/codeGenerator");
 jest.mock("../utils/mailingServcies");
 jest.mock("../utils/sessionManagement", () => jest.fn());
-
 
 describe("User Registration and Verification Controller", () => {
   beforeEach(() => {
@@ -47,7 +47,6 @@ describe("User Registration and Verification Controller", () => {
         mockUser.username,
         "123456",
         process.env.SNDGRID_TEMPLATEID_REGESTRATION_EMAIL
-
       );
     });
   });
@@ -110,7 +109,9 @@ describe("User Registration and Verification Controller", () => {
       });
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe("User not found");
+      expect(res.body.message).toBe(
+        "User not found or it might be verified already"
+      );
     });
   });
 

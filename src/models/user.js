@@ -7,7 +7,48 @@ const {phoneRegex} = require("../utils/regexFormat");
 const AppError = require("../errors/appError");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
 
+const contactSchema = new mongoose.Schema({
+  contactId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+    required: true,
+  },
+  blockDetails: {
+    status: {
+      type: String,
+      enum: ["blocked", "not_blocked"],
+      default: "not_blocked",
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+  },
+});
+
 const userSchema = new mongoose.Schema({
+  publicKey: {
+    type: String,
+    unique: true,
+    required: false,
+    validate: {
+      validator: (value) => {
+        try {
+          // eslint-disable-next-line node/no-unsupported-features/node-builtins
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
   username: {
     type: String,
     required: [true, "Username is required. Please enter a username."],
@@ -38,13 +79,13 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [true, "Password Confirm is required"],
-    validate: {
-      validator(el) {
-        return el === this.password;
-      },
-      message: "Password and passwordConfirm are different.",
-    },
+    // required: [true, "Password Confirm is required"],
+    // validate: {
+    //   validator(el) {
+    //     return el === this.password;
+    //   },
+    //   message: "Password and passwordConfirm are different.",
+    // },
   },
 
   phone: {
@@ -95,9 +136,16 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-  contacts: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
+  contacts: [contactSchema],
+  userChats: {
+    type: Map,
+    of: String,
+    default: new Map(),
+  },
+  userDrafts: {
+    type: Map,
+    of: String,
+    default: new Map(),
   },
   pendingEmail: {
     type: String,
@@ -151,6 +199,138 @@ const userSchema = new mongoose.Schema({
   passwordResetTokenExpiresAt: Date,
   lastPasswordResetRequestAt: Date,
   loggedOutFromAllDevicesAt: {type: Date, default: null},
+  profilePictureVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  storiesVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  lastSeenVisibility: {
+    type: String,
+    enum: ["EveryOne", "Contacts", "Nobody"],
+    default: "EveryOne",
+  },
+
+  readReceipts: {
+    type: Boolean,
+    default: true,
+  },
+
+  whoCanAddMe: {
+    type: String,
+    enum: ["EveryOne", "Admins"],
+    default: "EveryOne",
+  },
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    next();
+    return;
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    next();
+    return;
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    next();
+    return;
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    next();
+    return;
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
 });
 
 userSchema.post(/^find/, async function (doc, next) {
@@ -182,16 +362,18 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
   }
+  console.log("WHY");
 
   this.passwordModifiedAt = Date.now();
   return next();
 });
 
 userSchema.pre("save", async function (next) {
+  console.log("WHY");
   if (this.isModified("password")) {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
-    this.passwordConfirm = undefined;
+    this.passwordConfirm = this.password;
   }
   next();
 });
@@ -199,9 +381,14 @@ userSchema.pre("save", async function (next) {
 userSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
   if (update.password) {
+    console.log(update.password, " + ", update.passwordConfirm);
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
-    update.passwordConfirm = undefined;
+    update.passwordConfirm = update.password;
+    console.log(update.password === update.passwordConfirm);
+    console.log(update.password);
+    console.log(update.passwordConfirm);
+
     update.passwordModifiedAt = Date.now();
   }
   next();
@@ -242,11 +429,12 @@ userSchema.methods.unSetNewEmailInfo = async function () {
 };
 
 userSchema.methods.updateUserEmail = async function () {
-  if (!this.pendingEmail)
+  if (!this.pendingEmail) {
     throw new AppError(
       "Please make sure that you have provided a valid new email",
       404
     );
+  }
   this.email = this.pendingEmail;
   await this.unSetNewEmailInfo();
 };

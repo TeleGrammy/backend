@@ -17,7 +17,6 @@ const {
   gitHubCallBack,
 } = require("../../controllers/auth/githubAuthController");
 
-
 const registrationController = require("../../controllers/auth/registration");
 
 const resendPasswordTokenLimiter = require("../../middlewares/resendPasswordTokenLimiter");
@@ -29,7 +28,6 @@ router.get("/google/secrets", googleCallBack);
 
 router.get("/gitHub", signInWithGitHub);
 router.get("/gitHub/secrets", gitHubCallBack);
-
 
 router.post("/login", login);
 router.post("/logout", isAuthenticated, logout);
@@ -55,6 +53,7 @@ router
 
 router.post(
   "/register",
+  captchaController,
   registrationController.postRegistration
 );
 
