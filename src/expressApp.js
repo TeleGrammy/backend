@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const requestIp = require("request-ip");
 const passport = require("passport");
 const {swaggerUi, specs} = require("../swaggerConfig");
-const cronJobs = require("./middlewares/cronJobs");
 
 require("dotenv").config({
   path: "../env",
@@ -28,9 +27,6 @@ const app = express();
 
 app.set("trust-proxy", true);
 app.set(requestIp.mw());
-
-// use cron job script to automatically delete expired stories
-cronJobs();
 
 app.use(
   cors({
