@@ -254,19 +254,21 @@ const groupSchema = new mongoose.Schema({
   admins: {
     type: [adminSchema],
   },
-  leftMembers: [
-    {
-      memberId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        unique: [true, "The user is already admin of the group."],
+  leftMembers: {
+    type: [
+      {
+        memberId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        leftAt: {
+          type: Date,
+          default: Date.now(),
+        },
       },
-      leftAt: {
-        type: Date,
-        default: Date.now(),
-      },
-    },
-  ],
+    ],
+  },
 });
 
 const Group = mongoose.model("Group", groupSchema);
