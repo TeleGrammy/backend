@@ -22,7 +22,13 @@ const addNewGroup = catchAsync(async (req, res, next) => {
   const {groupName} = req.body;
   const userId = req.user.id;
   const groupData = await groupService.createGroup(groupName, userId);
-  res.status(201).json({group: groupData});
+  res.status(201).json({
+    status: "success",
+    data: {
+      group: groupData,
+    },
+    message: "The group was created successfully.",
+  });
 });
 
 const addAdmin = catchAsync(async (req, res, next) => {
@@ -82,8 +88,8 @@ const addAdmin = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: {group},
-    message: "The user is promoted to admin successfully",
+    data: {group, newAdmin},
+    message: "The user has been successfully promoted to admin.",
   });
 });
 
@@ -100,15 +106,14 @@ const removeAdmin = catchAsync(async (req, res, next) => {
   );
   if (!participantData)
     throw new AppError(
-      "Unauthorized Action. The user does not have permission to remove an admin from admin list.",
+      "Unauthorized action. You do not have permission to demote an admin.",
       403
     );
   const index = group.admins.findIndex((admin) =>
     admin.adminId.equals(adminId)
   );
 
-  if (index === -1)
-    throw new AppError("User not found in administrator list", 404);
+  if (index === -1) throw new AppError("User not found in admin list", 404);
 
   if (
     group.admins[index].superAdminId.toString() !== participantId &&
@@ -129,14 +134,20 @@ const removeAdmin = catchAsync(async (req, res, next) => {
       group,
     },
     message:
-      "The user removed successfully from administrator list and added to members list.",
+      "The user was successfully removed from the admin list and added back to members.",
   });
 });
 
 const findGroup = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const group = await groupService.findGroupById(groupId);
-  res.status(200).json(group);
+  if (!group) throw new AppError("Group not found", 404);
+
+  res.status(200).json({
+    status: "success",
+    data: {group},
+    message: "The group was retrieved successfully.",
+  });
 });
 
 const updateGroupLimit = catchAsync(async (req, res, next) => {
@@ -149,13 +160,13 @@ const updateGroupLimit = catchAsync(async (req, res, next) => {
 
   if (group.ownerId.toString() !== participantId)
     throw new AppError(
-      "Insufficient Permission. This feature is restricted to the owner of the group",
+      "Insufficient permissions. Only the group owner can update the group size.",
       403
     );
 
   if (group.admins.length + group.members.length > groupSize)
     throw new AppError(
-      "The new size of the group is not allowed. The group contains participant greater than the new size",
+      "The new size of the group is not allowed. The group contains more members than the specified size.",
       400
     );
 
@@ -165,7 +176,7 @@ const updateGroupLimit = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {group},
-    message: "The group size is updated successfully",
+    message: "The group size has been updated successfully.",
   });
 });
 
@@ -179,7 +190,7 @@ const updateGroupType = catchAsync(async (req, res, next) => {
 
   if (participantId !== group.ownerId.toString())
     throw new AppError(
-      "Forbidden Action. The user is not the owner of the group",
+      "Insufficient permissions. Only the group owner can update the group type.",
       403
     );
 
@@ -189,7 +200,7 @@ const updateGroupType = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {group},
-    message: "The group type is updated successfully",
+    message: "The group type has been updated successfully",
   });
 });
 
@@ -219,7 +230,7 @@ const membersList = catchAsync(async (req, res, next) => {
       count: members.length,
       members,
     },
-    message: "The list of members is retrieved successfully.",
+    message: "The list of members has been retrieved successfully.",
   });
 });
 
@@ -249,7 +260,7 @@ const adminsList = catchAsync(async (req, res, next) => {
       count: admins.length,
       admins,
     },
-    message: "The list of admins is retrieved successfully.",
+    message: "The list of admins has been retrieved successfully.",
   });
 });
 
@@ -279,7 +290,7 @@ const muteNotification = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {user: participantData},
-    message: "The user is updated successfully.",
+    message: "The member has updated his mute notification successfully.",
   });
 });
 
@@ -298,7 +309,7 @@ const updateMemberPermission = catchAsync(async (req, res, next) => {
 
   if (index === -1)
     throw new AppError(
-      "Forbidden Access. you does not have admin permission to update member permission.",
+      "Forbidden access. You do not have admin permissions to update member permissions.",
       403
     );
 
@@ -332,7 +343,7 @@ const updateMemberPermission = catchAsync(async (req, res, next) => {
     data: {
       user: group.members[index],
     },
-    message: "The user's permissions is updated successfully",
+    message: "The user's permissions have been updated successfully.",
   });
 });
 
