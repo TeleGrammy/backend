@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [closed]
     branches:
-      - 'module/**'
+      - "module/**"
 jobs:
   one:
     if: github.event.pull_request.merged == true && github.event.pull_request.head.ref != 'main' && startsWith(github.event.pull_request.base.ref,'module/')

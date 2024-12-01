@@ -13,7 +13,7 @@
     }
   },
   "rules": {
-    "linebreak-style": ["error", "windows"],
+    "linebreak-style": ["error", "unix"],
     "no-console": "warn",
     "no-bitwise": "off",
     "no-unused-vars": [

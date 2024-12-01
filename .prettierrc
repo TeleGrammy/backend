@@ -3,5 +3,5 @@
   "singleQuote": false,
   "bracketSpacing": false,
   "trailingComma": "es5",
-  "endOfLine": "crlf"
+  "endOfLine": "lf"
 }

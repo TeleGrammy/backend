@@ -31,10 +31,8 @@ const chatSchema = new mongoose.Schema({
   pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
 });
 
-
 applySoftDeleteMiddleWare(chatSchema);
 
 const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;
-
