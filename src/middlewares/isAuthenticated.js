@@ -12,11 +12,16 @@ const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
 module.exports = catchAsync(async (req, res, next) => {
-  const allowedOrigins = ["http://localhost:5173", "https://localhost:5173", "http://telegrammy.tech", "https://telegrammy.tech" ];
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://localhost:5173",
+    "http://telegrammy.tech",
+    "https://telegrammy.tech",
+  ];
   const origin = req.headers.origin;
-  if(allowedOrigins.includes(origin)){
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
   }
   const currentDeviceType = req.headers["user-agent"];
 
@@ -49,6 +54,10 @@ module.exports = catchAsync(async (req, res, next) => {
           process.env.JWT_SECRET
         );
       } catch (error) {
+        res.clearCookie(process.env.COOKIE_ACCESS_NAME, {
+          httpOnly: true,
+          secure: true,
+        });
         return next(
           new AppError("Invalid refresh token, please log in again", 401)
         );
