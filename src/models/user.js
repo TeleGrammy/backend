@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema({
     validate: {
       validator: (value) => {
         try {
+          // eslint-disable-next-line node/no-unsupported-features/node-builtins
           crypto.createPublicKey(value);
           return true;
         } catch (err) {
@@ -141,6 +142,11 @@ const userSchema = new mongoose.Schema({
     of: String,
     default: new Map(),
   },
+  userDrafts: {
+    type: Map,
+    of: String,
+    default: new Map(),
+  },
   pendingEmail: {
     type: String,
     validate: [validator.isEmail, "Please provide a valid new email address"],
@@ -193,7 +199,6 @@ const userSchema = new mongoose.Schema({
   passwordResetTokenExpiresAt: Date,
   lastPasswordResetRequestAt: Date,
   loggedOutFromAllDevicesAt: {type: Date, default: null},
-
   profilePictureVisibility: {
     type: String,
     enum: ["EveryOne", "Contacts", "Nobody"],
@@ -226,7 +231,8 @@ const userSchema = new mongoose.Schema({
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    return next();
+    next();
+    return;
   }
 
   if (!doc.length) {
@@ -251,7 +257,8 @@ userSchema.pre(/Delete$/, async function (next) {
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    throw new AppError("User not found", 404);
+    next();
+    return;
   }
 
   if (!doc.length) {
@@ -276,7 +283,34 @@ userSchema.pre(/Delete$/, async function (next) {
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    return next();
+    next();
+    return;
+  }
+
+  if (!doc.length) {
+    await doc.generateSignedUrl();
+  } else {
+    await Promise.all(
+      doc.map(async (document) => {
+        await document.generateSignedUrl();
+      })
+    );
+  }
+  next();
+});
+
+userSchema.pre(/Delete$/, async function (next) {
+  if (this.pictureKey) {
+    await deleteFile(this.pictureKey);
+  }
+
+  next();
+});
+
+userSchema.post(/^find/, async function (doc, next) {
+  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
+    next();
+    return;
   }
 
   if (!doc.length) {

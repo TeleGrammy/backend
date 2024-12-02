@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-expressions */
+
 const {expect} = require("chai");
 const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
@@ -10,10 +13,11 @@ const userService = require("../services/userService");
 const sessionService = require("../services/sessionService");
 
 const isLoggedOutModule = require("../utils/isLoggedOut");
-const addAuthCookieModule = require("../utils/addAuthCookie");
 
 describe("Auth Middleware Tests", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
 
   beforeEach(() => {
     req = {

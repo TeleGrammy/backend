@@ -1,8 +1,8 @@
+const mongoose = require("mongoose");
+
 const AppError = require("../errors/appError");
 
 const User = require("../models/user");
-
-const mongoose = require("mongoose");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -23,7 +23,7 @@ const getUserByUUID = async (UUID, selectionFilter = {}) => {
     throw new AppError("An UUID is required", 500);
   }
 
-  return await User.findOne({
+  return User.findOne({
     $or: [{email: UUID}, {username: UUID}, {phone: UUID}],
   }).select(selectionFilter);
 };
@@ -157,7 +157,7 @@ const getUserByEmail = async (email) => {
  * @returns {Promise<User|null>} A promise that resolves to the user's information if found,, otherwise returns null.
  */
 
-const createUser = async (userData) => {
+const createUser = (userData) => {
   const {
     username,
     email,
@@ -170,9 +170,10 @@ const createUser = async (userData) => {
     refreshToken,
     isGoogleUser,
     isGitHubUser,
+    publicKey,
   } = userData;
-
-  return await User.create({
+  console.log(publicKey);
+  return User.create({
     username,
     email,
     phone,
@@ -181,6 +182,7 @@ const createUser = async (userData) => {
     picture,
     accessToken,
     refreshToken,
+    publicKey,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
   });
@@ -197,29 +199,26 @@ const createUser = async (userData) => {
  */
 
 const updateRefreshToken = async (id, newRefreshToken) => {
-  return await User.update(
-    {jwtRefreshToken: newRefreshToken},
-    {where: {_id: id}}
-  );
+  return User.update({jwtRefreshToken: newRefreshToken}, {where: {_id: id}});
 };
 
 const findOne = async (filter) => {
-  return await User.findOne(filter);
+  return User.findOne(filter);
 };
 
 const findOneAndUpdate = async (filter, updateData, options) => {
-  return await User.findOneAndUpdate(filter, updateData, options);
+  return User.findOneAndUpdate(filter, updateData, options);
 };
 
 const getUserByID = async (ID) => {
-  return await User.findById(ID);
+  return User.findById(ID);
 };
 
 const findByIdAndUpdate = async (id, updateData, options) => {
-  return await User.findByIdAndUpdate(id, updateData, options);
+  return User.findByIdAndUpdate(id, updateData, options);
 };
 const getUserById = async (id, select = "") => {
-  return await User.findById(id).select(select);
+  return User.findById(id).select(select);
 };
 
 const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
@@ -279,7 +278,7 @@ const setBlockingStatus = async (blockerId, blockedId, action) => {
     }
   }
 
-  return await blocker.save();
+  return blocker.save();
 };
 
 const getBlockedUsers = async (userId) => {
@@ -350,7 +349,7 @@ const setReadReceiptsStatus = async (userId, status) => {
 
   user.readReceipts = status;
 
-  return await user.save();
+  return user.save();
 };
 
 const setWhoCanAddMe = async (userId, newPolicy) => {
@@ -362,9 +361,35 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
 
   user.whoCanAddMe = newPolicy;
 
-  return await user.save();
+  return user.save();
 };
 
+const ackEvent = async (id, chatId, offset) => {
+  const user = await User.findById(id);
+
+  // Check if the user already has a chat entry and if the new offset is greater than the current one
+  const currentOffset = user.userChats
+    ? user.userChats.get(`${chatId}`)
+    : undefined;
+
+  if (currentOffset === undefined || offset > currentOffset) {
+    user.userChats.set(`${chatId}`, offset);
+  }
+  await user.save();
+
+  return user;
+};
+
+const updateDraftOfUserInChat = async (chatId, userId, draft) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  user.userDrafts.set(`${chatId}`, draft);
+  await user.save();
+  return user;
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -383,4 +408,7 @@ module.exports = {
   setBlockingStatus,
   setReadReceiptsStatus,
   setWhoCanAddMe,
+  ackEvent,
+  updateDraftOfUserInChat,
+  updateRefreshToken,
 };

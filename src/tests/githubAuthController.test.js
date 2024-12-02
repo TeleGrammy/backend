@@ -1,3 +1,5 @@
+/* eslint-disable*/
+
 const {expect} = require("chai");
 const sinon = require("sinon");
 const passport = require("passport");
@@ -14,7 +16,9 @@ const {
 } = require("../controllers/auth/githubAuthController");
 
 describe("Auth Controller - GitHub Authentication", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
 
   beforeEach(() => {
     req = {body: {}, query: {}, cookies: {}, user: {}};

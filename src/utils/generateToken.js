@@ -43,4 +43,4 @@
     return jwt.sign(userTokenedData, process.env.JWT_SECRET, options);
   };
 
-  module.exports.default = generateToken;
+module.exports.default = generateToken;
