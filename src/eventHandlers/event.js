@@ -15,6 +15,7 @@ module.exports.ackEvent = function ({io, socket}) {
         payload.chatId,
         payload.eventIndex
       );
+      console.log("HERE IS EVENT");
       if (event && event.name === "message:sent") {
         const message = await messageService.updateMessageRecivers(
           event.payload.chatId,

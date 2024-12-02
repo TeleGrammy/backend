@@ -82,7 +82,7 @@ module.exports.updateMessageStatus = async (messageId, status) => {
 };
 
 module.exports.updateChatViewers = async (chatId, messageId, viewerId) => {
-  const message = await this.getMessageById(messageId);
+  let message = await this.getMessageById(messageId);
   const lastMessageTimeStamp = message.timestamp;
 
   // Find all messages in the chat up to the last message timestamp
@@ -106,6 +106,8 @@ module.exports.updateChatViewers = async (chatId, messageId, viewerId) => {
       await mes.updateMessageViewer(viewerId, numberOfMembers);
     })
   );
+
+  message = await this.getMessageById(messageId);
   return message;
 };
 module.exports.updateMessageRecivers = async (
@@ -113,7 +115,7 @@ module.exports.updateMessageRecivers = async (
   messageId,
   recieverId
 ) => {
-  const message = await this.getMessageById(messageId);
+  let message = await this.getMessageById(messageId);
   const lastMessageTimeStamp = message.timestamp;
 
   // Find all messages in the chat up to the last message timestamp
@@ -137,6 +139,8 @@ module.exports.updateMessageRecivers = async (
       await mes.updateMessageRecivers(recieverId, numberOfMembers);
     })
   );
+
+  message = await this.getMessageById(messageId);
   return message;
 };
 

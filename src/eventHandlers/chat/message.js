@@ -21,7 +21,7 @@ module.exports.sendMessage = function ({io, socket}) {
           messageData.chatId
         );
       }
-      const message = await messageService.createMessage(messageData);
+      let message = await messageService.createMessage(messageData);
 
       chatService.updateLastMessage(messageData.chatId, message.id);
 
@@ -46,7 +46,7 @@ module.exports.sendMessage = function ({io, socket}) {
         },
       });
 
-      await messageService.updateMessageStatus(message.id, "sent");
+      message = await messageService.updateMessageStatus(message.id, "sent");
 
       logThenEmit(
         socket.userId,

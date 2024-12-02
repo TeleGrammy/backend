@@ -172,7 +172,7 @@ messageSchema.post(/^find/, async function (docs, next) {
   }
 
   const documents = Array.isArray(docs) ? docs : [docs];
-  console.log(documents);
+
   await Promise.all(
     documents.map(async (doc) => {
       await doc.generateSignedUrl();
@@ -201,3 +201,4 @@ applySoftDeleteMiddleWare(messageSchema);
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;
+
