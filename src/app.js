@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const requestIp = require("request-ip");
 const passport = require("passport");
 const {swaggerUi, specs} = require("../swaggerConfig");
-const cronJobs = require("./middlewares/cronJobs");
 
 require("dotenv").config({
   path: "../env",
