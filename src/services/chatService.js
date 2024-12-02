@@ -162,9 +162,13 @@ const addParticipant = async (chatId, participantData) => {
  */
 const removeParticipant = async (chatId, userId) => {
   try {
+    let participantId = userId;
+    if (typeof participantId === "string")
+      participantId = new mongoose.Types.ObjectId(userId);
+
     const chat = await Chat.findByIdAndUpdate(
       chatId,
-      {$pull: {participants: {userId: mongoose.Types.ObjectId(userId)}}},
+      {$pull: {participants: {userId: participantId}}},
       {new: true}
     );
     if (!chat) throw new Error("Chat not found");
@@ -299,6 +303,14 @@ const createOneToOneChat = async (userId1, userId2) => {
     throw new Error(`Error creating one-to-one chat: ${error.message}`);
   }
 };
+/**
+ *
+ * @param {String} chatId = The Chat Id which will be deleted from database
+ * @returns
+ */
+const removeChat = (chatId) => {
+  return Chat.deleteOne(chatId);
+};
 
 module.exports = {
   createChat,
@@ -314,4 +326,5 @@ module.exports = {
   unpinMessage,
   createOneToOneChat,
   countUserChats,
+  removeChat,
 };

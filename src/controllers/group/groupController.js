@@ -1,4 +1,5 @@
 const groupService = require("../../services/groupService");
+const chatService = require("../../services/chatService");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -70,7 +71,17 @@ const createAdminObject = (
 const addNewGroup = catchAsync(async (req, res, next) => {
   const {groupName} = req.body;
   const userId = req.user.id;
-  const groupData = await groupService.createGroup(groupName, userId);
+
+  const groupChat = await chatService.createChat({isGroup: true});
+
+  await chatService.addParticipant(groupChat._id, {userId});
+
+  const groupData = await groupService.createGroup(
+    groupName,
+    userId,
+    groupChat._id
+  );
+
   res.status(201).json({
     status: "success",
     data: {

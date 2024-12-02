@@ -1,5 +1,6 @@
 const AppError = require("../../errors/appError");
 const groupService = require("../../services/groupService");
+const chatService = require("../../services/chatService");
 const handleSocketError = require("../../errors/handleSocketError");
 const {logThenEmit} = require("../utils/utilsFunc");
 
@@ -69,10 +70,11 @@ const addMember = ({io, socket}) => {
         index = group.leftMembers.findIndex((member) =>
           member.memberId.equals(userId)
         );
-
-        newMember.leftAt =
-          index === -1 ? null : group.leftMembers[index].leftAt;
-
+        if (index !== -1) {
+          newMember.leftAt = group.leftMembers[index].leftAt;
+          group.leftMembers.splice(index, 1);
+        }
+        chatService.addParticipant(group.chatId, {userId});
         group.members.push(newMember);
         // TODO : should be updated to use the chat Id  after creation the chat  of type group
         logThenEmit(
@@ -110,10 +112,7 @@ const leaveGroup = ({io, socket}) => {
       if (index === -1) {
         index = group.admins.findIndex((admin) => admin.adminId.equals(userId));
         if (index === -1)
-          throw new AppError(
-            "User not found. The user is not a member of the group with that id.",
-            404
-          );
+          throw new AppError("You are not a member of the group.", 400);
         else group.admins.splice(index, 1);
       } else {
         group.members.splice(index, 1);
@@ -123,6 +122,7 @@ const leaveGroup = ({io, socket}) => {
 
       if (totalMembers === 0) {
         await groupService.deleteGroup(groupId);
+        await chatService.removeChat(group.chatId);
         logThenEmit(
           userId,
           "group:deleted",
@@ -133,6 +133,7 @@ const leaveGroup = ({io, socket}) => {
         );
       } else {
         await group.save();
+        chatService.removeParticipant(group.chatId, userId);
         logThenEmit(
           userId,
           "group:memberLeaved",
@@ -166,6 +167,7 @@ const deleteGroup = ({io, socket}) => {
         );
 
       await groupService.deleteGroup(groupId);
+      await chatService.removeChat(group.chatId);
       logThenEmit(
         userId,
         "group:deleted",
@@ -222,6 +224,7 @@ const removeParticipant = ({io, socket}) => {
       else group.members.splice(index, 1);
 
       await group.save();
+      chatService.removeParticipant(group.chatId, userId);
       logThenEmit(
         userId,
         "group:memberRemoved",

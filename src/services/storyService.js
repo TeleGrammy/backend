@@ -1,6 +1,6 @@
 const Story = require("../models/story");
 const User = require("../models/user");
-const {getBasicProfileInfo} = require("../services/userProfileService");
+const {getBasicProfileInfo} = require("./userProfileService");
 
 exports.create = async (data) => {
   const {userId, content, mediaKey} = data;
