@@ -64,7 +64,7 @@ const addMember = ({io, socket}) => {
           throw new AppError("The user is already member of the group", 400);
         }
 
-        const newMember = groupService.createMember(userId);
+        const newMember = {memberId: userId};
 
         index = group.leftMembers.findIndex((member) =>
           member.memberId.equals(userId)

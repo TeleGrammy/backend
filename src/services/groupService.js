@@ -1,7 +1,7 @@
-const {Group, GroupAdmin, GroupMember} = require("../models/groupModel");
+const Group = require("../models/groupModel");
 
-const createGroup = (groupName, ownerId) => {
-  const admin = new GroupAdmin({
+const createGroup = (groupName, ownerId, chatId) => {
+  const admin = {
     adminId: ownerId,
     joinedAt: Date.now(),
     customTitle: "Owner",
@@ -12,12 +12,13 @@ const createGroup = (groupName, ownerId) => {
       deleteStories: false,
       remainAnonymous: false,
     },
-  });
+  };
 
   const newGroup = {
     name: groupName,
     ownerId,
     admins: [admin],
+    chatId,
   };
   return Group.create(newGroup);
 };
@@ -36,25 +37,6 @@ const findGroupByIdWithPopulatedMembersAndAdmins = (groupId) => {
     .populate({
       path: "members.memberId",
     });
-};
-
-const createAdmin = (memberData, newPermission, superAdminId, customTitle) => {
-  const admin = new GroupAdmin({
-    adminId: memberData.memberId,
-    joinedAt: memberData.joinedAt,
-    leftAt: memberData.leftAt,
-    superAdminId,
-    mute: memberData.mute,
-    muteUntil: memberData.muteUntil,
-    customTitle: customTitle ?? "Admin",
-    permissions: newPermission,
-  });
-  return admin;
-};
-
-const createMember = (memberId) => {
-  const member = new GroupMember({memberId});
-  return member;
 };
 
 const findAndUpdateGroup = (groupId, newData, options) => {
@@ -89,8 +71,6 @@ module.exports = {
   createGroup,
   findGroupById,
   deleteGroup,
-  createAdmin,
-  createMember,
   findAndUpdateGroup,
   findGroupByIdWithPopulatedMembersAndAdmins,
   updateParticipant,

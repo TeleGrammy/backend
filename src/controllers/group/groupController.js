@@ -18,6 +18,12 @@ const getListOfParticipants = (tempMembers) => {
   return members;
 };
 
+/**
+ * Merge current Permission with the new ones
+ * @param {Object} currentPermission - The current permission of group's participant
+ * @param {Object} body - The new permission received from the user
+ * @returns {Object} - The new Permission of participant
+ */
 const mergePermission = (currentPermission, body) => {
   const newPermission = {};
   Object.keys(currentPermission).forEach((key) => {
@@ -33,6 +39,32 @@ const mergePermission = (currentPermission, body) => {
   });
 
   return newPermission;
+};
+/**
+ * create new Admin object
+ * @param {Object} memberData - The current member data stored in the database
+ * @param {Object} newPermission - New Admin Permission
+ * @param {mongoose.Type.Object} superAdminId - ID of admin who promote him to be an admin
+ * @param {String} customTitle - Custom Title which will appear for member of the group
+ * @returns {Object} - The created admin object
+ */
+const createAdminObject = (
+  memberData,
+  newPermission,
+  superAdminId,
+  customTitle
+) => {
+  const newAdmin = {
+    adminId: memberData.memberId,
+    joinedAt: memberData.joinedAt,
+    leftAt: memberData.leftAt,
+    superAdminId,
+    mute: memberData.mute,
+    muteUntil: memberData.muteUntil,
+    customTitle: customTitle ?? "Admin",
+    permissions: newPermission,
+  };
+  return newAdmin;
 };
 
 const addNewGroup = catchAsync(async (req, res, next) => {
@@ -92,7 +124,7 @@ const addAdmin = catchAsync(async (req, res, next) => {
     else newPermission[property] = adminPermission[property];
   });
 
-  const newAdmin = groupService.createAdmin(
+  const newAdmin = createAdminObject(
     memberData,
     newPermission,
     superAdminId,
@@ -138,9 +170,10 @@ const removeAdmin = catchAsync(async (req, res, next) => {
   )
     throw new AppError("Insufficient Permission.", 403);
 
-  const member = groupService.createMember(
-    group.admins[index].adminId.toString()
-  );
+  const member = {
+    memberId: group.admins[index].adminId,
+  };
+
   group.admins.splice(index, 1);
   group.members.push(member);
 

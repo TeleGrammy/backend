@@ -271,14 +271,12 @@ const groupSchema = new mongoose.Schema({
       },
     ],
   },
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+  },
 });
 
 const Group = mongoose.model("Group", groupSchema);
-const GroupAdmin = mongoose.model("GroupAdmin", adminSchema);
-const GroupMember = mongoose.model("GroupMember", memberSchema);
 
-module.exports = {
-  Group,
-  GroupAdmin,
-  GroupMember,
-};
+module.exports = Group;
