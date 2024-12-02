@@ -138,17 +138,19 @@ const adminSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
-    postStories: {
-      type: Boolean,
-      default: true,
-    },
-    editStories: {
-      type: Boolean,
-      default: true,
-    },
-    deleteStories: {
-      type: Boolean,
-      default: true,
+    manageStories: {
+      postStories: {
+        type: Boolean,
+        default: true,
+      },
+      editStories: {
+        type: Boolean,
+        default: true,
+      },
+      deleteStories: {
+        type: Boolean,
+        default: true,
+      },
     },
     manageLiveStreams: {
       type: Boolean,
