@@ -18,6 +18,23 @@ const getListOfParticipants = (tempMembers) => {
   return members;
 };
 
+const mergePermission = (currentPermission, body) => {
+  const newPermission = {};
+  Object.keys(currentPermission).forEach((key) => {
+    if (typeof currentPermission[key] === "object") {
+      newPermission[key] = {};
+      Object.keys(currentPermission[key]).forEach((nestedKey) => {
+        if (body[key] && body[key][nestedKey] !== undefined)
+          newPermission[key][nestedKey] = body[key][nestedKey];
+        else newPermission[key][nestedKey] = currentPermission[key][nestedKey];
+      });
+    } else if (body[key] !== undefined) newPermission[key] = body[key];
+    else newPermission[key] = currentPermission[key];
+  });
+
+  return newPermission;
+};
+
 const addNewGroup = catchAsync(async (req, res, next) => {
   const {groupName} = req.body;
   const userId = req.user.id;
@@ -303,47 +320,73 @@ const updateMemberPermission = catchAsync(async (req, res, next) => {
   const group = await groupService.findGroupById(groupId);
   if (!group) throw new AppError("Group not found", 404);
 
-  let index = group.admins.findIndex(
+  const adminData = group.admins.find(
     (admin) => admin.adminId.toString() === participantId
   );
 
-  if (index === -1)
+  if (!adminData)
     throw new AppError(
       "Forbidden access. You do not have admin permissions to update member permissions.",
       403
     );
 
-  index = group.members.findIndex(
+  const memberData = group.members.find(
     (member) => member.memberId.toString() === memberId
   );
 
-  if (index === -1) throw new AppError("User not found in the group", 404);
+  if (!memberData) throw new AppError("User not found in the group", 404);
 
-  const currentPermission = group.members[index].permissions;
+  memberData.permissions = mergePermission(memberData.permissions, body);
 
-  const newPermission = {};
-
-  Object.keys(currentPermission).forEach((key) => {
-    if (typeof currentPermission[key] === "object") {
-      newPermission[key] = {};
-      Object.keys(currentPermission[key]).forEach((nestedKey) => {
-        if (body[key] && body[key][nestedKey] !== undefined)
-          newPermission[key][nestedKey] = body[key][nestedKey];
-        else newPermission[key][nestedKey] = currentPermission[key][nestedKey];
-      });
-    } else if (body[key] !== undefined) newPermission[key] = body[key];
-    else newPermission[key] = currentPermission[key];
-  });
-
-  group.members[index].permissions = newPermission;
   await group.save();
 
   res.status(200).json({
     status: "success",
     data: {
-      user: group.members[index],
+      member: memberData,
     },
     message: "The user's permissions have been updated successfully.",
+  });
+});
+
+const updateAdminPermission = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const {adminId} = req.params;
+  const participantId = req.user.id;
+  const {body} = req;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  const adminData = group.admins.find(
+    (admin) => admin.adminId.toString() === adminId
+  );
+
+  if (!adminData)
+    throw new AppError(
+      "Admin not found. The provided id is not an admin ID.",
+      404
+    );
+
+  if (
+    participantId !== group.ownerId.toString() &&
+    participantId !== adminData.superAdminId.toString()
+  )
+    throw new AppError(
+      "Forbidden access. You don't have the permission to change the admin's permissions.",
+      403
+    );
+
+  adminData.permissions = mergePermission(adminData.permissions, body);
+
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      admin: adminData,
+    },
+    message: "The admin's permissions have been updated successfully.",
   });
 });
 
@@ -358,4 +401,5 @@ module.exports = {
   adminsList,
   muteNotification,
   updateMemberPermission,
+  updateAdminPermission,
 };

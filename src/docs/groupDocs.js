@@ -737,6 +737,7 @@
  *          required: true
  *          description: The ID of the member whose permissions will be updated.
  *      requestBody:
+ *        required: true
  *        content:
  *          application/json:
  *            schema:
@@ -755,7 +756,7 @@
  *                  data:
  *                    type: object
  *                    properties:
- *                      user:
+ *                      member:
  *                        $ref: '#/components/schemas/member'
  *                  message:
  *                    type: string
@@ -787,6 +788,89 @@
  *                      message:
  *                        type: string
  *                        example: User not found in the group
+ *                  - type: object
+ *                    properties:
+ *                      status:
+ *                        type: string
+ *                        example: fail
+ *                      message:
+ *                        type: string
+ *                        example: Group not found
+ */
+
+/**
+ * @swagger
+ *  /groups/{groupId}/admins/{adminId}/permissions:
+ *    patch:
+ *      summary: Update admin permissions
+ *      description: Allows a superAdmin or owner to update an admin's permissions within a group.
+ *      tags:
+ *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the group in which the admin's permissions are being updated.
+ *        - in: path
+ *          name: adminId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the admin whose permissions will be updated.
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/adminPermission'
+ *      responses:
+ *        '200':
+ *          description: Admin's permissions updated successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      admin:
+ *                        $ref: '#/components/schemas/admin'
+ *                  message:
+ *                    type: string
+ *                    example: The admin's permissions have been updated successfully.
+ *        '403':
+ *          description: Unauthorized action.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: fail
+ *                  message:
+ *                    type: string
+ *                    example: Forbidden access. You don't have the permission to change the admin's permissions.
+ *        '404':
+ *          description: 'Not Found: the group or admin could not be found.'
+ *          content:
+ *            application/json:
+ *              schema:
+ *                oneOf:
+ *                  - type: object
+ *                    properties:
+ *                      status:
+ *                        type: string
+ *                        example: fail
+ *                      message:
+ *                        type: string
+ *                        example: admin not found in the group
  *                  - type: object
  *                    properties:
  *                      status:
@@ -885,8 +969,6 @@
  *          format: date-time
  *          description: The time at which the mute notification will be deactivated
  *        permissions:
- *          type: array
- *          items:
  *            $ref: '#/components/schemas/memberPermission'
  *    groupPermission:
  *      type: object
@@ -910,19 +992,20 @@
  *          type: boolean
  *        addUsers:
  *          type: boolean
- *        inviteUsersViaLinks:
+ *        inviteUsersViaLink:
  *          type: boolean
- *        pinMessage:
+ *        pinMessages:
  *          type: boolean
- *        postMessages:
- *          type: boolean
- *        postStories:
- *          type: boolean
- *        editStories:
- *          type: boolean
- *        deleteStories:
- *          type: boolean
- *        manageLiveStream:
+ *        manageStories:
+ *          type: object
+ *          properties:
+ *            postStories:
+ *              type: boolean
+ *            editStories:
+ *              type: boolean
+ *            deleteStories:
+ *              type: boolean
+ *        manageLiveStreams:
  *          type: boolean
  *        addNewAdmins:
  *          type: boolean
