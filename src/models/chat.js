@@ -6,6 +6,12 @@ const participantSchema = new mongoose.Schema({
   userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
   joinedAt: {type: Date, default: Date.now},
   draft_message: {type: String, default: ""},
+  role: {
+    type: String,
+    enum: ["Creator", "Admin", "Member", "Subscriber", "Peer"],
+    required: true,
+    default: "Member",
+  },
 });
 
 const chatSchema = new mongoose.Schema({
