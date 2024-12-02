@@ -903,6 +903,9 @@
  *        groupSizeLimit:
  *          type: integer
  *          description: The maximum capacity of the group
+ *        chatId:
+ *          type: string
+ *          description: The ID of chat used by the group
  *        groupPermission:
  *          $ref: '#/components/schemas/groupPermission'
  *        admins:
