@@ -23,7 +23,6 @@ const chatRouter = require("./routes/chat/chat");
 const channelRouter = require("./routes/channel/channel");
 const groupRouter = require("./routes/group/groupRoutes");
 
-
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 const isAuthenticated = require("./middlewares/isAuthenticated");
 
