@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
+const UserService = require("./userService");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -270,6 +271,7 @@ const unpinMessage = async (chatId, messageId) => {
  * @returns {Promise<Chat>} - The existing or newly created chat.
  */
 const createOneToOneChat = async (userId1, userId2) => {
+  console.log("Finding: ", {userId1, userId2});
   try {
     let chat = await Chat.findOne({
       participants: {
@@ -283,6 +285,7 @@ const createOneToOneChat = async (userId1, userId2) => {
     }).populate("participants.userId", "username email phone status");
 
     if (chat) return chat;
+    console.log("Creating: ", {userId1, userId2});
 
     chat = new Chat({
       participants: [
@@ -293,8 +296,11 @@ const createOneToOneChat = async (userId1, userId2) => {
       isChannel: false,
       createdAt: new Date(),
     });
-
     await chat.save();
+
+    await UserService.addContact(userId1, chat.id, userId2);
+    await UserService.addContact(userId2, chat.id, userId1);
+
     await chat.populate("participants.userId", "username email phone status");
     return chat;
   } catch (error) {

@@ -362,14 +362,12 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
   }
-  console.log("WHY");
 
   this.passwordModifiedAt = Date.now();
   return next();
 });
 
 userSchema.pre("save", async function (next) {
-  console.log("WHY");
   if (this.isModified("password")) {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
