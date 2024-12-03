@@ -403,7 +403,6 @@ const addContact = async (userId, chatId, contactId) => {
   );
 
   if (contactIndex === -1) {
-    console.log("Adding contact: ", {userId, contactId, chatId});
     user.contacts.push({
       contactId,
       chatId,

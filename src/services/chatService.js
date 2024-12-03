@@ -271,7 +271,6 @@ const unpinMessage = async (chatId, messageId) => {
  * @returns {Promise<Chat>} - The existing or newly created chat.
  */
 const createOneToOneChat = async (userId1, userId2) => {
-  console.log("Finding: ", {userId1, userId2});
   try {
     let chat = await Chat.findOne({
       participants: {
@@ -285,7 +284,6 @@ const createOneToOneChat = async (userId1, userId2) => {
     }).populate("participants.userId", "username email phone status");
 
     if (chat) return chat;
-    console.log("Creating: ", {userId1, userId2});
 
     chat = new Chat({
       participants: [
