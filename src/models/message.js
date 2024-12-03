@@ -172,7 +172,6 @@ messageSchema.post(/^find/, async function (docs, next) {
   }
 
   const documents = Array.isArray(docs) ? docs : [docs];
-
   await Promise.all(
     documents.map(async (doc) => {
       await doc.generateSignedUrl();
