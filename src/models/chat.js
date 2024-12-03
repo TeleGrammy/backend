@@ -9,6 +9,7 @@ const participantSchema = new mongoose.Schema({
     type: String,
     enum: ["Creator", "Admin", "Member", "Subscriber", "Peer"],
     required: true,
+    default: "Member",
   },
 });
 
