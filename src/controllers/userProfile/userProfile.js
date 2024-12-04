@@ -5,6 +5,7 @@ const catchAsync = require("../../utils/catchAsync");
 const {generateConfirmationCode} = require("../../utils/codeGenerator");
 const {filterObject, extractProfileInfo} = require("../../utils/utilitiesFunc");
 const AppError = require("../../errors/appError");
+const {getBasicProfileInfo} = require("../../services/userProfileService");
 
 exports.updateUserEmail = catchAsync(async (req, res, next) => {
   const {email} = req.body;
@@ -206,5 +207,17 @@ exports.updateUserActivity = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data,
+  });
+});
+
+exports.getBasicUserProfileInfo = catchAsync(async (req, res, next) => {
+  const {id} = req.params;
+  const profile = await getBasicProfileInfo(id);
+  if (!profile) {
+    return next(new AppError("User not found", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    data: {profile},
   });
 });
