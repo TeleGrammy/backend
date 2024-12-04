@@ -73,3 +73,4 @@ const seedData = async () => {
 
 // Export the seedData function to use in other parts of your app
 module.exports = {seedData};
+

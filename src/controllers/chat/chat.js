@@ -115,3 +115,4 @@ exports.fetchContacts = catchAsync(async (req, res, next) => {
   // Return all created chats
   return res.status(200).json({chats, chatCount: chats.length});
 });
+

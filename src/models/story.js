@@ -38,9 +38,13 @@ const storySchema = new mongoose.Schema({
   mediaKey: {
     type: String,
   },
+  mediaType: {
+    type: String,
+    enum: ["picture", "video"],
+  },
   expiresAt: {
     type: Date,
-    default: Date.now() + 24 * 60 * 60 * 1000, // 24 hour
+    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // Corrected dynamic value
   },
 });
 
@@ -112,6 +116,7 @@ storySchema.post(/^find/, async function (docs, next) {
 storySchema.set("toJSON", {virtuals: true});
 storySchema.set("toObject", {virtuals: true});
 
+storySchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
 const Story = mongoose.model("Story", storySchema);
 
 module.exports = Story;

@@ -220,3 +220,4 @@ This function, located in **`userPrivacyController.js`** within the **`userPriva
    - Send an appropriate response to the user indicating the success or failure of the operation.
 
 ---
+

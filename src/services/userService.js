@@ -390,6 +390,27 @@ const updateDraftOfUserInChat = async (chatId, userId, draft) => {
   await user.save();
   return user;
 };
+
+const addContact = async (userId, chatId, contactId) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const contactIndex = user.contacts.findIndex(
+    (contact) => contact.contactId.toString() === contactId
+  );
+
+  if (contactIndex === -1) {
+    user.contacts.push({
+      contactId,
+      chatId,
+    });
+  }
+  return user.save();
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -411,4 +432,5 @@ module.exports = {
   ackEvent,
   updateDraftOfUserInChat,
   updateRefreshToken,
+  addContact,
 };

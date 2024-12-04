@@ -86,6 +86,23 @@ const pendingUserSchema = new mongoose.Schema({
       message: "Public key must be a valid PEM-formatted string.",
     },
   },
+  publicKey: {
+    type: String,
+    unique: true,
+    required: false,
+    validate: {
+      validator: (value) => {
+        try {
+          // eslint-disable-next-line node/no-unsupported-features/node-builtins
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
 });
 
 pendingUserSchema.pre("save", function (next) {

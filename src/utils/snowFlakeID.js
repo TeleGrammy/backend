@@ -27,7 +27,9 @@ class SnowflakeID {
 
     if (timestamp < this.lastTimestamp) {
       throw new Error(
-        `Clock moved backwards. Refusing to generate id for ${this.lastTimestamp - timestamp} milliseconds`
+        "Clock moved backwards. Refusing to generate id for " +
+          (this.lastTimestamp - timestamp) +
+          " milliseconds"
       );
     }
     if (timestamp === this.lastTimestamp) {

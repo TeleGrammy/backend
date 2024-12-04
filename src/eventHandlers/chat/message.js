@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const messageService = require("../../services/messageService");
 const userService = require("../../services/userService");
 const chatService = require("../../services/chatService");
@@ -20,8 +21,11 @@ module.exports.sendMessage = function ({io, socket}) {
           messageData.chatId
         );
       }
+      let message = await messageService.createMessage(messageData);
 
-      const message = await messageService.createMessage(messageData);
+      chatService.updateLastMessage(messageData.chatId, message.id);
+
+      chatService.updateLastMessage(messageData.chatId, message.id);
 
       logThenEmit(
         socket.userId,
@@ -44,7 +48,7 @@ module.exports.sendMessage = function ({io, socket}) {
         },
       });
 
-      await messageService.updateMessageStatus(message.id, "sent");
+      message = await messageService.updateMessageStatus(message.id, "sent");
 
       logThenEmit(
         socket.userId,

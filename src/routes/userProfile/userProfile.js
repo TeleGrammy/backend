@@ -36,5 +36,5 @@ router.patch(
 router.post("/email/confirm/", isAuth, userProfileController.confirmNewEmail);
 
 router.delete("/bio/", isAuth, userProfileController.deleteUserBio);
-
+router.get("/:id", isAuth, userProfileController.getBasicUserProfileInfo);
 module.exports = router;
