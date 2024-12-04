@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const User = require("../user");
 const Group = require("../group");
 const Channel = require("../channel");
@@ -74,3 +73,4 @@ const seedData = async () => {
 
 // Export the seedData function to use in other parts of your app
 module.exports = {seedData};
+

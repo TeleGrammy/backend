@@ -16,9 +16,7 @@
       "get": {
         "summary": "Get chat details and messages by chat ID",
         "description": "Fetch chat details and its messages, with pagination support.",
-        "tags": [
-          "Chats"
-        ],
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "path",
@@ -113,9 +111,7 @@
       "get": {
         "summary": "Create or retrieve one-to-one chat",
         "description": "Create or retrieve a one-to-one chat with a receiver specified by their UUID.",
-        "tags": [
-          "Chats"
-        ],
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "query",
@@ -166,9 +162,7 @@
       "get": {
         "summary": "Get all chats for the user",
         "description": "Retrieve all chats the authenticated user is participating in, with pagination support.",
-        "tags": [
-          "Chats"
-        ],
+        "tags": ["Chats"],
         "parameters": [
           {
             "in": "query",
@@ -229,9 +223,7 @@
       "post": {
         "summary": "Fetch or create chats for a list of contacts",
         "description": "Given a list of contact UUIDs, fetch or create one-to-one chats for the user with each contact.",
-        "tags": [
-          "Chats"
-        ],
+        "tags": ["Chats"],
         "requestBody": {
           "required": true,
           "content": {
@@ -283,3 +275,4 @@
   "components": {},
   "tags": []
 }
+

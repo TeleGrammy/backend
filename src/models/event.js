@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const AppError = require("../errors/appError");
 
 const eventSchema = new mongoose.Schema({
   name: {

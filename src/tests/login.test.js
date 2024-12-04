@@ -15,7 +15,9 @@ const sessionManagementModule = require("../utils/sessionManagement");
 const login = require("../controllers/auth/login");
 
 describe("Login Function", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
   let user;
 
   beforeEach(() => {

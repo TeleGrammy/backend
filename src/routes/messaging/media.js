@@ -21,3 +21,4 @@ router.post("/document", uploadDocument, uploadDocumentHandler);
 router.post("/sticker", uploadSticker, uploadStickerHandler);
 
 module.exports = router;
+

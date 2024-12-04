@@ -2,7 +2,7 @@ asyncapi: "2.6.0"
 info:
   title: TeleGrammy API
   version: "1.0.0"
-  description: Documentation for Voice Calls 
+  description: Documentation for Voice Calls
 defaultContentType: application/json
 
 servers:
@@ -114,7 +114,6 @@ components:
       payload:
         type: object
         properties:
-
           sessionId:
             type: string
             description: ID of the newly initiated call session.
@@ -182,7 +181,7 @@ components:
           sessionId:
             type: string
             description: ID of the ongoing call session.
-          userId: 
+          userId:
             type: string
             description: ID of the user who want to mute or unmute the voice
 
@@ -260,4 +259,3 @@ components:
                 duration:
                   type: string
                   format: time
-  

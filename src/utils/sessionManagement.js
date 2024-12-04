@@ -56,3 +56,4 @@ const manageSessionForUser = async (req, res, user) => {
 };
 
 module.exports.default = manageSessionForUser;
+

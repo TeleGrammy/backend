@@ -12,7 +12,11 @@
   "rules": {
     "linebreak-style": ["error", "windows"],
     "no-console": "warn",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "req|res|next|err"}],
+    "no-bitwise": "off",
+    "no-unused-vars": [
+      "error",
+      {"argsIgnorePattern": "req|res|next|err|io|socket"}
+    ],
     "no-underscore-dangle": "off",
     "func-names": "off"
   }

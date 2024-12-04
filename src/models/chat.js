@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
-const AppError = require("../errors/appError");
 
 const participantSchema = new mongoose.Schema({
   userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
@@ -35,8 +34,8 @@ const chatSchema = new mongoose.Schema({
   },
   lastMessage: {type: mongoose.Schema.Types.ObjectId, ref: "Message"},
   pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
+  deleted: {type: Boolean, default: false},
 });
-
 
 applySoftDeleteMiddleWare(chatSchema);
 

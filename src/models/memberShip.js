@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const {Schema} = mongoose;
 
 const membershipSchema = new Schema({
@@ -21,3 +22,4 @@ const membershipSchema = new Schema({
 const Membership = mongoose.model("Membership", membershipSchema);
 
 module.exports = Membership;
+

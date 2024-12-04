@@ -67,7 +67,7 @@ const pendingUserSchema = new mongoose.Schema({
   codeExpiresAt: {
     type: Date,
     required: true,
-    default: new Date(Date.now() + 10 * 60 * 1000),
+    default: new Date(Date.now() + 60 * 60 * 1000),
   },
   publicKey: {
     type: String,
@@ -86,6 +86,28 @@ const pendingUserSchema = new mongoose.Schema({
       message: "Public key must be a valid PEM-formatted string.",
     },
   },
+  publicKey: {
+    type: String,
+    unique: true,
+    required: false,
+    validate: {
+      validator: (value) => {
+        try {
+          // eslint-disable-next-line node/no-unsupported-features/node-builtins
+          crypto.createPublicKey(value);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      },
+      message: "Public key must be a valid PEM-formatted string.",
+    },
+  },
+});
+
+pendingUserSchema.pre("save", function (next) {
+  this.codeExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  return next();
 });
 
 const PendingUser = mongoose.model("PendingUsers", pendingUserSchema);

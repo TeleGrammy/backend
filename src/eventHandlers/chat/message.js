@@ -171,3 +171,36 @@ module.exports.unpinMessage = function ({io, socket}) {
     }
   };
 };
+module.exports.sendVoiceNote = function ({io, socket}) {
+  console.log("Testing Send voice");
+  return async (payload) => {
+    console.log("Inside Testing Send voice");
+
+    const {file} = payload; // The audio file sent from the client
+    console.log(file);
+    try {
+      const url = await uploadVoiceNote(file);
+      console.log(url);
+      socket.broadcast.emit("message:send_voicenote", url);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
+
+module.exports.sendVoiceNote = function ({io, socket}) {
+  console.log("Testing Send voice");
+  return async (payload) => {
+    console.log("Inside Testing Send voice");
+
+    const {file} = payload; // The audio file sent from the client
+    console.log(file);
+    try {
+      const url = await uploadVoiceNote(file);
+      console.log(url);
+      socket.broadcast.emit("message:send_voicenote", url);
+    } catch (err) {
+      socket.emit("error", {message: err.message});
+    }
+  };
+};
