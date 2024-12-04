@@ -38,6 +38,10 @@ const storySchema = new mongoose.Schema({
   mediaKey: {
     type: String,
   },
+  mediaType: {
+    type: String,
+    enum: ["picture", "video"],
+  },
   expiresAt: {
     type: Date,
     default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // Corrected dynamic value

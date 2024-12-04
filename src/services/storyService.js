@@ -3,8 +3,8 @@ const User = require("../models/user");
 const {getBasicProfileInfo} = require("../services/userProfileService");
 
 exports.create = async (data) => {
-  const {userId, content, mediaKey} = data;
-  return Story.create({userId, content, mediaKey});
+  const {userId, content, mediaKey, mediaType} = data;
+  return Story.create({userId, content, mediaKey, mediaType});
 };
 
 exports.getStoriesByUserId = async (userId) => {
