@@ -84,4 +84,3 @@ describe("generateToken Function", () => {
     );
   });
 });
-

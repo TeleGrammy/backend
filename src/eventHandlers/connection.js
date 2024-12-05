@@ -4,7 +4,7 @@ const {
   updateMessageViewres,
   updateMessage,
   deleteMessage,
-  forwardMessage,
+
   updateDraftOfUserInChat,
   pinMessage,
   unpinMessage,

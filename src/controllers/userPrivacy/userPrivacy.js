@@ -217,4 +217,3 @@ module.exports = {
   getPrivacySettings,
   getContacts,
 };
-
