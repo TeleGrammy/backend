@@ -69,4 +69,3 @@ exports.uploadStickerHandler = catchAsync(async (req, res, next) => {
     mediaKey,
   });
 });
-

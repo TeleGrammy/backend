@@ -216,7 +216,7 @@ exports.getBasicUserProfileInfo = catchAsync(async (req, res, next) => {
   if (!profile) {
     return next(new AppError("User not found", 404));
   }
-  res.status(200).json({
+  return res.status(200).json({
     status: "success",
     data: {profile},
   });

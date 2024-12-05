@@ -149,4 +149,3 @@
  *                   type: string
  *                   example: "https://example.com/sticker/123456"
  */
-

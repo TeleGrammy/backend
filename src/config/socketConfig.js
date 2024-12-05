@@ -12,4 +12,3 @@ module.exports = {
   reconnectionDelay: 2000, // Delay (ms) between reconnection attempts
   allowEIO3: true, // For compatibility with older clients if needed
 };
-

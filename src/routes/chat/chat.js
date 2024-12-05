@@ -12,4 +12,3 @@ router.get("/all-chats", getAllChats);
 router.post("/fetch-contacts", fetchContacts);
 
 module.exports = router;
-

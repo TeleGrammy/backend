@@ -255,121 +255,16 @@ userSchema.pre(/Delete$/, async function (next) {
   next();
 });
 
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-    return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-    return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-    return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
 userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
   }
-  console.log("WHY");
 
   this.passwordModifiedAt = Date.now();
   return next();
 });
 
 userSchema.pre("save", async function (next) {
-  console.log("WHY");
   if (this.isModified("password")) {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
@@ -456,7 +351,7 @@ userSchema.methods.verifyConfirmationCode = function (confirmationCode) {
 
 userSchema.methods.generateSignedUrl = async function () {
   if (this.pictureKey) {
-    this.picture = await generateSignedUrl(this.pictureKey, 15 * 60);
+    this.picture = await generateSignedUrl(this.pictureKey);
   }
 };
 
