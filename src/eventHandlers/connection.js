@@ -21,9 +21,14 @@ const {
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
   socket.join(`${socket.userId}`);
-  // TODO : user should also handle the offset of the events sent for him only
-
   const user = await userService.getUserByID(socket.userId);
+  const offsetOfUserIndvidualchat = user.userChats.get(socket.userId);
+  await sendMissedEvents({
+    io,
+    userId: socket.userId,
+    chatId: socket.userId,
+    offset: offsetOfUserIndvidualchat,
+  });
   await Promise.all(
     user.contacts.map(async (contact) => {
       socket.join(`chat:${contact.chatId}`);
