@@ -116,7 +116,7 @@ module.exports.deleteMessage = function ({io, socket}) {
         socket.userId,
         "message:deleted",
         message._doc,
-        socket.broadcast.to(`chat:${message.chatId}`)
+        socket.to(`chat:${message.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
