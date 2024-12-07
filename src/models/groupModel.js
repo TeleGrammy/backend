@@ -174,9 +174,11 @@ const groupSchema = new mongoose.Schema({
   },
   image: {
     type: String,
+    default: null,
   },
   description: {
     type: String,
+    default: null,
   },
   groupType: {
     type: String,
@@ -188,7 +190,7 @@ const groupSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "The owner id is required."],
   },
-  groupPermission: {
+  groupPermissions: {
     sendTextMessages: {
       type: Boolean,
       default: true,
