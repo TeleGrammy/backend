@@ -398,6 +398,9 @@ const addContact = async (userId, chatId, contactId) => {
     throw new Error("User not found");
   }
 
+  if(!user.contacts){
+    user.contacts = [];
+  }
   const contactIndex = user.contacts.findIndex(
     (contact) => contact.contactId.toString() === contactId
   );
