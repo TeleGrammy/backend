@@ -62,7 +62,7 @@ app.use("/api/v1/user/stories", storyRouter);
 
 app.use("/api/v1/messaging/upload", isAuthenticated, mediaRouter);
 app.use("/api/v1/privacy/settings", userPrivacyRouter);
-app.use("/api/v1/chats", isAuthenticated, chatRouter);
+app.use("/api/v1/chats", chatRouter);
 app.use("/api/v1/channels", channelRouter);
 app.use("/api/v1/groups", isAuthenticated, groupRouter);
 

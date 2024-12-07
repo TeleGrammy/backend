@@ -64,22 +64,24 @@ exports.getChatById = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllChats = catchAsync(async (req, res, next) => {
+  console.log("here");
   const userId = req.user.id; // User ID passed as query parameter
 
   const page = parseInt(req.query.page, 10) || 1; // Default to page 1
   const limit = parseInt(req.query.limit, 10) || 50; // Default to 50 items per page
   const skip = (page - 1) * limit;
 
-  const chats = await chatService.getUserChats(userId, skip, limit);
-
+  // const chats = await chatService.getUserChats(userId, skip, limit);
+  const chats = await userService.getUserContactsChats(userId);
   // Count total documents for pagination info
-  const totalChats = await chatService.countUserChats(userId);
 
+  // const totalChats = await chatService.countUserChats(userId);
+  const totalChats = chats.length;
   return res.status(200).json({
     userId,
     totalChats,
     currentPage: page,
-    totalPages: Math.ceil(totalChats / limit),
+    // totalPages: Math.ceil(totalChats / limit),
     chats,
   });
 });
