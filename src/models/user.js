@@ -18,6 +18,10 @@ const contactSchema = new mongoose.Schema({
     ref: "Chat",
     required: true,
   },
+  addedByMe: {
+    type: Boolean,
+    default: false,
+  },
   blockDetails: {
     status: {
       type: String,

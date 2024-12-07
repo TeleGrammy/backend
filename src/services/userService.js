@@ -391,25 +391,44 @@ const updateDraftOfUserInChat = async (chatId, userId, draft) => {
   return user;
 };
 
-const addContact = async (userId, chatId, contactId) => {
+const addContact = async (userId, chatId, contactId, isMe) => {
   const user = await User.findById(userId);
 
   if (!user) {
     throw new Error("User not found");
   }
+  if (isMe === true) {
+    if (!user.contacts) {
+      user.contacts = [];
+    }
+    const contactIndex = user.contacts.findIndex(
+      (contact) => contact.contactId.toString() === contactId
+    );
 
-  if(!user.contacts){
-    user.contacts = [];
-  }
-  const contactIndex = user.contacts.findIndex(
-    (contact) => contact.contactId.toString() === contactId
-  );
+    if (contactIndex === -1) {
+      user.contacts.push({
+        contactId,
+        chatId,
+        addedByMe: true,
+      });
+    } else {
+      user.contacts[contactIndex].addedByMe = true;
+    }
+  } else {
+    if (!user.contacts) {
+      user.contacts = [];
+    }
+    const contactIndex = user.contacts.findIndex(
+      (contact) => contact.contactId.toString() === contactId
+    );
 
-  if (contactIndex === -1) {
-    user.contacts.push({
-      contactId,
-      chatId,
-    });
+    if (contactIndex === -1) {
+      user.contacts.push({
+        contactId,
+        chatId,
+        addedByMe: false,
+      });
+    }
   }
   return user.save();
 };
