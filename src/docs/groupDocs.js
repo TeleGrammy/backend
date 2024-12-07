@@ -16,6 +16,9 @@
  *                groupName:
  *                  type: string
  *                  description: The name of the group to be created.
+ *                image:
+ *                  type: string
+ *                  description: The URL of the group image
  *              required:
  *                - groupName
  *      responses:
@@ -741,7 +744,7 @@
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/memberPermission'
+ *              $ref: '#/components/schemas/memberPermissions'
  *      responses:
  *        '200':
  *          description: Member's permissions updated successfully.
@@ -824,7 +827,7 @@
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/adminPermission'
+ *              $ref: '#/components/schemas/adminPermissions'
  *      responses:
  *        '200':
  *          description: Admin's permissions updated successfully.
@@ -883,6 +886,93 @@
 
 /**
  * @swagger
+ *   /groups/{groupId}/info:
+ *    patch:
+ *      summary: Update the group information
+ *      description: Allows member who have permission to update the group information.
+ *      tags:
+ *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the group whose information will be updated.
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                name:
+ *                  type: string
+ *                  description: The group name
+ *                image:
+ *                  type: string
+ *                  description: The group image URL
+ *                description:
+ *                  type: string
+ *                  description: The group description
+ *      responses:
+ *        '200':
+ *          description: Group's information has been updated successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      group:
+ *                        $ref: '#/components/schemas/group'
+ *                  message:
+ *                    type: string
+ *                    example: The group information has been updated successfully.
+ *        '403':
+ *          description: Unauthorized action.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: fail
+ *                  message:
+ *                    type: string
+ *                    example: Forbidden access. You do not have permission to change the group's information.
+ *        '404':
+ *          description: 'Not Found: the group or admin could not be found.'
+ *          content:
+ *            application/json:
+ *              schema:
+ *                oneOf:
+ *                  - type: object
+ *                    properties:
+ *                      status:
+ *                        type: string
+ *                        example: fail
+ *                      message:
+ *                        type: string
+ *                        example: User not found in the group
+ *                  - type: object
+ *                    properties:
+ *                      status:
+ *                        type: string
+ *                        example: fail
+ *                      message:
+ *                        type: string
+ *                        example: Group not found
+ */
+
+/**
+ * @swagger
  *components:
  *  schemas:
  *    group:
@@ -891,6 +981,12 @@
  *        name:
  *          type: string
  *          description: The group name
+ *        image:
+ *          type: string
+ *          description: The URL of the group image
+ *        description:
+ *          type: string
+ *          description: The group description
  *        groupType:
  *          type: string
  *          enum:
@@ -906,8 +1002,8 @@
  *        chatId:
  *          type: string
  *          description: The ID of chat used by the group
- *        groupPermission:
- *          $ref: '#/components/schemas/groupPermission'
+ *        groupPermissions:
+ *          $ref: '#/components/schemas/groupPermissions'
  *        admins:
  *          type: array
  *          items:
@@ -949,7 +1045,7 @@
  *          type: string
  *          description: The custom title of each admin
  *        permissions:
- *          $ref: '#/components/schemas/adminPermission'
+ *          $ref: '#/components/schemas/adminPermissions'
  *    member:
  *      type: object
  *      properties:
@@ -972,8 +1068,8 @@
  *          format: date-time
  *          description: The time at which the mute notification will be deactivated
  *        permissions:
- *            $ref: '#/components/schemas/memberPermission'
- *    groupPermission:
+ *            $ref: '#/components/schemas/memberPermissions'
+ *    groupPermissions:
  *      type: object
  *      properties:
  *        sendTextMessages:
@@ -984,7 +1080,7 @@
  *          type: boolean
  *        changeChatInfo:
  *          type: boolean
- *    adminPermission:
+ *    adminPermissions:
  *      type: object
  *      properties:
  *        changeGroupInfo:
@@ -1014,7 +1110,7 @@
  *          type: boolean
  *        remainAnonymous:
  *          type: boolean
- *    memberPermission:
+ *    memberPermissions:
  *      type: object
  *      properties:
  *        sendMessages:

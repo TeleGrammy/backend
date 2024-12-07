@@ -27,6 +27,10 @@
                   "groupName": {
                     "type": "string",
                     "description": "The name of the group to be created."
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "The group image URL"
                   }
                 },
                 "required": ["groupName"]
@@ -1062,7 +1066,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/memberPermission"
+                "$ref": "#/components/schemas/memberPermissions"
               }
             }
           }
@@ -1184,7 +1188,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/adminPermission"
+                "$ref": "#/components/schemas/adminPermissions"
               }
             }
           }
@@ -1275,6 +1279,133 @@
           }
         }
       }
+    },
+    "/groups/{groupId}/info": {
+      "patch": {
+        "summary": "Update the group information",
+        "description": "Allows member who have permission to update the group information.",
+        "tags": ["Groups"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the group whose information will be updated."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The group name"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "The group image URL"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The group description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group's information has been updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "group": {"$ref": "#/components/schemas/group"}
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The group information has been updated successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden access. You do not have permission to change the group's information."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found: the group or admin could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "User not found in the group"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Group not found"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1285,6 +1416,14 @@
           "name": {
             "type": "string",
             "description": "The group name"
+          },
+          "image": {
+            "type": "string",
+            "description": "The group image URL"
+          },
+          "description": {
+            "type": "string",
+            "description": "The group description"
           },
           "groupType": {
             "type": "string",
@@ -1301,10 +1440,10 @@
           },
           "chatId": {
             "type": "string",
-            "description":"The ID of chat used by the group"
+            "description": "The ID of chat used by the group"
           },
-          "groupPermission": {
-            "$ref": "#/components/schemas/groupPermission"
+          "groupPermissions": {
+            "$ref": "#/components/schemas/groupPermissions"
           },
           "admins": {
             "type": "array",
@@ -1361,7 +1500,7 @@
             "description": "The custom title of each admin"
           },
           "permissions": {
-            "$ref": "#/components/schemas/adminPermission"
+            "$ref": "#/components/schemas/adminPermissions"
           }
         }
       },
@@ -1392,11 +1531,11 @@
             "description": "The time at which the mute notification will be deactivated"
           },
           "permissions": {
-            "$ref": "#/components/schemas/memberPermission"
+            "$ref": "#/components/schemas/memberPermissions"
           }
         }
       },
-      "groupPermission": {
+      "groupPermissions": {
         "type": "object",
         "properties": {
           "sendTextMessages": {
@@ -1413,7 +1552,7 @@
           }
         }
       },
-      "adminPermission": {
+      "adminPermissions": {
         "type": "object",
         "properties": {
           "changeGroupInfo": {
@@ -1437,7 +1576,7 @@
           "remainAnonymous": {"type": "boolean"}
         }
       },
-      "memberPermission": {
+      "memberPermissions": {
         "type": "object",
         "properties": {
           "sendMessages": {
