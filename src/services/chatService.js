@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
 const AppError = require("../errors/appError");
+const UserService = require("../services/userService");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -296,6 +297,7 @@ const createOneToOneChat = async (userId1, userId2) => {
     });
 
     await chat.save();
+    await UserService.addContact(userId1, chat.id, userId2);
     await chat.populate("participants.userId", "username email phone status");
     return chat;
   } catch (error) {
