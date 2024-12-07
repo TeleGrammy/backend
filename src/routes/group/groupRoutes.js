@@ -32,4 +32,6 @@ router
   .route("/:groupId/admins/:adminId/permissions")
   .patch(groupController.updateAdminPermission);
 
+router.route("/:groupId/info").patch(groupController.updateGroupBasicInfo);
+
 module.exports = router;

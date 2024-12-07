@@ -70,6 +70,7 @@ const createAdminObject = (
 
 const addNewGroup = catchAsync(async (req, res, next) => {
   const {groupName} = req.body;
+  const {image} = req.body;
   const userId = req.user.id;
 
   const groupChat = await chatService.createChat({isGroup: true});
@@ -78,6 +79,7 @@ const addNewGroup = catchAsync(async (req, res, next) => {
 
   const groupData = await groupService.createGroup(
     groupName,
+    image,
     userId,
     groupChat._id
   );
@@ -434,6 +436,56 @@ const updateAdminPermission = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateGroupBasicInfo = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const participantId = req.user.id;
+  let {name} = req.body;
+  let {description} = req.body;
+  let {image} = req.body;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  let participantData = group.admins.find(
+    (admin) => admin.adminId.toString() === participantId
+  );
+  if (
+    group.groupPermissions.changeChatInfo === false &&
+    (!participantData || participantData.permissions.changeGroupInfo === false)
+  )
+    throw new AppError(
+      "Forbidden access. You do not have permission to change the group's information.",
+      403
+    );
+
+  if (group.groupPermissions.changeChatInfo === true && !participantData) {
+    participantData = group.members.find(
+      (member) => member.memberId.toString() === participantId
+    );
+    if (!participantData)
+      throw new AppError("User not found in the group", 404);
+    if (participantData.permissions.changeChatInfo === false)
+      throw new AppError(
+        "Forbidden access. You do not have permission to change the group's information.",
+        403
+      );
+  }
+  if (name === undefined) name = group.name;
+  if (description === undefined) description = group.description;
+  if (image === undefined) image = group.image;
+
+  group.name = name;
+  group.description = description;
+  group.image = image;
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {group},
+    message: "The group information has been updated successfully.",
+  });
+});
+
 module.exports = {
   addNewGroup,
   findGroup,
@@ -446,4 +498,5 @@ module.exports = {
   muteNotification,
   updateMemberPermission,
   updateAdminPermission,
+  updateGroupBasicInfo,
 };

@@ -1,6 +1,6 @@
 const Group = require("../models/groupModel");
 
-const createGroup = (groupName, ownerId, chatId) => {
+const createGroup = (name, image, ownerId, chatId) => {
   const admin = {
     adminId: ownerId,
     joinedAt: Date.now(),
@@ -15,7 +15,8 @@ const createGroup = (groupName, ownerId, chatId) => {
   };
 
   const newGroup = {
-    name: groupName,
+    name,
+    image,
     ownerId,
     admins: [admin],
     chatId,
