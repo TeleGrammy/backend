@@ -1,5 +1,6 @@
 const groupService = require("../../services/groupService");
 const chatService = require("../../services/chatService");
+const userService = require("../../services/userService");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -83,6 +84,10 @@ const addNewGroup = catchAsync(async (req, res, next) => {
     userId,
     groupChat._id
   );
+
+  await userService.findByIdAndUpdate(userId, {
+    $push: {groups: groupData._id},
+  });
 
   res.status(201).json({
     status: "success",
