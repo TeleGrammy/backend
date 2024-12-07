@@ -227,6 +227,12 @@ const userSchema = new mongoose.Schema({
     enum: ["EveryOne", "Admins"],
     default: "EveryOne",
   },
+
+  groups: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Group",
+    default: [],
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {
