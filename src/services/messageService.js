@@ -15,7 +15,6 @@ const User = require("../models/user");
  */
 module.exports.createMessage = async (messageData) => {
   const message = await Message.create(messageData);
-
   return message;
 };
 
