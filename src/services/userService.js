@@ -366,7 +366,9 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
 
 const ackEvent = async (id, chatId, offset) => {
   const user = await User.findById(id);
-
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
     ? user.userChats.get(`${chatId}`)

@@ -21,7 +21,7 @@ module.exports.ackEvent = function ({io, socket}) {
           event.payload._id,
           socket.userId
         );
-        console.log(message);
+
         logThenEmit(
           socket.userId,
           "message:delivered",

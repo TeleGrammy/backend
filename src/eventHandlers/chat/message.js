@@ -116,7 +116,7 @@ module.exports.deleteMessage = function ({io, socket}) {
         socket.userId,
         "message:deleted",
         message._doc,
-        socket.to(`chat:${message.chatId}`)
+        io.to(`chat:${message.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -148,7 +148,7 @@ module.exports.pinMessage = function ({io, socket}) {
         socket.userId,
         "message:pin",
         {...payload, userId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        socket.to(`${socket.userId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
