@@ -71,7 +71,7 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const chats = await chatService.getUserChats(userId, skip, limit);
-
+  // const chats = await userService.getUserContactsChats(userId);
   // Count total documents for pagination info
   const totalChats = await chatService.countUserChats(userId);
 
