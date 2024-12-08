@@ -433,16 +433,6 @@ const addContact = async (userId, chatId, contactId, isMe) => {
   return user.save();
 };
 
-const getUserContactsChats = async (userId) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  return user.contacts;
-};
-
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -465,5 +455,4 @@ module.exports = {
   updateDraftOfUserInChat,
   updateRefreshToken,
   addContact,
-  getUserContactsChats,
 };

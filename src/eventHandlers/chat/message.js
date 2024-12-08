@@ -52,7 +52,7 @@ module.exports.sendMessage = function ({io, socket}) {
 
       logThenEmit(
         socket.userId,
-        "message:iSent",
+        "message:isSent",
         {
           message,
           chatId: message.senderId,
