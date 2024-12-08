@@ -191,3 +191,7 @@ module.exports.createForwardMessageData = async (
   };
   return newMessageData;
 };
+
+module.exports.removeChatMessages = async (chatId) => {
+  return Message.deleteMany({chatId});
+};

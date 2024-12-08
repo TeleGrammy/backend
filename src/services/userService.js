@@ -390,6 +390,11 @@ const updateDraftOfUserInChat = async (chatId, userId, draft) => {
   await user.save();
   return user;
 };
+
+const updateMany = async (filter, updateData, options) => {
+  return User.updateMany(filter, updateData, options);
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -411,4 +416,5 @@ module.exports = {
   ackEvent,
   updateDraftOfUserInChat,
   updateRefreshToken,
+  updateMany,
 };
