@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
 const AppError = require("../errors/appError");
-const UserService = require("../services/userService");
+const UserService = require("./userService");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -228,9 +228,8 @@ const restoreChat = async (chatId) => {
 const pinMessage = async (chatId, messageId) => {
   try {
     const message = await Message.findById(messageId);
-
     if (!message) throw new Error("Message not found");
-    if (message.chatId !== chatId) {
+    if (message.chatId.toString() !== chatId) {
       throw new Error("Message is not part of the provided chat");
     }
     const chat = await Chat.findByIdAndUpdate(
@@ -285,8 +284,8 @@ const createOneToOneChat = async (userId1, userId2) => {
     }).populate("participants.userId", "username email phone status");
 
     if (chat) {
-      await UserService.addContact(userId1, chat.id, userId2,true);
-      await UserService.addContact(userId2, chat.id, userId1,false);
+      await UserService.addContact(userId1, chat.id, userId2, true);
+      await UserService.addContact(userId2, chat.id, userId1, false);
       return chat;
     }
 
@@ -301,8 +300,8 @@ const createOneToOneChat = async (userId1, userId2) => {
     });
 
     await chat.save();
-    await UserService.addContact(userId1, chat.id, userId2,true);
-    await UserService.addContact(userId2, chat.id, userId1,false);
+    await UserService.addContact(userId1, chat.id, userId2, true);
+    await UserService.addContact(userId2, chat.id, userId1, false);
     await chat.populate("participants.userId", "username email phone status");
     return chat;
   } catch (error) {

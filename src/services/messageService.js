@@ -1,9 +1,10 @@
+const {default: mongoose} = require("mongoose");
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
 const filterObject = require("../utils/utilitiesFunc");
 const User = require("../models/user");
-const {default: mongoose} = require("mongoose");
+
 /**
  * Creates a new message.
  * @memberof Service.Message
@@ -167,6 +168,9 @@ module.exports.updateMessage = async (payload) => {
 
 module.exports.deleteMessage = async (messageId, senderId) => {
   const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
   if (message.senderId.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }

@@ -13,6 +13,7 @@ const createIoApp = (httpServer) => {
   module.exports.io = io;
   io.use(async (socket, next) => {
     const token = socket.handshake.auth.token || socket.handshake.query.token;
+
     let decodedAccessToken = null;
     try {
       decodedAccessToken = jwt.verify(token, process.env.JWT_SECRET);

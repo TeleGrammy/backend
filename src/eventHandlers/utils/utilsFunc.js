@@ -33,7 +33,9 @@ module.exports.logThenEmit = async (userId, event, payload, sockets) => {
     chatId: payload.chatId,
     payload,
   });
-
+  console.log("SERVER EMITING ", event);
+  const room = sockets.adapter.rooms.get(`chat:${payload.chatId}`);
+  if (room) console.log("emitted to ", room.size, "users");
   sockets.emit(event, {...payload, eventIndex: newEvent.index});
 
   // update the last event acknoleged by the user in that chat

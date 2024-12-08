@@ -52,6 +52,9 @@ const joinChatsOfUsers = async (io, socket) => {
 };
 
 exports.onConnection = async (socket, io) => {
+  let connectedSockets = io.sockets.sockets.size;
+  console.log(`Number of connected clients: ${connectedSockets}`);
+
   console.log("User connected:", socket.id);
 
   socket.userId = socket.user.id;
@@ -92,5 +95,7 @@ exports.onConnection = async (socket, io) => {
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+    connectedSockets = io.sockets.sockets.size;
+    console.log(`Number of connected clients: ${connectedSockets}`);
   });
 };

@@ -26,10 +26,11 @@ exports.getChatById = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page, 10) || 1; // Default to page 1
   const limit = parseInt(req.query.limit, 10) || 30; // Default to 10 messages per page
   const skip = (page - 1) * limit;
-
+  if (id === "undefined") {
+    return next(new AppError("id must be a chat id", 400));
+  }
   // Fetch the chat by ID
   const chat = await chatService.getChatById(id);
-
   if (!chat) {
     return next(new AppError("Chat not found", 404));
   }
