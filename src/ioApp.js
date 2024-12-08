@@ -5,11 +5,7 @@ const {onConnection} = require("./eventHandlers/connection");
 
 const createIoApp = (httpServer) => {
   console.log("Setup Socket.IO");
-  const io = new Server(httpServer, {
-    cors: {
-      origin: "*", // Allow any origin for testing. Restrict this in production.
-    },
-  });
+  const io = new Server(httpServer, socketConfig);
   module.exports.io = io;
   io.use(async (socket, next) => {
     const token = socket.handshake.auth.token || socket.handshake.query.token;

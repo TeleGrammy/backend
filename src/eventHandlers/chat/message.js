@@ -31,7 +31,7 @@ module.exports.sendMessage = function ({io, socket}) {
         socket.userId,
         "message:sent",
         {...message._doc},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        io.to(`chat:${payload.chatId}`)
       );
 
       // i think this is useless since at the event of new message
@@ -148,7 +148,7 @@ module.exports.pinMessage = function ({io, socket}) {
         socket.userId,
         "message:pin",
         {...payload, userId: socket.userId},
-        socket.to(`${socket.userId}`)
+        io.to(`${socket.userId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -164,7 +164,7 @@ module.exports.unpinMessage = function ({io, socket}) {
         socket.userId,
         "message:unpin",
         {...payload, userId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
