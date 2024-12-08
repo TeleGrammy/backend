@@ -167,6 +167,18 @@ const adminSchema = new mongoose.Schema({
   },
 });
 
+const leftMemberSchema = new mongoose.Schema({
+  memberId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  leftAt: {
+    type: Date,
+    default: Date.now(),
+  },
+});
+
 const groupSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -258,21 +270,7 @@ const groupSchema = new mongoose.Schema({
   admins: {
     type: [adminSchema],
   },
-  leftMembers: {
-    type: [
-      {
-        memberId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        leftAt: {
-          type: Date,
-          default: Date.now(),
-        },
-      },
-    ],
-  },
+  leftMembers: [leftMemberSchema],
   chatId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Chat",

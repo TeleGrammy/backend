@@ -113,7 +113,7 @@ const userSchema = new mongoose.Schema({
   },
   screenName: {
     type: String,
-    default: "User",
+    default: null,
   },
   pictureKey: {
     type: String, // contain media key of the profile picture
