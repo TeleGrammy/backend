@@ -285,8 +285,8 @@ const createOneToOneChat = async (userId1, userId2) => {
     }).populate("participants.userId", "username email phone status");
 
     if (chat) {
-      await UserService.addContact(userId1, chat.id, userId2,true);
-      await UserService.addContact(userId2, chat.id, userId1,false);
+      await UserService.addContact(userId1, chat.id, userId2, true);
+      await UserService.addContact(userId2, chat.id, userId1, false);
       return chat;
     }
 
@@ -301,8 +301,8 @@ const createOneToOneChat = async (userId1, userId2) => {
     });
 
     await chat.save();
-    await UserService.addContact(userId1, chat.id, userId2,true);
-    await UserService.addContact(userId2, chat.id, userId1,false);
+    await UserService.addContact(userId1, chat.id, userId2, true);
+    await UserService.addContact(userId2, chat.id, userId1, false);
     await chat.populate("participants.userId", "username email phone status");
     return chat;
   } catch (error) {
