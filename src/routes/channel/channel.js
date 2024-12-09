@@ -64,5 +64,10 @@ router.post(
   isAuth,
   channelController.addSubscriber
 );
+router.get("/:channelId/chat", channelController.fetchChannelChat);
+router.get(
+  "/thread/:threadId/messages",
+  channelController.fetchThreadsMesssage
+);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
-const {generateSignedUrl} = require("../middlewares/AWS");
+// const {generateSignedUrl} = require("../middlewares/AWS");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -131,7 +131,7 @@ messageSchema.methods.updateMessageRecivers = async function (
 messageSchema.methods.generateSignedUrl = async function () {
   try {
     if (this.mediaKey) {
-      this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
+      // this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
     }
   } catch (err) {
     console.error(`Error generating url for story ${this._id}:`, err);
@@ -172,7 +172,6 @@ messageSchema.post(/^find/, async function (docs, next) {
   }
 
   const documents = Array.isArray(docs) ? docs : [docs];
-  console.log(documents);
   await Promise.all(
     documents.map(async (doc) => {
       await doc.generateSignedUrl();

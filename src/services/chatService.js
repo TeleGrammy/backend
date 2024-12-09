@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
 const AppError = require("../errors/appError");
-const UserService = require("../services/userService");
+const UserService = require("./userService");
 /**
  * Creates a new chat.
  * @memberof Service.Chat

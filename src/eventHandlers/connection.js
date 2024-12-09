@@ -70,21 +70,6 @@ exports.onConnection = async (socket, io) => {
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
 
-  socket.on("message", (msg) => {
-    console.log("Message from Client:", msg);
-  });
-  socket.on("message:send_voicenote", (payload, callback) => {
-    console.log(
-      "Received 'message:send_voicenote' event from client:",
-      payload
-    );
-
-    // Acknowledge receipt if needed
-    if (callback) {
-      callback({status: "success", message: "Voice note received"});
-    }
-  });
-
   socket.on("addingGroupMember", addMember({io, socket}));
   socket.on("leavingGroup", leaveGroup({io, socket}));
   socket.on("removingGroup", deleteGroup({io, socket}));

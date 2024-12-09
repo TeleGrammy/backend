@@ -7,6 +7,7 @@ const AppError = require("../../errors/appError");
 const channelService = require("../../services/channelService");
 const chatService = require("../../services/chatService");
 const messageService = require("../../services/messageService");
+const threadService = require("../../services/threadService");
 
 const updateChannelHelper = async (
   req,
@@ -42,10 +43,7 @@ const createChannel = catchAsync(async (req, res, next) => {
       errorType: error.type,
       message: error.msg,
     }));
-    return res.status(400).json({
-      status: "fail",
-      errors: transformedErrors,
-    });
+    return res.status(400).json(transformedErrors);
   }
 
   const userId = req.user.id;
@@ -158,7 +156,7 @@ const deleteChannel = catchAsync(async (req, res, next) => {
   }
 
   const participant = chatOfChannel.participants.find(
-    (participant) => String(participant.userId._id) === userId
+    (part) => String(part.userId._id) === userId
   );
 
   if (!participant) {
@@ -180,7 +178,8 @@ const deleteChannel = catchAsync(async (req, res, next) => {
     return next(
       new AppError("An error occurred while deleting the channel", 500)
     );
-  } else if (participant.role === "Subscriber") {
+  }
+  if (participant.role === "Subscriber") {
     const updatedChat = await chatService.removeParticipant(
       chatOfChannel._id,
       userId
@@ -231,25 +230,18 @@ const getChannel = catchAsync(async (req, res, next) => {
     );
   }
 
-  const channelSubscribers = chatData.participants.filter(
-    (participant) => participant.role === "Subscriber"
-  );
-
   return res.status(200).json({
-    status: "success",
-    data: {
-      channelId,
-      channelSubscribers,
-      channelName: channelData.name,
-      channelDescription: channelData.description,
-      channelOwner: {
-        id: ownerData.userId._id,
-        name: ownerData.userId.screenName,
-        phone: ownerData.userId.phone,
-        profilePicture: ownerData.userId.profilePicture,
-      },
-      channelCreationDate: channelData.createdAt,
+    channelId,
+    channelName: channelData.name,
+    channelDescription: channelData.description,
+    subscribersCount: channelData.membersCount,
+    channelOwner: {
+      id: ownerData.userId._id,
+      name: ownerData.userId.screenName,
+      phone: ownerData.userId.phone,
+      profilePicture: ownerData.userId.profilePicture,
     },
+    channelCreationDate: channelData.createdAt,
   });
 });
 
@@ -498,7 +490,7 @@ const addSubscriber = catchAsync(async (req, res, next) => {
         role,
       };
     })
-    .filter((participant) => participant !== null); // Filter out any null entries
+    .filter((part) => PaymentRequest !== null); // Filter out any null entries
 
   return res.status(200).json({
     status: "success",
@@ -508,6 +500,33 @@ const addSubscriber = catchAsync(async (req, res, next) => {
   });
 });
 
+const fetchChannelChat = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+  const {page = 1, limit = 10} = req.query;
+
+  const result = await channelService.getChannelChatWithThreads(
+    channelId,
+    Number(page),
+    Number(limit)
+  );
+  res.status(200).json(result);
+});
+
+const fetchThreadsMesssage = catchAsync(async (req, res) => {
+  const {threadId} = req.params;
+  const {page = 1, limit = 10} = req.query; // Pagination params from query string
+
+  try {
+    const result = await threadService.getThreadMessages(
+      threadId,
+      Number(page),
+      Number(limit)
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({error: error.message});
+  }
+});
 module.exports = {
   createChannel,
   updateChannel,
@@ -516,4 +535,6 @@ module.exports = {
   promoteSubscriber,
   demoteAdmin,
   addSubscriber,
+  fetchChannelChat,
+  fetchThreadsMesssage,
 };

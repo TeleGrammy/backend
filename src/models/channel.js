@@ -4,23 +4,7 @@ const {Schema} = mongoose;
 
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 
-const AppError = require("../errors/appError");
-
-const ThreadSchema = new mongoose.Schema({
-  messageId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Message",
-    required: true,
-  },
-  channelChatId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Chat",
-    required: true,
-  },
-  chatId: {type: mongoose.Schema.Types.ObjectId, ref: "Chat", required: true}, // Reference to the thread's Chat document
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now},
-});
+// const AppError = require("../errors/appError");
 
 const channelSchema = new Schema({
   name: {type: String, required: true},
@@ -28,7 +12,12 @@ const channelSchema = new Schema({
   privacy: {type: String, enum: ["Public", "Private"], default: "Private"},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now},
-  threads: [ThreadSchema],
+  threads: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Thread", // Reference to the Thread model
+    },
+  ],
   metaDataPolicy: {
     type: String,
     enum: ["Admins", "EveryOne"],
@@ -38,14 +27,18 @@ const channelSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  membersCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
-channelSchema.post(/^find/, function (docs, next) {
-  if (!docs || (Array.isArray(docs) && docs.length === 0)) {
-    return next(new AppError("Chat not found", 404));
-  }
-  return next();
-});
+// channelSchema.post(/^find/, function (docs, next) {
+//   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
+//     return next(new AppError("Chat not found", 404));
+//   }
+//   return next();
+// });
 applySoftDeleteMiddleWare(channelSchema);
 
 const Channel = mongoose.model("Channel", channelSchema);
