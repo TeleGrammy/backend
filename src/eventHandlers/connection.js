@@ -1,22 +1,16 @@
 const userService = require("../services/userService");
+const groupService = require("../services/groupService");
 const {
   sendMessage,
   updateMessageViewres,
   updateMessage,
   deleteMessage,
-  forwardMessage,
   updateDraftOfUserInChat,
   pinMessage,
   unpinMessage,
 } = require("./chat/message");
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
-const {
-  addMember,
-  leaveGroup,
-  deleteGroup,
-  removeParticipant,
-} = require("./group/group");
 
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
@@ -46,13 +40,29 @@ const joinChatsOfUsers = async (io, socket) => {
   );
 };
 
-exports.onConnection = async (socket, io) => {
+const joinGroupChats = async (io, socket) => {
+  const userData = await userService.getUserById(socket.user.id);
+  await Promise.all(
+    userData.groups.map(async (group) => {
+      const groupData = await groupService.findGroupById(group);
+      if (groupData) socket.join(`chat:${groupData.chatId}`);
+    })
+  );
+};
+
+exports.onConnection = async (socket, io, connectedUsers) => {
   console.log("User connected:", socket.id);
 
   socket.userId = socket.user.id;
+
+  if (connectedUsers.get(socket.userId))
+    connectedUsers.get(socket.userId).set("chat", socket);
+  else connectedUsers.set(socket.userId, new Map([["chat", socket]]));
+
   console.log("User id connected:", socket.userId);
 
   await joinChatsOfUsers(io, socket);
+  await joinGroupChats(io, socket);
 
   socket.on("message:send", sendMessage({io, socket}));
   socket.on("message:update", updateMessage({io, socket}));
@@ -80,12 +90,8 @@ exports.onConnection = async (socket, io) => {
     }
   });
 
-  socket.on("addingGroupMember", addMember({io, socket}));
-  socket.on("leavingGroup", leaveGroup({io, socket}));
-  socket.on("removingGroup", deleteGroup({io, socket}));
-  socket.on("removingParticipant", removeParticipant({io, socket}));
-
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+    connectedUsers.get(socket.userId).delete("chat");
   });
 };
