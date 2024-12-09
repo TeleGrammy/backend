@@ -308,8 +308,8 @@ const createOneToOneChat = async (userId1, userId2) => {
  * @param {String} chatId = The Chat Id which will be deleted from database
  * @returns
  */
-const removeChat = (chatId) => {
-  return Chat.deleteOne(chatId);
+const removeChat = (filter) => {
+  return Chat.deleteOne(filter);
 };
 
 module.exports = {

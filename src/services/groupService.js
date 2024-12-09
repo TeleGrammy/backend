@@ -24,7 +24,7 @@ const createGroup = (name, image, ownerId, chatId) => {
   return Group.create(newGroup);
 };
 
-const deleteGroup = async (groupId) => Group.deleteOne({_id: groupId});
+const deleteGroup = async (filter) => Group.deleteOne(filter);
 
 const findGroupById = (groupId) => {
   return Group.findById(groupId);
