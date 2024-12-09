@@ -6,6 +6,43 @@ const messageService = require("../../services/messageService");
 const handleSocketError = require("../../errors/handleSocketError");
 const {logThenEmit} = require("../utils/utilsFunc");
 
+const createGroup = (io, socket, connectedUsers) => {
+  return async (payload) => {
+    try {
+      const {name} = payload;
+      const {image} = payload;
+      const userId = socket.user.id;
+
+      const groupChat = await chatService.createChat({isGroup: true});
+
+      await chatService.addParticipant(groupChat._id, {userId});
+
+      const groupData = await groupService.createGroup(
+        name,
+        image,
+        userId,
+        groupChat._id
+      );
+
+      await userService.findByIdAndUpdate(userId, {
+        $push: {groups: groupData._id},
+      });
+
+      socket.join(`group:${groupData._id}`);
+      const userChatSocket = connectedUsers.get(userId).get("chat");
+      if (userChatSocket) userChatSocket.join(`chat:${groupChat._id}`);
+
+      socket.emit("group:created", {
+        status: "success",
+        message: "Group created successfully.",
+        groupId: groupData._id,
+      });
+    } catch (err) {
+      handleSocketError(socket, err);
+    }
+  };
+};
+
 const addMember = (io, socket, connectedUsers) => {
   return async (data) => {
     const {userIds} = data;
@@ -349,6 +386,7 @@ const removeParticipant = (io, socket, connectedUsers) => {
 };
 
 module.exports = {
+  createGroup,
   addMember,
   leaveGroup,
   deleteGroup,

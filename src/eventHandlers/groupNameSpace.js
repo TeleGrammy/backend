@@ -1,5 +1,6 @@
 const userService = require("../services/userService");
 const {
+  createGroup,
   addMember,
   leaveGroup,
   deleteGroup,
@@ -25,6 +26,7 @@ const groupConnection = async (socket, io, connectedUsers) => {
 
   await joinGroups(io, socket);
 
+  socket.on("creatingGroup", createGroup(io, socket, connectedUsers));
   socket.on("addingGroupMember", addMember(io, socket, connectedUsers));
   socket.on("leavingGroup", leaveGroup(io, socket));
   socket.on("removingGroup", deleteGroup(io, socket, connectedUsers));
