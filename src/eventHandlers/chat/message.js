@@ -25,6 +25,7 @@ module.exports.sendMessage = function ({io, socket}) {
 
       chatService.updateLastMessage(messageData.chatId, message.id);
 
+      chatService.updateLastMessage(messageData.chatId, message.id);
 
       logThenEmit(
         socket.userId,

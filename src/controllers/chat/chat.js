@@ -64,45 +64,6 @@ exports.getChatById = catchAsync(async (req, res, next) => {
   });
 });
 
-const handlePrivateChat = (chatObj, userId) => {
-  const otherUser = chatObj.participants.find(
-    (participant) => participant.userId._id.toString() !== userId
-  );
-  const myUser = chatObj.participants.find(
-    (participant) => participant.userId._id.toString() === userId
-  );
-  const chat = {
-    id: chatObj._id,
-    name: otherUser.userId.username,
-    email: otherUser.userId.email,
-    photo: otherUser.userId.picture,
-    status: otherUser.userId.status,
-    lastSeen: otherUser.userId.lastSeen,
-    joinedAt: otherUser.joinedAt,
-    role: otherUser.role,
-    lastMessage: chatObj.lastMessage,
-    draftMessage: myUser?.draft_message,
-  };
-
-  return chat;
-};
-
-const handleGroupChat = (chatObj, userId) => {
-  const myUser = chatObj.participants.find(
-    (participant) => participant.userId._id.toString() === userId
-  );
-  const chat = {
-    id: chatObj._id,
-    name: chatObj.groupId.name,
-    photo: chatObj.groupId.image,
-    description: chatObj.groupId.description,
-    lastMessage: chatObj.lastMessage,
-    draftMessage: myUser?.draft_message,
-    isGroup: true,
-  };
-
-  return chat;
-};
 exports.getAllChats = catchAsync(async (req, res, next) => {
   const userId = req.user.id; // User ID passed as query parameter
 
@@ -110,18 +71,7 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 50; // Default to 50 items per page
   const skip = (page - 1) * limit;
 
-  let chats = await chatService.getUserChats(userId, skip, limit);
-
-  chats = chats.map((chat) => {
-    if (!chat.isGroup && !chat.isChannel) {
-      return handlePrivateChat(chat, userId);
-    }
-    if (chat.isGroup) {
-      console.log(chat.isGroup);
-      return handleGroupChat(chat);
-    }
-    return chat;
-  });
+  const chats = await chatService.getUserChats(userId, skip, limit);
   // const chats = await userService.getUserContactsChats(userId);
   // Count total documents for pagination info
   const totalChats = await chatService.countUserChats(userId);

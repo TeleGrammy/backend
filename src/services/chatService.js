@@ -68,17 +68,24 @@ const getUserChats = async (userId, skip, limit) => {
     const chats = await Chat.find({"participants.userId": userId})
       .skip(skip)
       .limit(limit)
-      .sort({lastMessageTimestamp: -1})
+      .sort({createdAt: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId"
+        "name isGroup isChannel createdAt participants lastMessage pinnedMessages"
       )
       .populate(
         "participants.userId",
         "username email phone picture screenName lastSeen status"
       )
-      .populate("groupId", "name image description")
       .populate({
         path: "lastMessage",
+        select: "content senderId messageType status timestamp mediaUrl",
+        populate: {
+          path: "senderId",
+          select: "username",
+        },
+      })
+      .populate({
+        path: "pinnedMessages",
         select: "content senderId messageType status timestamp mediaUrl",
         populate: {
           path: "senderId",
@@ -116,7 +123,6 @@ const updateLastMessage = async (chatId, messageId) => {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
       {lastMessage: messageId},
-      {lastMessageTimestamp: Date.now()},
       {new: true}
     );
     if (!chat) throw new Error("Chat not found");
