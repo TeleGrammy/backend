@@ -13,16 +13,25 @@ const createGroup = (io, socket, connectedUsers) => {
       const {image} = payload;
       const userId = socket.user.id;
 
-      const groupChat = await chatService.createChat({isGroup: true});
+      if (!name) throw new AppError("Group name is required", 400);
+
+      const groupData = await groupService.createGroup(name, image, userId);
+
+      let groupChat;
+
+      try {
+        groupChat = await chatService.createChat({
+          isGroup: true,
+          groupId: groupData._id,
+        });
+        groupData.chatId = groupChat._id;
+        await groupData.save();
+      } catch (err) {
+        if (!groupChat) await groupService.deleteGroup({_id: groupData._id});
+        handleSocketError(socket, err);
+      }
 
       await chatService.addParticipant(groupChat._id, {userId});
-
-      const groupData = await groupService.createGroup(
-        name,
-        image,
-        userId,
-        groupChat._id
-      );
 
       await userService.findByIdAndUpdate(userId, {
         $push: {groups: groupData._id},
@@ -36,6 +45,7 @@ const createGroup = (io, socket, connectedUsers) => {
         status: "success",
         message: "Group created successfully.",
         groupId: groupData._id,
+        chatId: groupChat._id,
       });
     } catch (err) {
       handleSocketError(socket, err);
@@ -197,6 +207,7 @@ const leaveGroup = (io, socket) => {
         await messageService.removeChatMessages({chatId: group.chatId});
 
         socket.emit("group:deleted", {
+          chatId: group.chatId,
           message: "You left the group and the group was deleted.",
           groupId,
         });
@@ -370,7 +381,7 @@ const removeParticipant = (io, socket, connectedUsers) => {
           {
             chatId: group.chatId,
             groupId,
-            removedBy: participantId,
+            removerId: participantId,
             memberId: userId,
             removerName: ParticipantName.screenName || ParticipantName.username,
             exMemberName:
