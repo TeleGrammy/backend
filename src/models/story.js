@@ -105,7 +105,7 @@ storySchema.post(/^find/, async function (docs, next) {
     })
   );
 
-  next();
+  return next();
 });
 
 // Ensure virtuals are included in JSON and Object conversion
