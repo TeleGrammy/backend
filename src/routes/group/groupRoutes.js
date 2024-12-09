@@ -28,4 +28,10 @@ router
   .route("/:groupId/members/:memberId/permissions")
   .patch(groupController.updateMemberPermission);
 
+router
+  .route("/:groupId/admins/:adminId/permissions")
+  .patch(groupController.updateAdminPermission);
+
+router.route("/:groupId/info").patch(groupController.updateGroupBasicInfo);
+
 module.exports = router;
