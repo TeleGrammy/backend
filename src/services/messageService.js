@@ -2,8 +2,6 @@ const {default: mongoose} = require("mongoose");
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
-const filterObject = require("../utils/utilitiesFunc");
-const User = require("../models/user");
 
 /**
  * Creates a new message.
@@ -200,4 +198,8 @@ module.exports.createForwardMessageData = async (
     mediaUrl: message.mediaUrl,
   };
   return newMessageData;
+};
+
+module.exports.removeChatMessages = async (filter) => {
+  return Message.deleteMany(filter);
 };

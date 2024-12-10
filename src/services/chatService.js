@@ -162,7 +162,7 @@ const removeParticipant = async (chatId, userId) => {
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
-      {$pull: {participants: {userId: mongoose.Types.ObjectId(userId)}}},
+      {$pull: {participants: {userId: new mongoose.Types.ObjectId(userId)}}},
       {new: true}
     );
     if (!chat) throw new Error("Chat not found");
@@ -351,6 +351,15 @@ const changeUserRole = async (chatId, userId, newRole) => {
   return updatedChat;
 };
 
+/**
+ *
+ * @param {String} chatId = The Chat Id which will be deleted from database
+ * @returns
+ */
+const removeChat = (filter) => {
+  return Chat.deleteOne(filter);
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -367,4 +376,5 @@ module.exports = {
   countUserChats,
   getChatOfChannel,
   changeUserRole,
+  removeChat,
 };

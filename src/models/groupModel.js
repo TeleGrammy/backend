@@ -138,17 +138,19 @@ const adminSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
-    postStories: {
-      type: Boolean,
-      default: true,
-    },
-    editStories: {
-      type: Boolean,
-      default: true,
-    },
-    deleteStories: {
-      type: Boolean,
-      default: true,
+    manageStories: {
+      postStories: {
+        type: Boolean,
+        default: true,
+      },
+      editStories: {
+        type: Boolean,
+        default: true,
+      },
+      deleteStories: {
+        type: Boolean,
+        default: true,
+      },
     },
     manageLiveStreams: {
       type: Boolean,
@@ -165,6 +167,18 @@ const adminSchema = new mongoose.Schema({
   },
 });
 
+const leftMemberSchema = new mongoose.Schema({
+  memberId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  leftAt: {
+    type: Date,
+    default: Date.now(),
+  },
+});
+
 const groupSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -172,9 +186,11 @@ const groupSchema = new mongoose.Schema({
   },
   image: {
     type: String,
+    default: null,
   },
   description: {
     type: String,
+    default: null,
   },
   groupType: {
     type: String,
@@ -186,7 +202,7 @@ const groupSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "The owner id is required."],
   },
-  groupPermission: {
+  groupPermissions: {
     sendTextMessages: {
       type: Boolean,
       default: true,
@@ -254,27 +270,13 @@ const groupSchema = new mongoose.Schema({
   admins: {
     type: [adminSchema],
   },
-  leftMembers: [
-    {
-      memberId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        unique: [true, "The user is already admin of the group."],
-      },
-      leftAt: {
-        type: Date,
-        default: Date.now(),
-      },
-    },
-  ],
+  leftMembers: [leftMemberSchema],
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+  },
 });
 
 const Group = mongoose.model("Group", groupSchema);
-const GroupAdmin = mongoose.model("GroupAdmin", adminSchema);
-const GroupMember = mongoose.model("GroupMember", memberSchema);
 
-module.exports = {
-  Group,
-  GroupAdmin,
-  GroupMember,
-};
+module.exports = Group;

@@ -435,6 +435,10 @@ const addContact = async (userId, chatId, contactId, isMe) => {
   return user.save();
 };
 
+const updateMany = async (filter, updateData, options) => {
+  return User.updateMany(filter, updateData, options);
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -457,4 +461,5 @@ module.exports = {
   updateDraftOfUserInChat,
   updateRefreshToken,
   addContact,
+  updateMany,
 };
