@@ -3,8 +3,6 @@ const groupController = require("../../controllers/group/groupController");
 
 const router = express.Router();
 
-router.route("/").post(groupController.addNewGroup);
-
 router.route("/:groupId").get(groupController.findGroup);
 
 router

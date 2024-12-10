@@ -1,6 +1,4 @@
 const groupService = require("../../services/groupService");
-const chatService = require("../../services/chatService");
-const userService = require("../../services/userService");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -11,6 +9,7 @@ const getListOfParticipants = (tempMembers) => {
     const data = {
       id: memberData._id,
       username: memberData.username,
+      screenName: memberData.screenName,
       picture: memberData.picture,
       lastSeen: memberData.lastSeen,
       customTitle: member.customTitle,
@@ -68,35 +67,6 @@ const createAdminObject = (
   };
   return newAdmin;
 };
-
-const addNewGroup = catchAsync(async (req, res, next) => {
-  const {groupName} = req.body;
-  const {image} = req.body;
-  const userId = req.user.id;
-
-  const groupChat = await chatService.createChat({isGroup: true});
-
-  await chatService.addParticipant(groupChat._id, {userId});
-
-  const groupData = await groupService.createGroup(
-    groupName,
-    image,
-    userId,
-    groupChat._id
-  );
-
-  await userService.findByIdAndUpdate(userId, {
-    $push: {groups: groupData._id},
-  });
-
-  res.status(201).json({
-    status: "success",
-    data: {
-      group: groupData,
-    },
-    message: "The group was created successfully.",
-  });
-});
 
 const addAdmin = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
@@ -276,8 +246,15 @@ const membersList = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const participantId = req.user.id;
 
-  const group =
-    await groupService.findGroupByIdWithPopulatedMembersAndAdmins(groupId);
+  const group = await groupService
+    .findGroupById(groupId)
+    .populate({
+      path: "admins.adminId",
+    })
+    .populate({
+      path: "members.memberId",
+    });
+
   if (!group) throw new AppError("Group not found", 404);
 
   const participantData =
@@ -306,8 +283,9 @@ const adminsList = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const participantId = req.user.id;
 
-  const group =
-    await groupService.findGroupByIdWithPopulatedMembersAndAdmins(groupId);
+  const group = await groupService.findGroupById(groupId).populate({
+    path: "admins.adminId",
+  });
   if (!group) throw new AppError("Group not found", 404);
 
   const participantData =
@@ -492,7 +470,6 @@ const updateGroupBasicInfo = catchAsync(async (req, res, next) => {
 });
 
 module.exports = {
-  addNewGroup,
   findGroup,
   addAdmin,
   removeAdmin,

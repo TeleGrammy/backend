@@ -433,6 +433,10 @@
  *                              type: string
  *                              description: The username of the member.
  *                              example: john_doe
+ *                            screenName:
+ *                              type: string
+ *                              description: The screen name of the member.
+ *                              example: John Doe
  *                            picture:
  *                              type: string
  *                              description: The profile picture URL of the member.
@@ -448,7 +452,7 @@
  *                                - Public
  *                                - Private
  *                              nullable: true
- *                              description: The custom title assigned to the member in the group, which can be 'Public', 'Private', or undefined.
+ *                              description: The custom title assigned to the member in the group.
  *                  message:
  *                    type: string
  *                    example: The list of members has been retrieved successfully.
@@ -521,27 +525,28 @@
  *                          properties:
  *                            id:
  *                              type: string
- *                              description: The unique identifier of the member.
+ *                              description: The unique identifier of the admin.
  *                              example: 61234abcde56789f01234567
  *                            username:
  *                              type: string
- *                              description: The username of the member.
+ *                              description: The username of the admin.
  *                              example: john_doe
+ *                            screenName:
+ *                              type: string
+ *                              description: The screen name of the admin.
+ *                              example: John Doe
  *                            picture:
  *                              type: string
- *                              description: The profile picture URL of the member.
+ *                              description: The profile picture URL of the admin.
  *                              example: https://example.com/profiles/john_doe.png
  *                            lastSeen:
  *                              type: string
  *                              format: date-time
- *                              description: The last seen timestamp of the member.
+ *                              description: The last seen timestamp of the admin.
  *                              example: '2024-11-30T12:34:56Z'
  *                            customTitle:
  *                              type: string
- *                              enum:
- *                                - Public
- *                                - Private
- *                              description: The custom title assigned to the admin in the group, which can be 'Public', 'Private', or undefined.
+ *                              description: The custom title assigned to the admin in the group.
  *                  message:
  *                    type: string
  *                    example: The list of admins has been retrieved successfully.

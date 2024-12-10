@@ -29,16 +29,6 @@ const findGroupById = (groupId) => {
   return Group.findById(groupId);
 };
 
-const findGroupByIdWithPopulatedMembersAndAdmins = (groupId) => {
-  return Group.findById(groupId)
-    .populate({
-      path: "admins.adminId",
-    })
-    .populate({
-      path: "members.memberId",
-    });
-};
-
 const findAndUpdateGroup = (groupId, newData, options) => {
   const group = Group.findByIdAndUpdate(groupId, newData, options);
   return group;
@@ -72,6 +62,5 @@ module.exports = {
   findGroupById,
   deleteGroup,
   findAndUpdateGroup,
-  findGroupByIdWithPopulatedMembersAndAdmins,
   updateParticipant,
 };
