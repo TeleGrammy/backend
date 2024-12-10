@@ -87,6 +87,10 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isPinned: {
+    type: Boolean,
+    default: false,
+  },
   selfDestructTime: {type: Number}, // Time-to-live in seconds
   expiresAt: {type: Date}, // Exact expiration time for TTL
 });
