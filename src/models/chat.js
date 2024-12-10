@@ -32,8 +32,7 @@ const chatSchema = new mongoose.Schema({
     default: Date.now(),
   },
   lastMessage: {type: mongoose.Schema.Types.ObjectId, ref: "Message"},
-  lastMessageTimestamp: {type: Date},
-  pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
+  // pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
   deleted: {type: Boolean, default: false},
 });
 
