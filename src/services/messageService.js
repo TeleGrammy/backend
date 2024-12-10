@@ -2,8 +2,6 @@ const {default: mongoose} = require("mongoose");
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
-const filterObject = require("../utils/utilitiesFunc");
-const User = require("../models/user");
 
 /**
  * Creates a new message.
@@ -56,7 +54,8 @@ module.exports.fetchChatMessages = (chatId, skip, limit) => {
     .select(
       "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
     ) // Only fetch relevant fields
-    .populate("senderId mentions", "username"); // Populate sender details (only username)
+    .populate("senderId mentions", "username") // Populate sender details (only username)
+    .populate("replyOn");
 };
 
 module.exports.countChatMessages = (chatId) => {
@@ -200,6 +199,10 @@ module.exports.createForwardMessageData = async (
     mediaUrl: message.mediaUrl,
   };
   return newMessageData;
+};
+
+module.exports.removeChatMessages = async (filter) => {
+  return Message.deleteMany(filter);
 };
 
 module.exports.markMessageAsPinned = async (chatId, messageId) => {

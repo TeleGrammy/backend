@@ -38,6 +38,8 @@ const chatSchema = new mongoose.Schema({
 
 applySoftDeleteMiddleWare(chatSchema);
 
+chatSchema.index({lastMessageTimestamp: -1});
+
 const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;
