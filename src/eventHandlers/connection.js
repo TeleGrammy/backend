@@ -20,6 +20,7 @@ const {
 
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
+  console.log("user join it is own room");
   socket.join(`${socket.userId}`);
   const user = await userService.getUserByID(socket.userId);
   const offsetOfUserIndvidualchat = user.userChats.get(socket.userId);
@@ -31,6 +32,7 @@ const joinChatsOfUsers = async (io, socket) => {
   });
   await Promise.all(
     user.contacts.map(async (contact) => {
+      console.log("user join room", `chat:${contact.chatId}`);
       socket.join(`chat:${contact.chatId}`);
       const draft = user.userDrafts.get(contact.chatId);
       if (draft) {

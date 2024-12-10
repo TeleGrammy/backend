@@ -72,11 +72,9 @@ exports.generateSignedUrl = async (key, expireTime = null) => {
   });
 
   // Options object for getSignedUrl
-  const options = {};
-  if (expireTime !== null) {
-    options.expiresIn = expireTime || 3600; // Default to 1 hour if not provided
-  }
-
+  const options = {
+    expiresIn: expireTime || 48 * 60 * 60,
+  };
   const url = await getSignedUrl(s3, command, options);
 
   return url;
