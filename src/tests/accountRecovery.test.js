@@ -1,6 +1,5 @@
-/* eslint-disable node/no-unpublished-require */
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-expressions */
+// eslint-disable-next-line node/no-unpublished-require
 const supertest = require("supertest");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");

@@ -117,7 +117,7 @@ const userSchema = new mongoose.Schema({
   },
   screenName: {
     type: String,
-    default: "User",
+    default: null,
   },
   pictureKey: {
     type: String, // contain media key of the profile picture
@@ -230,6 +230,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["EveryOne", "Admins"],
     default: "EveryOne",
+  },
+
+  groups: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Group",
+    default: [],
   },
 });
 

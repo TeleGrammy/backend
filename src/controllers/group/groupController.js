@@ -9,6 +9,7 @@ const getListOfParticipants = (tempMembers) => {
     const data = {
       id: memberData._id,
       username: memberData.username,
+      screenName: memberData.screenName,
       picture: memberData.picture,
       lastSeen: memberData.lastSeen,
       customTitle: member.customTitle,
@@ -18,12 +19,54 @@ const getListOfParticipants = (tempMembers) => {
   return members;
 };
 
-const addNewGroup = catchAsync(async (req, res, next) => {
-  const {groupName} = req.body;
-  const userId = req.user.id;
-  const groupData = await groupService.createGroup(groupName, userId);
-  res.status(201).json({group: groupData});
-});
+/**
+ * Merge current Permission with the new ones
+ * @param {Object} currentPermission - The current permission of group's participant
+ * @param {Object} body - The new permission received from the user
+ * @returns {Object} - The new Permission of participant
+ */
+const mergePermission = (currentPermission, body) => {
+  const newPermission = {};
+  Object.keys(currentPermission).forEach((key) => {
+    if (typeof currentPermission[key] === "object") {
+      newPermission[key] = {};
+      Object.keys(currentPermission[key]).forEach((nestedKey) => {
+        if (body[key] && body[key][nestedKey] !== undefined)
+          newPermission[key][nestedKey] = body[key][nestedKey];
+        else newPermission[key][nestedKey] = currentPermission[key][nestedKey];
+      });
+    } else if (body[key] !== undefined) newPermission[key] = body[key];
+    else newPermission[key] = currentPermission[key];
+  });
+
+  return newPermission;
+};
+/**
+ * create new Admin object
+ * @param {Object} memberData - The current member data stored in the database
+ * @param {Object} newPermission - New Admin Permission
+ * @param {mongoose.Type.Object} superAdminId - ID of admin who promote him to be an admin
+ * @param {String} customTitle - Custom Title which will appear for member of the group
+ * @returns {Object} - The created admin object
+ */
+const createAdminObject = (
+  memberData,
+  newPermission,
+  superAdminId,
+  customTitle
+) => {
+  const newAdmin = {
+    adminId: memberData.memberId,
+    joinedAt: memberData.joinedAt,
+    leftAt: memberData.leftAt,
+    superAdminId,
+    mute: memberData.mute,
+    muteUntil: memberData.muteUntil,
+    customTitle: customTitle ?? "Admin",
+    permissions: newPermission,
+  };
+  return newAdmin;
+};
 
 const addAdmin = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
@@ -69,7 +112,7 @@ const addAdmin = catchAsync(async (req, res, next) => {
     else newPermission[property] = adminPermission[property];
   });
 
-  const newAdmin = groupService.createAdmin(
+  const newAdmin = createAdminObject(
     memberData,
     newPermission,
     superAdminId,
@@ -82,8 +125,8 @@ const addAdmin = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: {group},
-    message: "The user is promoted to admin successfully",
+    data: {group, newAdmin},
+    message: "The user has been successfully promoted to admin.",
   });
 });
 
@@ -100,15 +143,14 @@ const removeAdmin = catchAsync(async (req, res, next) => {
   );
   if (!participantData)
     throw new AppError(
-      "Unauthorized Action. The user does not have permission to remove an admin from admin list.",
+      "Unauthorized action. You do not have permission to demote an admin.",
       403
     );
   const index = group.admins.findIndex((admin) =>
     admin.adminId.equals(adminId)
   );
 
-  if (index === -1)
-    throw new AppError("User not found in administrator list", 404);
+  if (index === -1) throw new AppError("User not found in admin list", 404);
 
   if (
     group.admins[index].superAdminId.toString() !== participantId &&
@@ -116,9 +158,10 @@ const removeAdmin = catchAsync(async (req, res, next) => {
   )
     throw new AppError("Insufficient Permission.", 403);
 
-  const member = groupService.createMember(
-    group.admins[index].adminId.toString()
-  );
+  const member = {
+    memberId: group.admins[index].adminId,
+  };
+
   group.admins.splice(index, 1);
   group.members.push(member);
 
@@ -129,14 +172,20 @@ const removeAdmin = catchAsync(async (req, res, next) => {
       group,
     },
     message:
-      "The user removed successfully from administrator list and added to members list.",
+      "The user was successfully removed from the admin list and added back to members.",
   });
 });
 
 const findGroup = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const group = await groupService.findGroupById(groupId);
-  res.status(200).json(group);
+  if (!group) throw new AppError("Group not found", 404);
+
+  res.status(200).json({
+    status: "success",
+    data: {group},
+    message: "The group was retrieved successfully.",
+  });
 });
 
 const updateGroupLimit = catchAsync(async (req, res, next) => {
@@ -149,13 +198,13 @@ const updateGroupLimit = catchAsync(async (req, res, next) => {
 
   if (group.ownerId.toString() !== participantId)
     throw new AppError(
-      "Insufficient Permission. This feature is restricted to the owner of the group",
+      "Insufficient permissions. Only the group owner can update the group size.",
       403
     );
 
   if (group.admins.length + group.members.length > groupSize)
     throw new AppError(
-      "The new size of the group is not allowed. The group contains participant greater than the new size",
+      "The new size of the group is not allowed. The group contains more members than the specified size.",
       400
     );
 
@@ -165,7 +214,7 @@ const updateGroupLimit = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {group},
-    message: "The group size is updated successfully",
+    message: "The group size has been updated successfully.",
   });
 });
 
@@ -179,7 +228,7 @@ const updateGroupType = catchAsync(async (req, res, next) => {
 
   if (participantId !== group.ownerId.toString())
     throw new AppError(
-      "Forbidden Action. The user is not the owner of the group",
+      "Insufficient permissions. Only the group owner can update the group type.",
       403
     );
 
@@ -189,7 +238,7 @@ const updateGroupType = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {group},
-    message: "The group type is updated successfully",
+    message: "The group type has been updated successfully",
   });
 });
 
@@ -197,8 +246,15 @@ const membersList = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const participantId = req.user.id;
 
-  const group =
-    await groupService.findGroupByIdWithPopulatedMembersAndAdmins(groupId);
+  const group = await groupService
+    .findGroupById(groupId)
+    .populate({
+      path: "admins.adminId",
+    })
+    .populate({
+      path: "members.memberId",
+    });
+
   if (!group) throw new AppError("Group not found", 404);
 
   const participantData =
@@ -219,7 +275,7 @@ const membersList = catchAsync(async (req, res, next) => {
       count: members.length,
       members,
     },
-    message: "The list of members is retrieved successfully.",
+    message: "The list of members has been retrieved successfully.",
   });
 });
 
@@ -227,8 +283,9 @@ const adminsList = catchAsync(async (req, res, next) => {
   const {groupId} = req.params;
   const participantId = req.user.id;
 
-  const group =
-    await groupService.findGroupByIdWithPopulatedMembersAndAdmins(groupId);
+  const group = await groupService.findGroupById(groupId).populate({
+    path: "admins.adminId",
+  });
   if (!group) throw new AppError("Group not found", 404);
 
   const participantData =
@@ -249,7 +306,7 @@ const adminsList = catchAsync(async (req, res, next) => {
       count: admins.length,
       admins,
     },
-    message: "The list of admins is retrieved successfully.",
+    message: "The list of admins has been retrieved successfully.",
   });
 });
 
@@ -279,7 +336,7 @@ const muteNotification = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {user: participantData},
-    message: "The user is updated successfully.",
+    message: "The member has updated his mute notification successfully.",
   });
 });
 
@@ -292,52 +349,127 @@ const updateMemberPermission = catchAsync(async (req, res, next) => {
   const group = await groupService.findGroupById(groupId);
   if (!group) throw new AppError("Group not found", 404);
 
-  let index = group.admins.findIndex(
+  const adminData = group.admins.find(
     (admin) => admin.adminId.toString() === participantId
   );
 
-  if (index === -1)
+  if (!adminData)
     throw new AppError(
-      "Forbidden Access. you does not have admin permission to update member permission.",
+      "Forbidden access. You do not have admin permissions to update member permissions.",
       403
     );
 
-  index = group.members.findIndex(
+  const memberData = group.members.find(
     (member) => member.memberId.toString() === memberId
   );
 
-  if (index === -1) throw new AppError("User not found in the group", 404);
+  if (!memberData) throw new AppError("User not found in the group", 404);
 
-  const currentPermission = group.members[index].permissions;
+  memberData.permissions = mergePermission(memberData.permissions, body);
 
-  const newPermission = {};
-
-  Object.keys(currentPermission).forEach((key) => {
-    if (typeof currentPermission[key] === "object") {
-      newPermission[key] = {};
-      Object.keys(currentPermission[key]).forEach((nestedKey) => {
-        if (body[key] && body[key][nestedKey] !== undefined)
-          newPermission[key][nestedKey] = body[key][nestedKey];
-        else newPermission[key][nestedKey] = currentPermission[key][nestedKey];
-      });
-    } else if (body[key] !== undefined) newPermission[key] = body[key];
-    else newPermission[key] = currentPermission[key];
-  });
-
-  group.members[index].permissions = newPermission;
   await group.save();
 
   res.status(200).json({
     status: "success",
     data: {
-      user: group.members[index],
+      member: memberData,
     },
-    message: "The user's permissions is updated successfully",
+    message: "The user's permissions have been updated successfully.",
+  });
+});
+
+const updateAdminPermission = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const {adminId} = req.params;
+  const participantId = req.user.id;
+  const {body} = req;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  const adminData = group.admins.find(
+    (admin) => admin.adminId.toString() === adminId
+  );
+
+  if (!adminData)
+    throw new AppError(
+      "Admin not found. The provided id is not an admin ID.",
+      404
+    );
+
+  if (
+    participantId !== group.ownerId.toString() &&
+    participantId !== adminData.superAdminId.toString()
+  )
+    throw new AppError(
+      "Forbidden access. You don't have the permission to change the admin's permissions.",
+      403
+    );
+
+  adminData.permissions = mergePermission(adminData.permissions, body);
+
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      admin: adminData,
+    },
+    message: "The admin's permissions have been updated successfully.",
+  });
+});
+
+const updateGroupBasicInfo = catchAsync(async (req, res, next) => {
+  const {groupId} = req.params;
+  const participantId = req.user.id;
+  let {name} = req.body;
+  let {description} = req.body;
+  let {image} = req.body;
+
+  const group = await groupService.findGroupById(groupId);
+  if (!group) throw new AppError("Group not found", 404);
+
+  let participantData = group.admins.find(
+    (admin) => admin.adminId.toString() === participantId
+  );
+  if (
+    group.groupPermissions.changeChatInfo === false &&
+    (!participantData || participantData.permissions.changeGroupInfo === false)
+  )
+    throw new AppError(
+      "Forbidden access. You do not have permission to change the group's information.",
+      403
+    );
+
+  if (group.groupPermissions.changeChatInfo === true && !participantData) {
+    participantData = group.members.find(
+      (member) => member.memberId.toString() === participantId
+    );
+    if (!participantData)
+      throw new AppError("User not found in the group", 404);
+    if (participantData.permissions.changeChatInfo === false)
+      throw new AppError(
+        "Forbidden access. You do not have permission to change the group's information.",
+        403
+      );
+  }
+  if (name === undefined) name = group.name;
+  if (description === undefined) description = group.description;
+  if (image === undefined) image = group.image;
+
+  group.name = name;
+  group.description = description;
+  group.image = image;
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {group},
+    message: "The group information has been updated successfully.",
   });
 });
 
 module.exports = {
-  addNewGroup,
   findGroup,
   addAdmin,
   removeAdmin,
@@ -347,4 +479,6 @@ module.exports = {
   adminsList,
   muteNotification,
   updateMemberPermission,
+  updateAdminPermission,
+  updateGroupBasicInfo,
 };

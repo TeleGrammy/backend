@@ -1,0 +1,421 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Group Chats WebSocket API",
+    "version": "1.0.0",
+    "description": "This API provides functionality for managing group chats. It allows users to create, manage, and interact with groups in a WebSocket-based environment."
+  },
+  "servers": {
+    "development": {
+      "host": "localhost:8080",
+      "protocol": "http"
+    }
+  },
+  "channels": {
+    "group": {
+      "address": "/group",
+      "description": "The channel for group",
+      "messages": {
+        "creatingGroupMessage": {
+          "summary": "Create a new group",
+          "$ref": "#/components/messages/creatingGroup"
+        },
+        "addingGroupMemberMessage": {
+          "summary": "Add a new member to a group",
+          "$ref": "#/components/messages/addingGroupMember"
+        },
+        "leavingGroupMessage": {
+          "summary": "Leave a group",
+          "$ref": "#/components/messages/leavingGroup"
+        },
+        "removingGroupMessage": {
+          "summary": "Remove a group",
+          "$ref": "#/components/messages/removingGroup"
+        },
+        "removingParticipantMessage": {
+          "summary": "Remove a participant from a group",
+          "$ref": "#/components/messages/removingParticipant"
+        },
+        "groupCreatedMessage": {
+          "summary": "Group created",
+          "$ref": "#/components/messages/group:created"
+        },
+        "groupMemberAddedMessage": {
+          "summary": "Group member added",
+          "$ref": "#/components/messages/group:memberAdded"
+        },
+        "groupMemberLeftMessage": {
+          "summary": "Group member left",
+          "$ref": "#/components/messages/group:memberLeft"
+        },
+        "userLeftGroupMessage": {
+          "summary": "User left group",
+          "$ref": "#/components/messages/user:leftGroup"
+        },
+        "groupDeletedMessage": {
+          "summary": "Group deleted",
+          "$ref": "#/components/messages/group:deleted"
+        },
+        "groupMemberRemovedMessage": {
+          "summary": "Group member removed",
+          "$ref": "#/components/messages/group:memberRemoved"
+        },
+        "userRemovedFromGroupMessage": {
+          "summary": "User removed from group",
+          "$ref": "#/components/messages/user:removedFromGroup"
+        }
+      }
+    }
+  },
+  "operations": {
+    "creatingGroup": {
+      "summary": "Create a new group",
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/creatingGroupMessage"
+        }
+      ]
+    },
+    "addingGroupMember": {
+      "summary": "Add a new member to a group",
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/addingGroupMemberMessage"
+        }
+      ]
+    },
+    "leavingGroup": {
+      "summary": "Leave a group",
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/leavingGroupMessage"
+        }
+      ]
+    },
+    "removingGroup": {
+      "summary": "Remove a group",
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/removingGroupMessage"
+        }
+      ]
+    },
+    "removingParticipant": {
+      "summary": "Remove a participant from a group",
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/removingParticipantMessage"
+        }
+      ]
+    },
+    "group:created": {
+      "summary": "Group created",
+      "description": "That event is triggered when a group is created. It sent to the user who create group",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/groupCreatedMessage"
+        }
+      ]
+    },
+    "group:memberAdded": {
+      "summary": "Group member added",
+      "description": "That event is triggered when a member is added to a group. It sent to all members of the group",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/groupMemberAddedMessage"
+        }
+      ]
+    },
+    "group:memberLeft": {
+      "summary": "Group member left",
+      "description": "That event is triggered when a member left a group. It sent to all members of the group except who will leave the group",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/groupMemberLeftMessage"
+        }
+      ]
+    },
+    "user:leftGroup": {
+      "summary": "User left group",
+      "description": "That event is triggered when a user left a group. It sent to the user who left the group",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/userLeftGroupMessage"
+        }
+      ]
+    },
+    "group:deleted": {
+      "summary": "Group deleted",
+      "description": "That event is triggered when a group is deleted. It sent to all members of the group",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/groupDeletedMessage"
+        }
+      ]
+    },
+    "group:memberRemoved": {
+      "summary": "Group member removed",
+      "description": "That event is triggered when a member is removed from a group. It sent to all members of the group except who will be removed",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/groupMemberRemovedMessage"
+        }
+      ]
+    },
+    "user:removedFromGroup": {
+      "summary": "User removed from group",
+      "description": "That event is triggered when a user is removed from a group. It sent to the user who was removed",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/userRemovedFromGroupMessage"
+        }
+      ]
+    }
+  },
+  "components": {
+    "messages": {
+      "creatingGroup": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the group"
+            },
+            "image": {
+              "type": "string",
+              "description": "The URL of the group's image"
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      "addingGroupMember": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string",
+              "description": "The id of the group"
+            },
+            "userIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "leavingGroup": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "removingGroup": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "removingParticipant": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "group:created": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "status": {"type": "string"},
+            "message": {"type": "string"},
+            "groupId": {"type": "string"},
+            "chatId": {"type": "string"}
+          }
+        }
+      },
+      "group:memberAdded": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string"
+            },
+            "memberId": {
+              "type": "string"
+            },
+            "inviterId": {
+              "type": "string"
+            },
+            "inviterName": {
+              "type": "string"
+            },
+            "memberName": {
+              "type": "string"
+            },
+            "eventIndex": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "group:memberLeft": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string"
+            },
+            "chatId": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "string"
+            },
+            "memberName": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "user:leftGroup": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "groupId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "group:deleted": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "groupId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "group:memberRemoved": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string"
+            },
+            "groupId": {
+              "type": "string"
+            },
+            "removerId": {
+              "type": "string"
+            },
+            "memberId": {
+              "type": "string"
+            },
+            "removerName": {
+              "type": "string"
+            },
+            "exMemberName": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "user:removedFromGroup": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string"
+            },
+            "removerId": {
+              "type": "string"
+            },
+            "removerName": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

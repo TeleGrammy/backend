@@ -3,8 +3,6 @@ const groupController = require("../../controllers/group/groupController");
 
 const router = express.Router();
 
-router.route("/").post(groupController.addNewGroup);
-
 router.route("/:groupId").get(groupController.findGroup);
 
 router
@@ -27,5 +25,11 @@ router
 router
   .route("/:groupId/members/:memberId/permissions")
   .patch(groupController.updateMemberPermission);
+
+router
+  .route("/:groupId/admins/:adminId/permissions")
+  .patch(groupController.updateAdminPermission);
+
+router.route("/:groupId/info").patch(groupController.updateGroupBasicInfo);
 
 module.exports = router;
