@@ -147,10 +147,11 @@ module.exports.pinMessage = function ({io, socket}) {
         payload.chatId,
         payload.messageId
       );
+      console.log(message, "returned");
       logThenEmit(
         socket.userId,
         "message:pin",
-        {message, userId: socket.userId},
+        {message, chatId: message.chatId, userId: socket.userId},
         io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
@@ -169,7 +170,7 @@ module.exports.unpinMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:unpin",
-        {message, userId: socket.userId},
+        {message, chatId: message.chatId, userId: socket.userId},
         io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {

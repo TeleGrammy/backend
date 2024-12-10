@@ -207,11 +207,10 @@ module.exports.markMessageAsPinned = async (chatId, messageId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-  if(message.chatId.toString()!=== chatId){
+  if (message.chatId.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
-  message.isPinned = true;
-  await message.save();
+  await message.pin();
   return message;
 };
 
@@ -220,10 +219,10 @@ module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-  if(message.chatId.toString()!=== chatId){
+  if (message.chatId.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
+  await message.unpin();
   message.isPinned = false;
-  await message.save();
   return message;
 };

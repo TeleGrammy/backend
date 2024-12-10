@@ -185,6 +185,15 @@ messageSchema.post(/^find/, async function (docs, next) {
   return next();
 });
 
+messageSchema.methods.pin = async function () {
+  this.isPinned = true;
+  await this.save();
+};
+
+messageSchema.methods.unpin = async function () {
+  this.isPinned = false;
+  await this.save();
+};
 // messageSchema.post("remove", function (doc) {
 //   // TODO: put proper socket path and test this socket
 //   // const io = require("SOCKET PATH");
