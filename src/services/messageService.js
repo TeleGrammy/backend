@@ -54,7 +54,8 @@ module.exports.fetchChatMessages = (chatId, skip, limit) => {
     .select(
       "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
     ) // Only fetch relevant fields
-    .populate("senderId mentions", "username"); // Populate sender details (only username)
+    .populate("senderId mentions", "username") // Populate sender details (only username)
+    .populate("replyOn");
 };
 
 module.exports.countChatMessages = (chatId) => {
