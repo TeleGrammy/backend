@@ -196,3 +196,22 @@ module.exports.createForwardMessageData = async (
   };
   return newMessageData;
 };
+
+module.exports.checkChannelPost = async (postId, chatId) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+  const post = await Message.findById(postId);
+  if (!chat.isChannel) {
+    throw new Error("This Chat is not a Channel");
+  }
+
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  if (post.chatId.toString() !== chatId) {
+    throw new Error("This Post does not belong to Channel");
+  }
+  return true;
+};

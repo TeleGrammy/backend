@@ -59,6 +59,13 @@ exports.onConnection = async (socket, io) => {
 
   await joinChatsOfUsers(io, socket);
 
+  socket.on("message:test", (payload, callback) => {
+    console.log("Received 'message:test' event from client:", payload);
+    if (callback) {
+      callback({status: "success", message: "Voice note received"});
+    }
+  });
+
   socket.on("message:send", sendMessage({io, socket}));
   socket.on("message:update", updateMessage({io, socket}));
   socket.on("message:delete", deleteMessage({io, socket}));

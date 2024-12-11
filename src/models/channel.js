@@ -9,19 +9,21 @@ const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const channelSchema = new Schema({
   name: {type: String, required: true},
   description: {type: String},
-  privacy: {type: String, enum: ["Public", "Private"], default: "Private"},
+  privacy: {type: Boolean, default: false},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now},
-  threads: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Thread", // Reference to the Thread model
-    },
-  ],
   metaDataPolicy: {
     type: String,
     enum: ["Admins", "EveryOne"],
     default: "Admins",
+  },
+  comments: {
+    type: Boolean,
+    default: true,
+  },
+  download: {
+    type: Boolean,
+    default: true,
   },
   deleted: {
     type: Boolean,

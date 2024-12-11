@@ -29,6 +29,17 @@ const deleteChannel = async (channelId) => {
   );
 };
 
+const updateChannelPrivacy = async (id, userId, updateData) => {
+  const chat = await ChatService.getChatOfChannel(id);
+
+  await ChatService.checkUserAdmin(chat.id, userId);
+  const updatedChannel = await Channel.findByIdAndUpdate(
+    id,
+    {$set: updateData},
+    {new: true} // Return the updated document
+  );
+  return updatedChannel;
+};
 /**
  * Get channel messages with embedded thread metadata
  * @param {String} channelId - The ID of the channel
@@ -36,7 +47,7 @@ const deleteChannel = async (channelId) => {
  * @param {Number} limit - The number of messages per page (default: 10)
  * @returns {Object} - Channel details with messages and thread metadata
  */
-const getChannelChatWithThreads = async (channelId, page = 1, limit = 30) => {
+const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
   try {
     // Validate the channel exists
     const channel = await Channel.findById(channelId);
@@ -98,7 +109,7 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
     throw new Error("Thread not found");
   }
 
-  const {chatId} = post;
+  const chatId = post.chatId.toString();
 
   await ChatService.checkUserParticipant(chatId, userId);
   // Calculate pagination options
@@ -140,6 +151,14 @@ const checkUserParticipant = async (channelId, userId) => {
   return currentUser;
 };
 
+const checkCommentEnable = async (channelId) => {
+  const channel = await getChannelInformation(channelId);
+  if (!channel) {
+    throw new AppError("Channl not Found", 404);
+  }
+  return channel.comments;
+};
+
 module.exports = {
   createChannel,
   deleteChannel,
@@ -147,4 +166,6 @@ module.exports = {
   getChannelChatWithThreads,
   getThreadMessages,
   checkUserParticipant,
+  checkCommentEnable,
+  updateChannelPrivacy,
 };

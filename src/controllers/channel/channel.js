@@ -515,7 +515,7 @@ const fetchChannelChat = catchAsync(async (req, res, next) => {
 
 const fetchThreadsMesssage = catchAsync(async (req, res) => {
   const {postId} = req.params;
-  const {page = 1, limit = 10} = req.query; // Pagination params from query string
+  const {page = 1, limit = 20} = req.query; // Pagination params from query string
   const result = await channelService.getThreadMessages(
     postId,
     req.user.id,
@@ -524,6 +524,31 @@ const fetchThreadsMesssage = catchAsync(async (req, res) => {
   );
   res.status(200).json(result);
 });
+
+const updatePrivacy = catchAsync(async (req, res) => {
+  const {channelId} = req.params;
+  const {privacy, comments, download} = req.body;
+
+  // Validate input if needed
+  const updateData = {};
+  if (typeof privacy !== "undefined") updateData.privacy = privacy;
+  if (typeof comments !== "undefined") updateData.comments = comments;
+  if (typeof download !== "undefined") updateData.download = download;
+  // Update the channel document
+  const updatedChannel = await channelService.updateChannelPrivacy(
+    channelId,
+    req.user.id,
+    updateData
+  );
+
+  if (!updatedChannel) {
+    return res.status(404).json({message: "Channel not found"});
+  }
+  return res
+    .status(200)
+    .json({message: "Channel updated successfully", data: updatedChannel});
+});
+
 module.exports = {
   createChannel,
   updateChannel,
@@ -534,4 +559,5 @@ module.exports = {
   addSubscriber,
   fetchChannelChat,
   fetchThreadsMesssage,
+  updatePrivacy,
 };

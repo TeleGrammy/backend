@@ -221,6 +221,13 @@ const getUserById = async (id, select = "") => {
   return User.findById(id).select(select);
 };
 
+const getUserContact = async (id) => {
+  return User.findById(id).select("contacts -_id").populate({
+    path: "contacts.contactId", // Path to the field to populate
+    select: "username", // Optional: Specify which fields to include from the referenced document
+  });
+};
+
 const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
   return findOneAndUpdate(
     {_id: id},
@@ -466,4 +473,5 @@ module.exports = {
   updateRefreshToken,
   addContact,
   getUserContactsChats,
+  getUserContact,
 };

@@ -611,3 +611,189 @@
  *                  You do not have permission to change user's downloading
  *                  permission
  */
+/**
+ * @swagger
+ * /channels/{channelId}/chat:
+ *   get:
+ *     summary: Get Channel Messages
+ *     description: Retrieve Channl details including messages and pagination.
+ *     tags:
+ *        - Channels
+ *     parameters:
+ *       - name: channelId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the channel to retrieve chat details for.
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number for pagination.
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: The limit number for pagination.
+ *     responses:
+ *       '200':
+ *         description: Chat details retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 channelId:
+ *                   type: string
+ *                   description: The ID of the channel.
+ *                 channelName:
+ *                   type: string
+ *                   description: The name of the channel.
+ *                 channelDescription:
+ *                   type: string
+ *                   description: The description of the channel.
+ *                 chatId:
+ *                   type: string
+ *                   description: The ID of the chat.
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     description: Details of a single message.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalMessages:
+ *                       type: integer
+ *                       description: Total number of messages.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       description: Indicates if there is a next page.
+ *                     hasPreviousPage:
+ *                       type: boolean
+ *                       description: Indicates if there is a previous page.
+ * /channels/thread/{postId}/messages:
+ *   get:
+ *     summary: Get messages for a thread
+ *     tags:
+ *        - Channels
+ *     description: Retrieve messages and pagination details for a specific thread post.
+ *     parameters:
+ *       - name: postId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the thread post to retrieve messages for.
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number for pagination.
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: The limit number for pagination.
+ *     responses:
+ *       '200':
+ *         description: Messages retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     description: Details of a single message.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalMessages:
+ *                       type: integer
+ *                       description: Total number of messages.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       description: Indicates if there is a next page.
+ *                     hasPreviousPage:
+ *                       type: boolean
+ *                       description: Indicates if there is a previous page.
+ * /channels/{channelId}/privacy:
+ *   patch:
+ *     summary: Update channel privacy settings
+ *     description: Update the privacy, comments, and download settings for a specific channel.
+ *     parameters:
+ *       - name: channelId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the channel to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               privacy:
+ *                 type: boolean
+ *                 description: Privacy setting of the channel. False for private and True for public.
+ *               comments:
+ *                 type: boolean
+ *                 description: Enable or disable comments on the channel. False for disable and True for enable.
+ *               download:
+ *                 type: boolean
+ *                 description: Enable or disable download functionality for the channel. False for disable and True for enable.
+ *           example:
+ *             privacy: true
+ *             comments: true
+ *             download: false
+ *     responses:
+ *       '200':
+ *         description: Channel updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message.
+ *                 data:
+ *                   type: object
+ *                   description: The updated channel document.
+ *       '404':
+ *         description: Channel not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating the channel was not found.
+ */
