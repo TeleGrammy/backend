@@ -217,8 +217,12 @@ const getUserByID = async (ID) => {
 const findByIdAndUpdate = async (id, updateData, options) => {
   return User.findByIdAndUpdate(id, updateData, options);
 };
-const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+const getUserById = async (id, select = "", populate = null) => {
+  const query = User.findById(id).select(select);
+  if (populate) {
+    query.populate(populate);
+  }
+  return query.exec();
 };
 
 const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
