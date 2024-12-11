@@ -9,6 +9,10 @@ const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const channelSchema = new Schema({
   name: {type: String, required: true},
   description: {type: String},
+  image: {
+    type: String,
+    default: null,
+  },
   privacy: {type: Boolean, default: false},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now},

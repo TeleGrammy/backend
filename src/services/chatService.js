@@ -68,13 +68,14 @@ const getUserChats = async (userId, skip, limit) => {
       .limit(limit)
       .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId isPinned"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
       )
       .populate(
         "participants.userId",
         "username email phone picture screenName lastSeen status"
       )
       .populate("groupId", "name image description")
+      .populate("channelId", "name image description")
       .populate({
         path: "lastMessage",
         select:
@@ -118,6 +119,7 @@ const updateLastMessage = async (chatId, messageId) => {
       {lastMessageTimestamp: Date.now()},
       {new: true}
     );
+    console.log("updating Last Message: ", chat);
     if (!chat) throw new Error("Chat not found");
     return chat;
   } catch (error) {
