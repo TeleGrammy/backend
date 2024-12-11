@@ -472,7 +472,6 @@ module.exports = {
   updateDraftOfUserInChat,
   updateRefreshToken,
   addContact,
-  getUserContactsChats,
   getUserContact,
   updateMany,
 };
