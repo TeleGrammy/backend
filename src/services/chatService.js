@@ -78,7 +78,8 @@ const getUserChats = async (userId, skip, limit) => {
       .populate("channelId", "name image description")
       .populate({
         path: "lastMessage",
-        select: "content senderId messageType status timestamp mediaUrl",
+        select:
+          "content senderId messageType status timestamp mediaUrl isPinned",
         populate: {
           path: "senderId",
           select: "username",
@@ -278,7 +279,7 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
-  console.log(chat);
+  console.log(chat, userId);
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
