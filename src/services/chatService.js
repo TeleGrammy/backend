@@ -33,12 +33,10 @@ const createChat = async (chatData) => {
  */
 const getChatById = async (chatId) => {
   try {
-    const chat = await Chat.findById(chatId)
-      .populate("lastMessage pinnedMessages")
-      .populate({
-        path: "participants.userId",
-        select: "username email phone picture screenName lastSeen status",
-      });
+    const chat = await Chat.findById(chatId).populate("lastMessage").populate({
+      path: "participants.userId",
+      select: "username email phone picture screenName lastSeen status",
+    });
 
     return chat;
   } catch (error) {
@@ -78,14 +76,6 @@ const getUserChats = async (userId, skip, limit) => {
       )
       .populate({
         path: "lastMessage",
-        select: "content senderId messageType status timestamp mediaUrl",
-        populate: {
-          path: "senderId",
-          select: "username",
-        },
-      })
-      .populate({
-        path: "pinnedMessages",
         select: "content senderId messageType status timestamp mediaUrl",
         populate: {
           path: "senderId",
@@ -319,13 +309,25 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("participants.userId lastMessage pinnedMessages");
+  }).populate("lastMessage");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
   }
 
   return chat;
+};
+
+const checkUserParticipant = async (chatId, userId) => {
+  const chat = await getChatById(chatId);
+  const currentUser = chat.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  return currentUser;
 };
 
 const changeUserRole = async (chatId, userId, newRole) => {
@@ -335,13 +337,7 @@ const changeUserRole = async (chatId, userId, newRole) => {
     throw new AppError("Chat not found", 404);
   }
 
-  const currentUser = currentChat.participants.find(
-    (participant) => participant.userId._id.toString() === userId
-  );
-
-  if (!currentUser) {
-    throw new AppError("User not found in the chat participants", 404);
-  }
+  const currentUser = checkUserParticipant(currentChat, userId);
 
   currentUser.role = newRole;
 
@@ -374,4 +370,5 @@ module.exports = {
   countUserChats,
   getChatOfChannel,
   changeUserRole,
+  checkUserParticipant,
 };

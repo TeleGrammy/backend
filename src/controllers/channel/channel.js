@@ -7,7 +7,7 @@ const AppError = require("../../errors/appError");
 const channelService = require("../../services/channelService");
 const chatService = require("../../services/chatService");
 const messageService = require("../../services/messageService");
-const threadService = require("../../services/threadService");
+const userService = require("../../services/userService");
 
 const updateChannelHelper = async (
   req,
@@ -133,7 +133,7 @@ const updateChannel = catchAsync(async (req, res, next) => {
       chatOfChannel.participants.some(
         (participant) =>
           (participant.role === "Admin" || participant.role === "Creator") &&
-          String(participant.userId._id) === userId
+          String(participant.userId) === userId
       );
 
     if (!isAdmin) {
@@ -156,7 +156,7 @@ const deleteChannel = catchAsync(async (req, res, next) => {
   }
 
   const participant = chatOfChannel.participants.find(
-    (part) => String(part.userId._id) === userId
+    (part) => String(part.userId) === userId
   );
 
   if (!participant) {
@@ -217,11 +217,10 @@ const getChannel = catchAsync(async (req, res, next) => {
     );
   }
 
-  const ownerData = chatData.participants.find(
+  const ownerId = chatData.participants.find(
     (participant) => participant.role === "Creator"
   );
-
-  if (!ownerData) {
+  if (!ownerId) {
     return next(
       new AppError(
         "Channel owner's data is missing. Please try again later.",
@@ -229,6 +228,7 @@ const getChannel = catchAsync(async (req, res, next) => {
       )
     );
   }
+  const ownerData = userService.getUserByID(ownerId.userId);
 
   return res.status(200).json({
     channelId,
@@ -236,10 +236,10 @@ const getChannel = catchAsync(async (req, res, next) => {
     channelDescription: channelData.description,
     subscribersCount: channelData.membersCount,
     channelOwner: {
-      id: ownerData.userId._id,
-      name: ownerData.userId.screenName,
-      phone: ownerData.userId.phone,
-      profilePicture: ownerData.userId.profilePicture,
+      id: ownerData.id,
+      name: ownerData.screenName,
+      phone: ownerData.phone,
+      profilePicture: ownerData.profilePicture,
     },
     channelCreationDate: channelData.createdAt,
   });
@@ -502,7 +502,8 @@ const addSubscriber = catchAsync(async (req, res, next) => {
 
 const fetchChannelChat = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
-  const {page = 1, limit = 10} = req.query;
+  const {page = 1, limit = 20} = req.query;
+  await channelService.checkUserParticipant(channelId, req.user.id);
 
   const result = await channelService.getChannelChatWithThreads(
     channelId,
@@ -513,19 +514,15 @@ const fetchChannelChat = catchAsync(async (req, res, next) => {
 });
 
 const fetchThreadsMesssage = catchAsync(async (req, res) => {
-  const {threadId} = req.params;
+  const {postId} = req.params;
   const {page = 1, limit = 10} = req.query; // Pagination params from query string
-
-  try {
-    const result = await threadService.getThreadMessages(
-      threadId,
-      Number(page),
-      Number(limit)
-    );
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({error: error.message});
-  }
+  const result = await channelService.getThreadMessages(
+    postId,
+    req.user.id,
+    Number(page),
+    Number(limit)
+  );
+  res.status(200).json(result);
 });
 module.exports = {
   createChannel,

@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
+const ChatService = require("./chatService");
+
 const AppError = require("../errors/appError");
 
 const Channel = require("../models/channel");
-
-const Chat = require("../models/chat");
 
 const Message = require("../models/message");
 
@@ -36,7 +36,7 @@ const deleteChannel = async (channelId) => {
  * @param {Number} limit - The number of messages per page (default: 10)
  * @returns {Object} - Channel details with messages and thread metadata
  */
-const getChannelChatWithThreads = async (channelId, page = 1, limit = 10) => {
+const getChannelChatWithThreads = async (channelId, page = 1, limit = 30) => {
   try {
     // Validate the channel exists
     const channel = await Channel.findById(channelId);
@@ -45,7 +45,7 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 10) => {
     }
 
     // Get the associated chat for the channel
-    const chat = await Chat.findOne({channelId: channel._id});
+    const chat = await ChatService.getChatOfChannel(channelId);
     if (!chat) {
       throw new Error("Chat not found for this channel");
     }
@@ -54,57 +54,22 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 10) => {
     const skip = (page - 1) * limit;
 
     // Fetch messages and thread metadata
-    const messages = await Message.aggregate([
-      {$match: {chatId: chat._id}}, // Match messages for the channel's chat
-      {$sort: {timestamp: -1}}, // Sort messages (newest first)
-      {$skip: skip}, // Pagination: Skip documents
-      {$limit: limit}, // Limit the number of documents
-      {
-        $lookup: {
-          from: "threads", // Join with threads collection
-          localField: "_id", // Match message ID to thread's messageId
-          foreignField: "messageId",
-          as: "thread", // Embed matching thread
-        },
-      },
-      {
-        $unwind: {
-          path: "$thread",
-          preserveNullAndEmptyArrays: true, // Allow messages without threads
-        },
-      },
-      {
-        $lookup: {
-          from: "messages", // Join with messages collection to count thread messages
-          localField: "thread.chatId", // Use thread's chatId to find messages
-          foreignField: "chatId",
-          as: "threadMessages",
-        },
-      },
-      {
-        $addFields: {
-          threadId: "$thread._id", // Include thread ID
-          comments: {$size: "$threadMessages"}, // Count messages in the thread
-        },
-      },
-      {
-        $project: {
-          content: 1,
-          messageType: 1,
-          timestamp: 1,
-          threadId: 1,
-          comments: 1, // Include the count of thread messages
-        },
-      },
-    ]);
+    const messages = await Message.find({chatId: chat._id, isPost: true})
+      .skip(skip) // Skip the documents for previous pages
+      .limit(limit); // Limit the results to pageSize
 
     // Total message count for pagination
-    const totalMessages = await Message.countDocuments({chatId: chat._id});
+    const totalMessages = await Message.countDocuments({
+      chatId: chat._id,
+      isPost: true,
+    });
     const totalPages = Math.ceil(totalMessages / limit);
 
     return {
       channelId: channel._id,
       channelName: channel.name,
+      channelDescription: channel.description,
+      chatId: chat._id,
       messages,
       pagination: {
         totalMessages,
@@ -119,9 +84,67 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 10) => {
   }
 };
 
+/**
+ * Get chat messages for a specific thread with pagination
+ * @param {String} threadId - The ID of the thread
+ * @param {Number} page - The page number (default: 1)
+ * @param {Number} limit - The number of messages per page (default: 10)
+ * @returns {Object} - Paginated messages and metadata
+ */
+const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
+  // Validate the thread exists
+  const post = await Message.findById(postId);
+  if (!post) {
+    throw new Error("Thread not found");
+  }
+
+  const {chatId} = post;
+
+  await ChatService.checkUserParticipant(chatId, userId);
+  // Calculate pagination options
+  const skip = (page - 1) * limit;
+
+  // Query messages for the thread's associated chat
+  const messages = await Message.find({parentPost: postId})
+    .sort({createdAt: -1}) // Sort by newest first
+    .skip(skip)
+    .limit(limit);
+
+  // Get total message count for the thread's chat
+  const totalMessages = await Message.countDocuments({parentPost: postId});
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalMessages / limit);
+
+  return {
+    messages,
+    pagination: {
+      totalMessages,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
+};
+
+const checkUserParticipant = async (channelId, userId) => {
+  const chat = await ChatService.getChatOfChannel(channelId);
+  const currentUser = chat.participants.find(
+    (participant) => participant.userId.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the channel participants", 401);
+  }
+  return currentUser;
+};
+
 module.exports = {
   createChannel,
   deleteChannel,
   getChannelInformation,
   getChannelChatWithThreads,
+  getThreadMessages,
+  checkUserParticipant,
 };
