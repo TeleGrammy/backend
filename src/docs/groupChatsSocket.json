@@ -63,6 +63,10 @@
         "userRemovedFromGroupMessage": {
           "summary": "User removed from group",
           "$ref": "#/components/messages/user:removedFromGroup"
+        },
+        "errorMessage": {
+          "summary": "Error",
+          "$ref": "#/components/messages/error"
         }
       }
     }
@@ -216,6 +220,19 @@
       "messages": [
         {
           "$ref": "#/channels/group/messages/userRemovedFromGroupMessage"
+        }
+      ]
+    },
+    "error": {
+      "summary": "Error",
+      "description": "That event is triggered when an error occurs",
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/errorMessage"
         }
       ]
     }
@@ -411,6 +428,22 @@
               "type": "string"
             },
             "removerName": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "error": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "statusCode": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "message": {
               "type": "string"
             }
           }
