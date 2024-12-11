@@ -32,6 +32,7 @@ const chatSchema = new mongoose.Schema({
     default: Date.now(),
   },
   lastMessage: {type: mongoose.Schema.Types.ObjectId, ref: "Message"},
+  lastMessageTimestamp: {type: Date, default: () => new Date(1900, 0, 1)},
   // pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
   deleted: {type: Boolean, default: false},
 });
@@ -40,6 +41,15 @@ applySoftDeleteMiddleWare(chatSchema);
 
 chatSchema.index({lastMessageTimestamp: -1});
 
+chatSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+
+  if (update.lastMessage) {
+    update.lastMessageTimestamp = Date.now();
+  }
+
+  next();
+});
 const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;
