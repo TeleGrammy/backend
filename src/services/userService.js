@@ -217,8 +217,12 @@ const getUserByID = async (ID) => {
 const findByIdAndUpdate = async (id, updateData, options) => {
   return User.findByIdAndUpdate(id, updateData, options);
 };
-const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+const getUserById = async (id, select = "", populate = null) => {
+  const query = User.findById(id).select(select);
+  if (populate) {
+    query.populate(populate);
+  }
+  return query.exec();
 };
 
 const getUserContact = async (id) => {
@@ -373,7 +377,9 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
 
 const ackEvent = async (id, chatId, offset) => {
   const user = await User.findById(id);
-
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
     ? user.userChats.get(`${chatId}`)
@@ -440,14 +446,8 @@ const addContact = async (userId, chatId, contactId, isMe) => {
   return user.save();
 };
 
-const getUserContactsChats = async (userId) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  return user.contacts;
+const updateMany = async (filter, updateData, options) => {
+  return User.updateMany(filter, updateData, options);
 };
 
 module.exports = {
@@ -474,4 +474,5 @@ module.exports = {
   addContact,
   getUserContactsChats,
   getUserContact,
+  updateMany,
 };

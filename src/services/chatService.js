@@ -66,14 +66,15 @@ const getUserChats = async (userId, skip, limit) => {
     const chats = await Chat.find({"participants.userId": userId})
       .skip(skip)
       .limit(limit)
-      .sort({createdAt: -1})
+      .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage pinnedMessages"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId"
       )
       .populate(
         "participants.userId",
         "username email phone picture screenName lastSeen status"
       )
+      .populate("groupId", "name image description")
       .populate({
         path: "lastMessage",
         select: "content senderId messageType status timestamp mediaUrl",
@@ -113,6 +114,7 @@ const updateLastMessage = async (chatId, messageId) => {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
       {lastMessage: messageId},
+      {lastMessageTimestamp: Date.now()},
       {new: true}
     );
     if (!chat) throw new Error("Chat not found");
@@ -158,7 +160,7 @@ const removeParticipant = async (chatId, userId) => {
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
-      {$pull: {participants: {userId: mongoose.Types.ObjectId(userId)}}},
+      {$pull: {participants: {userId: new mongoose.Types.ObjectId(userId)}}},
       {new: true}
     );
     if (!chat) throw new Error("Chat not found");
@@ -206,52 +208,6 @@ const restoreChat = async (chatId) => {
     return chat;
   } catch (error) {
     throw new Error(`Error restoring chat: ${error.message}`);
-  }
-};
-
-/**
- * Pins a message in a chat.
- * @param {String} chatId - The ID of the chat to update.
- * @param {String} messageId - The ID of the message to pin.
- * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
- */
-const pinMessage = async (chatId, messageId) => {
-  try {
-    const message = await Message.findById(messageId);
-
-    if (!message) throw new Error("Message not found");
-    if (message.chatId !== chatId) {
-      throw new Error("Message is not part of the provided chat");
-    }
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {$addToSet: {pinnedMessages: messageId}},
-      {new: true}
-    );
-    if (!chat) throw new Error("Chat not found");
-    return chat;
-  } catch (error) {
-    throw new Error(`Error pinning message: ${error.message}`);
-  }
-};
-
-/**
- * Unpins a message in a chat.
- * @param {String} chatId - The ID of the chat to update.
- * @param {String} messageId - The ID of the message to unpin.
- * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
- */
-const unpinMessage = async (chatId, messageId) => {
-  try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {$pull: {pinnedMessages: messageId}},
-      {new: true}
-    );
-    if (!chat) throw new Error("Chat not found");
-    return chat;
-  } catch (error) {
-    throw new Error(`Error unpinning message: ${error.message}`);
   }
 };
 
@@ -382,6 +338,15 @@ const changeUserRole = async (chatId, userId, newRole) => {
   return updatedChat;
 };
 
+/**
+ *
+ * @param {String} chatId = The Chat Id which will be deleted from database
+ * @returns
+ */
+const removeChat = (filter) => {
+  return Chat.deleteOne(filter);
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -392,8 +357,8 @@ module.exports = {
   removeParticipant,
   softDeleteChat,
   restoreChat,
-  pinMessage,
-  unpinMessage,
+  // pinMessage,
+  // unpinMessage,
   createOneToOneChat,
   countUserChats,
   getChatOfChannel,
@@ -401,4 +366,5 @@ module.exports = {
   checkUserParticipant,
   checkUserAdmin,
   checkChatChannel,
+  removeChat,
 };

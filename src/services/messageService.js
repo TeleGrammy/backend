@@ -12,7 +12,6 @@ const AppError = require("../errors/appError");
  */
 module.exports.createMessage = async (messageData) => {
   const message = await Message.create(messageData);
-
   return message;
 };
 
@@ -54,7 +53,8 @@ module.exports.fetchChatMessages = (chatId, skip, limit) => {
     .select(
       "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
     ) // Only fetch relevant fields
-    .populate("senderId mentions", "username"); // Populate sender details (only username)
+    .populate("senderId mentions", "username") // Populate sender details (only username)
+    .populate("replyOn");
 };
 
 module.exports.countChatMessages = (chatId) => {
@@ -165,6 +165,9 @@ module.exports.updateMessage = async (payload) => {
 
 module.exports.deleteMessage = async (messageId, senderId) => {
   const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
   if (message.senderId.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }
@@ -214,4 +217,33 @@ module.exports.checkChannelPost = async (postId, chatId) => {
     throw new Error("This Post does not belong to Channel");
   }
   return true;
+};
+
+module.exports.removeChatMessages = async (filter) => {
+  return Message.deleteMany(filter);
+};
+
+module.exports.markMessageAsPinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.pin();
+  return message;
+};
+
+module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.unpin();
+  message.isPinned = false;
+  return message;
 };

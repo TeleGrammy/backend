@@ -32,11 +32,13 @@ const chatSchema = new mongoose.Schema({
     default: Date.now(),
   },
   lastMessage: {type: mongoose.Schema.Types.ObjectId, ref: "Message"},
-  pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
+  // pinnedMessages: [{type: mongoose.Schema.Types.ObjectId, ref: "Message"}],
   deleted: {type: Boolean, default: false},
 });
 
 applySoftDeleteMiddleWare(chatSchema);
+
+chatSchema.index({lastMessageTimestamp: -1});
 
 const Chat = mongoose.model("Chat", chatSchema);
 

@@ -39,7 +39,7 @@ module.exports.sendMessage = function ({io, socket}) {
         socket.userId,
         "message:sent",
         {...message._doc},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        io.to(`chat:${payload.chatId}`)
       );
 
       // i think this is useless since at the event of new message
@@ -60,7 +60,7 @@ module.exports.sendMessage = function ({io, socket}) {
 
       logThenEmit(
         socket.userId,
-        "message:iSent",
+        "message:isSent",
         {
           message,
           chatId: message.senderId,
@@ -124,7 +124,7 @@ module.exports.deleteMessage = function ({io, socket}) {
         socket.userId,
         "message:deleted",
         message._doc,
-        socket.to(`chat:${message.chatId}`)
+        io.to(`chat:${message.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -151,12 +151,16 @@ module.exports.updateDraftOfUserInChat = function ({io, socket}) {
 module.exports.pinMessage = function ({io, socket}) {
   return async (payload) => {
     try {
-      await chatService.pinMessage(payload.chatId, payload.messageId);
+      const message = await messageService.markMessageAsPinned(
+        payload.chatId,
+        payload.messageId
+      );
+      console.log(message, "returned");
       logThenEmit(
         socket.userId,
         "message:pin",
-        {...payload, userId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        {message, chatId: message.chatId, userId: socket.userId},
+        io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -167,48 +171,51 @@ module.exports.pinMessage = function ({io, socket}) {
 module.exports.unpinMessage = function ({io, socket}) {
   return async (payload) => {
     try {
-      await chatService.unpinMessage(payload.chatId, payload.messageId);
+      const message = await messageService.markMessageAsUnpinned(
+        payload.chatId,
+        payload.messageId
+      );
       logThenEmit(
         socket.userId,
         "message:unpin",
-        {...payload, userId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        {message, chatId: message.chatId, userId: socket.userId},
+        io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
     }
   };
 };
-module.exports.sendVoiceNote = function ({io, socket}) {
-  console.log("Testing Send voice");
-  return async (payload) => {
-    console.log("Inside Testing Send voice");
+// module.exports.sendVoiceNote = function ({io, socket}) {
+//   console.log("Testing Send voice");
+//   return async (payload) => {
+//     console.log("Inside Testing Send voice");
 
-    const {file} = payload; // The audio file sent from the client
-    console.log(file);
-    try {
-      const url = await uploadVoiceNote(file);
-      console.log(url);
-      socket.broadcast.emit("message:send_voicenote", url);
-    } catch (err) {
-      socket.emit("error", {message: err.message});
-    }
-  };
-};
+//     const {file} = payload; // The audio file sent from the client
+//     console.log(file);
+//     try {
+//       const url = await uploadVoiceNote(file);
+//       console.log(url);
+//       socket.broadcast.emit("message:send_voicenote", url);
+//     } catch (err) {
+//       socket.emit("error", {message: err.message});
+//     }
+//   };
+// };
 
-module.exports.sendVoiceNote = function ({io, socket}) {
-  console.log("Testing Send voice");
-  return async (payload) => {
-    console.log("Inside Testing Send voice");
+// module.exports.sendVoiceNote = function ({io, socket}) {
+//   console.log("Testing Send voice");
+//   return async (payload) => {
+//     console.log("Inside Testing Send voice");
 
-    const {file} = payload; // The audio file sent from the client
-    console.log(file);
-    try {
-      const url = await uploadVoiceNote(file);
-      console.log(url);
-      socket.broadcast.emit("message:send_voicenote", url);
-    } catch (err) {
-      socket.emit("error", {message: err.message});
-    }
-  };
-};
+//     const {file} = payload; // The audio file sent from the client
+//     console.log(file);
+//     try {
+//       const url = await uploadVoiceNote(file);
+//       console.log(url);
+//       socket.broadcast.emit("message:send_voicenote", url);
+//     } catch (err) {
+//       socket.emit("error", {message: err.message});
+//     }
+//   };
+// };

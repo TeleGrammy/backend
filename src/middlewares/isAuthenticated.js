@@ -24,13 +24,12 @@ module.exports = catchAsync(async (req, res, next) => {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
   }
-
   const currentDeviceType = req.headers["user-agent"];
 
   const accessToken =
     req.cookies[process.env.COOKIE_ACCESS_NAME] ||
-    req.headers["Authorization"]?.replace("Bearer ", "") ||
-    req.headers["authorization"]?.replace("Bearer ", "");
+    req.headers.Authorization?.replace("Bearer ", "") ||
+    req.headers.authorization?.replace("Bearer ", "");
 
   if (!accessToken) {
     return next(new AppError("Not authorized access, Please login!", 401));
@@ -141,5 +140,5 @@ module.exports = catchAsync(async (req, res, next) => {
 
   req.user = decodedAccessToken;
   req.user.currentSession = currentSession;
-  next();
+  return next();
 });

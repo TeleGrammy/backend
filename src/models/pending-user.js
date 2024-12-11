@@ -86,12 +86,15 @@ const pendingUserSchema = new mongoose.Schema({
       message: "Public key must be a valid PEM-formatted string.",
     },
   },
+  expiresAt: {type: Date}, // Exact expiration time for TTL
 });
 
 pendingUserSchema.pre("save", function (next) {
   this.codeExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  this.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   return next();
 });
+pendingUserSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
 
 const PendingUser = mongoose.model("PendingUsers", pendingUserSchema);
 

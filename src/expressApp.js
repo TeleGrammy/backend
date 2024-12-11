@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const requestIp = require("request-ip");
 const passport = require("passport");
+const MongoStore = require("connect-mongo");
 const {swaggerUi, specs} = require("../swaggerConfig");
 
 require("dotenv").config({
@@ -43,11 +44,27 @@ if (process.env.NODE_ENV === "development") {
   const morgan = require("morgan");
   app.use(morgan("dev"));
 }
-
-app.use(
-  session({secret: "supersecretkey", resave: false, saveUninitialized: true})
-);
-
+if (process.env.NODE_ENV === "test") {
+  app.use(
+    session({secret: "supersecretkey", resave: false, saveUninitialized: true})
+  );
+} else {
+  app.use(
+    session({
+      secret: "supersecretkey",
+      resave: false,
+      saveUninitialized: true,
+      store: MongoStore.create({
+        mongoUrl: process.env.DB_HOST,
+        collectionName: "sessionsUsers",
+      }),
+      cookie: {
+        secure: false, // Set true in production with HTTPS
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
+      },
+    })
+  );
+}
 app.use(cookieParser());
 app.use(express.json({limit: "10kb"}));
 app.use(express.urlencoded({extended: true}));
