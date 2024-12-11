@@ -265,7 +265,7 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("participants.userId lastMessage");
+  }).populate("lastMessage");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
@@ -274,6 +274,46 @@ const getChatOfChannel = async (channelId) => {
   return chat;
 };
 
+const checkUserParticipant = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  console.log(chat);
+  const currentUser = chat.participants.find(
+    (participant) => participant.userId.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  return currentUser;
+};
+
+const checkUserAdmin = async (chatId, userId) => {
+  console.log(chatId);
+  const chat = await Chat.findById(chatId);
+  console.log(chat);
+  const currentUser = chat.participants.find(
+    (participant) => participant.userId.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  if (currentUser.role !== "Admin" && currentUser.role !== "Creator") {
+    throw new AppError("User not Authorized for the following operation", 401);
+  }
+  return currentUser;
+};
+
+const checkChatChannel = async (chatId) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    return false;
+  }
+  if (chat.isChannel) {
+    return chat.channelId.toString();
+  }
+  return false;
+};
 const changeUserRole = async (chatId, userId, newRole) => {
   const currentChat = await getChatById(chatId);
 
@@ -281,13 +321,7 @@ const changeUserRole = async (chatId, userId, newRole) => {
     throw new AppError("Chat not found", 404);
   }
 
-  const currentUser = currentChat.participants.find(
-    (participant) => participant.userId._id.toString() === userId
-  );
-
-  if (!currentUser) {
-    throw new AppError("User not found in the chat participants", 404);
-  }
+  const currentUser = checkUserParticipant(currentChat, userId);
 
   currentUser.role = newRole;
 
@@ -329,5 +363,8 @@ module.exports = {
   countUserChats,
   getChatOfChannel,
   changeUserRole,
+  checkUserParticipant,
+  checkUserAdmin,
+  checkChatChannel,
   removeChat,
 };

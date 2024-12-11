@@ -4,12 +4,12 @@ const {Schema} = mongoose;
 
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 
-const AppError = require("../errors/appError");
+// const AppError = require("../errors/appError");
 
 const channelSchema = new Schema({
   name: {type: String, required: true},
   description: {type: String},
-  privacy: {type: String, enum: ["Public", "Private"], default: "Private"},
+  privacy: {type: Boolean, default: false},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now},
   metaDataPolicy: {
@@ -17,18 +17,30 @@ const channelSchema = new Schema({
     enum: ["Admins", "EveryOne"],
     default: "Admins",
   },
+  comments: {
+    type: Boolean,
+    default: true,
+  },
+  download: {
+    type: Boolean,
+    default: true,
+  },
   deleted: {
     type: Boolean,
     default: false,
   },
+  membersCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
-channelSchema.post(/^find/, function (docs, next) {
-  if (!docs || (Array.isArray(docs) && docs.length === 0)) {
-    return next(new AppError("Chat not found", 404));
-  }
-  return next();
-});
+// channelSchema.post(/^find/, function (docs, next) {
+//   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
+//     return next(new AppError("Chat not found", 404));
+//   }
+//   return next();
+// });
 applySoftDeleteMiddleWare(channelSchema);
 
 const Channel = mongoose.model("Channel", channelSchema);

@@ -2,9 +2,14 @@
 const messageService = require("../../services/messageService");
 const userService = require("../../services/userService");
 const chatService = require("../../services/chatService");
+const channelService = require("../../services/channelService");
 const {uploadVoiceNote} = require("../../middlewares/AWS");
 
-const {logThenEmit, createMessageData} = require("../utils/utilsFunc");
+const {
+  logThenEmit,
+  createMessageData,
+  checkChannelRules,
+} = require("../utils/utilsFunc");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
@@ -14,16 +19,21 @@ module.exports.sendMessage = function ({io, socket}) {
 
     try {
       const messageData = await createMessageData(payload, socket.userId);
-
       if (messageData.replyOn) {
         await messageService.checkChatOfMessage(
           messageData.replyOn,
           messageData.chatId
         );
       }
+      await chatService.checkUserParticipant(messageData.chatId, socket.userId);
+      const channelId = await chatService.checkChatChannel(messageData.chatId);
+      if (channelId) {
+        await checkChannelRules(socket.userId, channelId, messageData);
+      }
       let message = await messageService.createMessage(messageData);
-
-      chatService.updateLastMessage(messageData.chatId, message.id);
+      if (!channelId || messageData.isPost) {
+        chatService.updateLastMessage(messageData.chatId, message.id);
+      }
 
       logThenEmit(
         socket.userId,
