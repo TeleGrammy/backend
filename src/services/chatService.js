@@ -33,12 +33,10 @@ const createChat = async (chatData) => {
  */
 const getChatById = async (chatId) => {
   try {
-    const chat = await Chat.findById(chatId)
-      .populate("lastMessage pinnedMessages")
-      .populate({
-        path: "participants.userId",
-        select: "username email phone picture screenName lastSeen status",
-      });
+    const chat = await Chat.findById(chatId).populate("lastMessage").populate({
+      path: "participants.userId",
+      select: "username email phone picture screenName lastSeen status",
+    });
 
     return chat;
   } catch (error) {
@@ -267,7 +265,7 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("participants.userId lastMessage pinnedMessages");
+  }).populate("participants.userId lastMessage");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
