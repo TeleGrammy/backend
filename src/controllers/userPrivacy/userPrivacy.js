@@ -57,7 +57,7 @@ const getContacts = catchAsync(async (req, res, next) => {
 
   const userContacts = await userService.getUserById(userId, "contacts -_id", {
     path: "contacts.contactId",
-    select: "screenName username email phone profilePicture",
+    select: "screenName email phone profilePicture",
   });
 
   userContacts.contacts.forEach((contact) => {
