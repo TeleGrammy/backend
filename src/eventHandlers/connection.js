@@ -9,6 +9,7 @@ const {
   pinMessage,
   unpinMessage,
 } = require("./chat/message");
+
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
 
@@ -87,11 +88,6 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   socket.on("draft", updateDraftOfUserInChat({io, socket}));
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
-
-  socket.on("addingGroupMember", addMember({io, socket}));
-  socket.on("leavingGroup", leaveGroup({io, socket}));
-  socket.on("removingGroup", deleteGroup({io, socket}));
-  socket.on("removingParticipant", removeParticipant({io, socket}));
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
