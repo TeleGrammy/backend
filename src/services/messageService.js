@@ -204,3 +204,28 @@ module.exports.createForwardMessageData = async (
 module.exports.removeChatMessages = async (filter) => {
   return Message.deleteMany(filter);
 };
+
+module.exports.markMessageAsPinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.pin();
+  return message;
+};
+
+module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.unpin();
+  message.isPinned = false;
+  return message;
+};

@@ -214,51 +214,6 @@ const restoreChat = async (chatId) => {
 };
 
 /**
- * Pins a message in a chat.
- * @param {String} chatId - The ID of the chat to update.
- * @param {String} messageId - The ID of the message to pin.
- * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
- */
-const pinMessage = async (chatId, messageId) => {
-  try {
-    const message = await Message.findById(messageId);
-    if (!message) throw new Error("Message not found");
-    if (message.chatId.toString() !== chatId) {
-      throw new Error("Message is not part of the provided chat");
-    }
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {$addToSet: {pinnedMessages: messageId}},
-      {new: true}
-    );
-    if (!chat) throw new Error("Chat not found");
-    return chat;
-  } catch (error) {
-    throw new Error(`Error pinning message: ${error.message}`);
-  }
-};
-
-/**
- * Unpins a message in a chat.
- * @param {String} chatId - The ID of the chat to update.
- * @param {String} messageId - The ID of the message to unpin.
- * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
- */
-const unpinMessage = async (chatId, messageId) => {
-  try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {$pull: {pinnedMessages: messageId}},
-      {new: true}
-    );
-    if (!chat) throw new Error("Chat not found");
-    return chat;
-  } catch (error) {
-    throw new Error(`Error unpinning message: ${error.message}`);
-  }
-};
-
-/**
  * Creates a one-to-one chat between two users if it doesn't already exist.
  * @param {String} userId1 - ID of the first user.
  * @param {String} userId2 - ID of the second user.
@@ -370,8 +325,8 @@ module.exports = {
   removeParticipant,
   softDeleteChat,
   restoreChat,
-  pinMessage,
-  unpinMessage,
+  // pinMessage,
+  // unpinMessage,
   createOneToOneChat,
   countUserChats,
   getChatOfChannel,
