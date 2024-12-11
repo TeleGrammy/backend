@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
-const {generateSignedUrl} = require("../middlewares/AWS");
+// const {generateSignedUrl} = require("../middlewares/AWS");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -12,6 +12,19 @@ const messageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Chat",
     required: [true, "Chat ID is required"],
+  },
+  parentPost: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message",
+    default: null,
+  },
+  isPost: {
+    type: Boolean,
+    default: false,
+  },
+  commentsCount: {
+    type: Number,
+    default: 0,
   },
   messageType: {
     type: String,
@@ -49,7 +62,6 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
   mentions: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "User",
@@ -104,6 +116,23 @@ messageSchema.pre("save", function (next) {
   next();
 });
 
+messageSchema.post("save", async function (doc, next) {
+  if (doc.parentPost) {
+    try {
+      // Increment the commentsCount of the parent post
+      await mongoose.model("Message").findByIdAndUpdate(doc.parentPost, {
+        $inc: {commentsCount: 1},
+      });
+      console.log(
+        `Incremented commentsCount for parentPost: ${doc.parentPost}`
+      );
+    } catch (error) {
+      console.error("Error updating commentsCount:", error);
+    }
+  }
+  next();
+});
+
 messageSchema.methods.updateMessageViewer = async function (
   viewerId,
   numberOfMembersInChat
@@ -135,7 +164,7 @@ messageSchema.methods.updateMessageRecivers = async function (
 messageSchema.methods.generateSignedUrl = async function () {
   try {
     if (this.mediaKey) {
-      this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
+      // this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
     }
   } catch (err) {
     console.error(`Error generating url for story ${this._id}:`, err);
