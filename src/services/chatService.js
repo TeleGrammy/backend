@@ -265,7 +265,7 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("participants.userId lastMessage");
+  }).populate("lastMessage");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
