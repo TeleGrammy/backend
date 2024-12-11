@@ -167,17 +167,23 @@ const adminSchema = new mongoose.Schema({
   },
 });
 
-const leftMemberSchema = new mongoose.Schema({
-  memberId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+const leftMemberSchema = new mongoose.Schema(
+  {
+    memberId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: false,
+    },
+    leftAt: {
+      type: Date,
+      default: Date.now(),
+    },
   },
-  leftAt: {
-    type: Date,
-    default: Date.now(),
-  },
-});
+  {
+    autoIndex: false,
+  }
+);
 
 const groupSchema = new mongoose.Schema({
   name: {
