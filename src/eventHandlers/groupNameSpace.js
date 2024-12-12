@@ -2,6 +2,7 @@ const userService = require("../services/userService");
 const {
   createGroup,
   addMember,
+  addMemberV2,
   leaveGroup,
   deleteGroup,
   removeParticipant,
@@ -28,6 +29,7 @@ const groupConnection = async (socket, io, connectedUsers) => {
 
   socket.on("creatingGroup", createGroup(io, socket, connectedUsers));
   socket.on("addingGroupMember", addMember(io, socket, connectedUsers));
+  socket.on("addingGroupMemberV2", addMemberV2(io, socket, connectedUsers));
   socket.on("leavingGroup", leaveGroup(io, socket));
   socket.on("removingGroup", deleteGroup(io, socket, connectedUsers));
   socket.on(
