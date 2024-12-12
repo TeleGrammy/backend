@@ -217,8 +217,19 @@ const getUserByID = async (ID) => {
 const findByIdAndUpdate = async (id, updateData, options) => {
   return User.findByIdAndUpdate(id, updateData, options);
 };
-const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+const getUserById = async (id, select = "", populate = null) => {
+  const query = User.findById(id).select(select);
+  if (populate) {
+    query.populate(populate);
+  }
+  return query.exec();
+};
+
+const getUserContact = async (id) => {
+  return User.findById(id).select("contacts -_id").populate({
+    path: "contacts.contactId", // Path to the field to populate
+    select: "username", // Optional: Specify which fields to include from the referenced document
+  });
 };
 
 const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
@@ -461,5 +472,6 @@ module.exports = {
   updateDraftOfUserInChat,
   updateRefreshToken,
   addContact,
+  getUserContact,
   updateMany,
 };

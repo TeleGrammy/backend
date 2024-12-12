@@ -55,7 +55,10 @@ const getBlockedUsers = catchAsync(async (req, res, next) => {
 const getContacts = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
-  const userContacts = await userService.getUserById(userId, "contacts -_id");
+  const userContacts = await userService.getUserById(userId, "contacts -_id", {
+    path: "contacts.contactId",
+    select: "screenName username email phone picture",
+  });
 
   userContacts.contacts.forEach((contact) => {
     // eslint-disable-next-line no-param-reassign
