@@ -24,6 +24,10 @@
           "summary": "Add a new member to a group",
           "$ref": "#/components/messages/addingGroupMember"
         },
+        "addingGroupMemberMessageV2": {
+          "summary": "Add a new member to a group",
+          "$ref": "#/components/messages/addingGroupMemberV2"
+        },
         "leavingGroupMessage": {
           "summary": "Leave a group",
           "$ref": "#/components/messages/leavingGroup"
@@ -96,6 +100,19 @@
         }
       ]
     },
+    "addingGroupMemberV2": {
+      "summary": "Add a new member to a group",
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/group"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/group/messages/addingGroupMemberMessageV2"
+        }
+      ]
+    },
+
     "leavingGroup": {
       "summary": "Leave a group",
       "action": "send",
@@ -264,6 +281,29 @@
               "description": "The id of the group"
             },
             "userIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "addingGroupMemberV2": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string",
+              "description": "The id of the group"
+            },
+            "userIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "phones": {
               "type": "array",
               "items": {
                 "type": "string"

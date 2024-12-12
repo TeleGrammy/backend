@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const AppError = require("../../errors/appError");
 const groupService = require("../../services/groupService");
 const chatService = require("../../services/chatService");
@@ -5,6 +6,7 @@ const userService = require("../../services/userService");
 const messageService = require("../../services/messageService");
 const handleSocketError = require("../../errors/handleSocketError");
 const {logThenEmit} = require("../utils/utilsFunc");
+const {phoneRegex} = require("../../utils/regexFormat");
 
 const createGroup = (io, socket, connectedUsers) => {
   return async (payload) => {
@@ -171,6 +173,174 @@ const addMember = (io, socket, connectedUsers) => {
           );
         })
       );
+    } catch (err) {
+      handleSocketError(socket, err);
+    }
+  };
+};
+
+const addMemberV2 = (io, socket, connectedUsers) => {
+  return async (data, callback) => {
+    const userIds = data.userIds || [];
+    const phones = data.phones || [];
+    const {groupId} = data;
+    const participantId = socket.user.id;
+    try {
+      const group = await groupService.findGroupById(groupId);
+      if (!group) throw new AppError("Group not found", 404);
+
+      let participantData = group.members.find((member) =>
+        member.memberId.equals(participantId)
+      );
+
+      const participantType = participantData ? "member" : "admin";
+      participantData =
+        participantData ??
+        group.admins.find((admin) => admin.adminId.equals(participantId));
+
+      if (!participantData)
+        throw new AppError(
+          "Unauthorized Access. The user who did the request is not a member of the group",
+          401
+        );
+
+      const addUsersGroupPermission = group.groupPermissions.addUsers;
+
+      if (
+        (!addUsersGroupPermission && participantType === "member") ||
+        (!addUsersGroupPermission &&
+          participantType === "admin" &&
+          !participantData.permissions.addUsers)
+      )
+        throw new AppError(
+          `Insufficient Permissions. The ${participantType} does not have permission to add new users.`,
+          403
+        );
+
+      const newUsers = userIds.concat(phones);
+
+      if (
+        group.admins.length + group.members.length + newUsers.length >
+        group.groupSizeLimit
+      )
+        throw new AppError(
+          "You will exceed the the size limit of the group.",
+          400
+        );
+
+      const groupChat = await chatService.getChatById(group.chatId);
+
+      const messages = [];
+      const addedMembers = [];
+
+      await Promise.all(
+        newUsers.map(async (uuid) => {
+          const filter = {};
+          if (phoneRegex.test(uuid)) {
+            filter.phone = uuid;
+          } else if (mongoose.Types.ObjectId.isValid(uuid)) {
+            filter._id = uuid;
+          } else {
+            messages.push(`Invalid user ID or phone number ${uuid}.`);
+            return;
+          }
+
+          const user = await userService.findOne(filter);
+
+          if (!user) {
+            if (phoneRegex.test(uuid))
+              messages.push(`Phone number ${uuid} not found.`);
+            else messages.push(`User ID ${uuid} not found`);
+            return;
+          }
+
+          const userId = user._id;
+
+          let index = group.members.findIndex((member) =>
+            member.memberId.equals(userId)
+          );
+
+          if (index === -1) {
+            index = group.admins.findIndex((admin) =>
+              admin.adminId.equals(userId)
+            );
+            if (index !== -1) {
+              messages.push(
+                `User with id or phone ${uuid} is already admin of the group`
+              );
+              return;
+            }
+          } else {
+            messages.push(
+              `User with id or phone ${uuid} is already member of the group`
+            );
+            return;
+          }
+
+          const newMember = {memberId: userId};
+
+          index = group.leftMembers.findIndex((member) =>
+            member.memberId.equals(userId)
+          );
+          if (index !== -1) {
+            newMember.leftAt = group.leftMembers[index].leftAt;
+            group.leftMembers.splice(index, 1);
+          }
+
+          groupChat.participants.push({userId});
+          group.members.push(newMember);
+          addedMembers.push(userId);
+        })
+      );
+
+      await group.save();
+      await groupChat.save();
+
+      participantData = await userService.getUserById(participantId);
+      const inviterName =
+        participantData.screenName || participantData.username;
+
+      await Promise.all(
+        addedMembers.map(async (userId) => {
+          const newMember = await userService.findByIdAndUpdate(
+            userId,
+            {
+              $push: {groups: groupId},
+            },
+            {new: true}
+          );
+
+          if (!newMember) return;
+
+          const memberName = newMember.screenName || newMember.username;
+
+          const userSocket = connectedUsers.get(userId);
+          if (userSocket) {
+            if (userSocket.get("group"))
+              userSocket.get("group").join(`group:${groupId}`);
+            if (userSocket.get("chat"))
+              userSocket.get("chat").join(`chat:${group.chatId}`);
+          }
+
+          logThenEmit(
+            participantId,
+            "group:memberAdded",
+            {
+              chatId: group.chatId,
+              memberId: userId,
+              inviterId: participantId,
+              memberName,
+              inviterName,
+            },
+            io.to(`group:${groupId}`)
+          );
+        })
+      );
+
+      callback({
+        status: "success",
+        messages,
+      });
     } catch (err) {
       handleSocketError(socket, err);
     }
@@ -399,6 +569,7 @@ const removeParticipant = (io, socket, connectedUsers) => {
 module.exports = {
   createGroup,
   addMember,
+  addMemberV2,
   leaveGroup,
   deleteGroup,
   removeParticipant,
