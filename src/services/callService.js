@@ -1,88 +1,101 @@
 const Call = require("../models/call");
-const AppError = require("../errors/appError");
+const Chat = require("../models/chat");
 
-module.exports.createNewCall = async (callData) => {
-  const {caller, chatId, reciever} = callData;
-  const call = await Call.create({caller, chatId, reciever});
+// Create a new call
+module.exports.createCall = async ({chatId, callerId, offer}) => {
+  const call = Call.create({
+    chatId,
+    participants: [
+      {
+        userId: callerId,
+      },
+    ],
+    callObj: {
+      offer,
+    },
+  });
+
   return call;
 };
 
-module.exports.getCallById = async (callId) => {
+// Add a participant to a call
+module.exports.addParticipant = async (callId, participantId) => {
   const call = await Call.findById(callId);
-  if (!call) {
-    throw new AppError("Call not found", 404);
-  }
+  if (!call) throw new Error("Call not found");
+
+  call.participants.push({userId: participantId});
+  await call.save();
   return call;
 };
 
-module.exports.updatestatus = async (callId, status) => {
-  const call = await Call.findByIdAndUpdate(
-    callId,
-    {
-      status,
-    },
-    {new: true}
-  );
-  if (!call) {
-    throw new AppError("Call not found", 404);
-  }
+// Update the call with an answer
+module.exports.setAnswer = async (userId, callId, answer) => {
+  const call = await Call.findById(callId);
+  if (!call) throw new Error("Call not found");
+
+  call.callObj.answer = answer;
+  call.participants.push({userId});
+  await call.save();
   return call;
 };
 
-module.exports.endCall = async (callId) => {
-  const call = await Call.findByIdAndUpdate(
-    callId,
-    {
-      endTime: Date.now(),
-      status: "ended",
-    },
-    {new: true}
-  );
-  if (!call) {
-    throw new AppError("Call not found", 404);
+// Add ICE candidates for a participant
+module.exports.addIceCandidate = async (callId, userId, candidate) => {
+  const call = await Call.findById(callId);
+  if (!call) throw new Error("Call not found");
+
+  if (!call.callObj.participantsICE.has(userId.toString())) {
+    call.callObj.participantsICE.set(userId.toString(), []);
   }
+
+  call.callObj.participantsICE.get(userId.toString()).push(candidate);
+  await call.save();
   return call;
 };
 
-module.exports.answerCall = async (callId) => {
-  const call = await Call.findByIdAndUpdate(
-    callId,
-    {
-      status: "answered",
-      startTime: Date.now(),
-    },
-    {new: true}
-  );
-  if (!call) {
-    throw new AppError("Call not found", 404);
-  }
+const removeUnwantedData = async (call) => {
+  call.callObj = undefined;
+  call.participants = undefined;
   return call;
 };
 
-module.exports.addCallerIce = async (callId, ice) => {
-  const call = await Call.findByIdAndUpdate(
-    callId,
-    {
-      callerIce: ice,
-    },
-    {new: true}
+// End a call
+module.exports.endCall = async (userId, callId, status) => {
+  const call = await Call.findById(callId);
+  if (!call) throw new Error("Call not found");
+
+  // Remove the user from participants
+  call.participants = call.participants.filter(
+    (participant) => participant.userId.toString() !== userId
   );
-  if (!call) {
-    throw new AppError("Call not found", 404);
+
+  if (call.participants.length === 0) {
+    call.status = status;
+    if (status === "ended") call.endedAt = new Date();
+    removeUnwantedData(call);
   }
+  console.log(call);
+  await call.save();
   return call;
 };
 
-module.exports.addRecieverIce = async (callId, ice) => {
-  const call = await Call.findByIdAndUpdate(
-    callId,
-    {
-      recieverIce: ice,
-    },
-    {new: true}
+// Fetch a call by ID
+module.exports.getCallById = async (callId) => {
+  const call = await Call.findById(callId).populate(
+    "participants.userId",
+    "username picture phone email "
   );
-  if (!call) {
-    throw new AppError("Call not found", 404);
+  if (!call) throw new Error("Call not found");
+  return call;
+};
+
+module.exports.updateStatus = async (callId, status) => {
+  const call = await Call.findById(callId);
+  if (!call) throw new Error("Call not found");
+  const chat = Chat.findById(call.cahtId);
+  if (!chat.isChannel && !chat.isGroup) {
+    call.status = status;
   }
+  await call.save();
   return call;
 };

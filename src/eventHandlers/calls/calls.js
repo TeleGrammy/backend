@@ -5,17 +5,19 @@ module.exports.sendCall = function ({socket, io}) {
     try {
       if (typeof callBack !== "function") return;
 
-      const call = await callService.createNewCall({
-        caller: socket.userId,
-        reciever: payload.reciever,
+      const call = await callService.createCall({
+        callerId: socket.userId,
         chatId: payload.chatId,
+        offer: payload.offer,
       });
 
       // send out to all connected sockets
-      io.to(`${call.reciever}`).emit("call:incomingCall", call);
+      socket.broadcast
+        .to(`chat:${call.chatId}`)
+        .emit("call:incomingCall", call);
 
       callBack({
-        status: "ongoing",
+        status: "ok",
         call,
       });
     } catch (err) {
@@ -28,9 +30,16 @@ module.exports.answerCall = function ({socket, io}) {
   return async (payload, callBack) => {
     try {
       if (typeof callBack !== "function") return;
-      const call = await callService.answerCall(payload.callId);
 
-      io.to(`${call.caller}`).emit("call:answeredCall", call);
+      const call = await callService.setAnswer(
+        socket.userId,
+        payload.callId,
+        payload.answer
+      );
+
+      socket.broadcast
+        .to(`chat:${call.chatId}`)
+        .emit("call:answeredCall", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -45,8 +54,8 @@ module.exports.rejectCall = function ({socket, io}) {
 
       const call = await callService.updateStatus(payload.callId, "rejected");
 
-      io.to(`${call.caller}`).emit("call:rejectedCall", payload.callId);
-      callBack({status: "ok"});
+      io.to(`chat:${call.chatId}`).emit("call:rejectedCall", call);
+      callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
     }
@@ -58,7 +67,11 @@ module.exports.endCall = function ({socket, io}) {
     try {
       if (typeof callBack !== "function") return;
 
-      const call = await callService.endCall(payload.callId);
+      const call = await callService.endCall(
+        socket.userId,
+        payload.callId,
+        payload.status
+      );
 
       io.to(`chat:${call.chatId}`).emit("call:endedCall", call);
       callBack({status: "ok", call});
@@ -73,18 +86,12 @@ module.exports.addIce = function ({socket, io}) {
     try {
       if (typeof callBack !== "function") return;
 
-      let call = await callService.getCallById(payload.callId);
-      if (socket.userId === call.caller.toString()) {
-        call = await callService.addCallerIce(payload.callId, payload.ice);
-        if (call.status === "answered") {
-          io.to(`${call.reciever}`).emit("call:recievedIce", call);
-        }
-      } else if (socket.userId === call.reciever.toString()) {
-        call = await callService.addRecieverIce(payload.callId, payload.ice);
-        io.to(`${call.senderId}`).emit("call:recievedIce", call);
-      } else {
-        throw new Error("User is not a participant in the call");
-      }
+      const call = await callService.addIceCandidate(
+        payload.callId,
+        socket.userId,
+        payload.IceCandidate
+      );
+      socket.broadcast.to(`chat:${call.chatId}`).emit("call:addedICE", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
