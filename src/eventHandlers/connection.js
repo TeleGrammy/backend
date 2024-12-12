@@ -9,6 +9,7 @@ const {
   pinMessage,
   unpinMessage,
 } = require("./chat/message");
+
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
 const {
@@ -77,6 +78,13 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   await joinChatsOfUsers(io, socket);
   await joinGroupChats(io, socket);
 
+  socket.on("message:test", (payload, callback) => {
+    console.log("Received 'message:test' event from client:", payload);
+    if (callback) {
+      callback({status: "success", message: "Voice note received"});
+    }
+  });
+
   socket.on("message:send", sendMessage({io, socket}));
   socket.on("message:update", updateMessage({io, socket}));
   socket.on("message:delete", deleteMessage({io, socket}));
@@ -93,21 +101,6 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   socket.on("call:end", endCall({socket, io}));
   socket.on("call:reject", rejectCall({socket, io}));
   socket.on("call:addMyIce", addIce({socket, io}));
-
-  socket.on("message", (msg) => {
-    console.log("Message from Client:", msg);
-  });
-  socket.on("message:send_voicenote", (payload, callback) => {
-    console.log(
-      "Received 'message:send_voicenote' event from client:",
-      payload
-    );
-
-    // Acknowledge receipt if needed
-    if (callback) {
-      callback({status: "success", message: "Voice note received"});
-    }
-  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);

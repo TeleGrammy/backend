@@ -13,6 +13,19 @@ const messageSchema = new mongoose.Schema({
     ref: "Chat",
     required: [true, "Chat ID is required"],
   },
+  parentPost: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message",
+    default: null,
+  },
+  isPost: {
+    type: Boolean,
+    default: false,
+  },
+  commentsCount: {
+    type: Number,
+    default: 0,
+  },
   messageType: {
     type: String,
     enum: {
@@ -49,7 +62,6 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
   mentions: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "User",
@@ -100,6 +112,23 @@ messageSchema.pre("save", function (next) {
     this.expiresAt = new Date(
       this.timestamp.getTime() + this.selfDestructTime * 1000
     );
+  }
+  next();
+});
+
+messageSchema.post("save", async function (doc, next) {
+  if (doc.parentPost) {
+    try {
+      // Increment the commentsCount of the parent post
+      await mongoose.model("Message").findByIdAndUpdate(doc.parentPost, {
+        $inc: {commentsCount: 1},
+      });
+      console.log(
+        `Incremented commentsCount for parentPost: ${doc.parentPost}`
+      );
+    } catch (error) {
+      console.error("Error updating commentsCount:", error);
+    }
   }
   next();
 });

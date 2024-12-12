@@ -96,9 +96,28 @@ const handleGroupChat = (chatObj, userId) => {
     name: chatObj.groupId.name,
     photo: chatObj.groupId.image,
     description: chatObj.groupId.description,
+    groupId: chatObj.groupId._id,
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
     isGroup: true,
+  };
+
+  return chat;
+};
+
+const handleChannelChat = (chatObj, userId) => {
+  const myUser = chatObj.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+  const chat = {
+    id: chatObj._id,
+    name: chatObj.channelId.name,
+    photo: chatObj.channelId.image,
+    description: chatObj.channelId.description,
+    channelId: chatObj.channelId._id,
+    lastMessage: chatObj.lastMessage,
+    draftMessage: myUser?.draft_message,
+    isChannel: true,
   };
 
   return chat;
@@ -117,8 +136,10 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
       return handlePrivateChat(chat, userId);
     }
     if (chat.isGroup) {
-      console.log(chat.isGroup);
       return handleGroupChat(chat);
+    }
+    if (chat.isChannel) {
+      return handleChannelChat(chat);
     }
     return chat;
   });

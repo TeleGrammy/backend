@@ -1,6 +1,8 @@
 const eventService = require("../../services/eventService");
 const userService = require("../../services/userService");
 const messageService = require("../../services/messageService");
+const channelService = require("../../services/channelService");
+const chatService = require("../../services/chatService");
 
 module.exports.createMessageData = async (payload, userId) => {
   // check if the message is a forward message
@@ -22,9 +24,29 @@ module.exports.createMessageData = async (payload, userId) => {
     mediaUrl: payload.mediaUrl || "",
     mediaKey: payload.mediaKey || "",
     selfDestructTime: payload.selfDestructTime || undefined,
+    isPost: payload.isPost || false,
+    parentPost: payload.parentPost,
   };
 
   return messageData;
+};
+
+module.exports.checkChannelRules = async (userId, channelId, messageData) => {
+  if (messageData.isPost) {
+    await chatService.checkUserAdmin(messageData.chatId, userId);
+  } else {
+    const comments = await channelService.checkCommentEnable(channelId);
+    if (!comments) {
+      throw new Error("Comments is not allowed");
+    }
+    if (!messageData.parentPost) {
+      throw new Error("Parent Post is not found");
+    }
+    await messageService.checkChannelPost(
+      messageData.parentPost,
+      messageData.chatId
+    );
+  }
 };
 
 module.exports.logThenEmit = async (userId, event, payload, sockets) => {
