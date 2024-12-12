@@ -1,7 +1,11 @@
 const jwt = require("jsonwebtoken");
 
 const isAuthenticatedSocket = async (socket, next) => {
-  const token = socket.handshake.auth.token || socket.handshake.query.token;
+  let token =
+    socket.handshake.headers.authorization || socket.handshake.query.token;
+  if (token.startsWith("Bearer ")) {
+    token = token.replace("Bearer ", "");
+  }
   let decodedAccessToken = null;
   try {
     decodedAccessToken = jwt.verify(token, process.env.JWT_SECRET);

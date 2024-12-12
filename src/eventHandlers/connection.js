@@ -12,6 +12,13 @@ const {
 
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
+const {
+  sendCall,
+  answerCall,
+  endCall,
+  rejectCall,
+  addIce,
+} = require("./calls/calls");
 
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
@@ -88,6 +95,12 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   socket.on("draft", updateDraftOfUserInChat({io, socket}));
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
+
+  socket.on("call:newCall", sendCall({socket, io}));
+  socket.on("call:answer", answerCall({socket, io}));
+  socket.on("call:end", endCall({socket, io}));
+  socket.on("call:reject", rejectCall({socket, io}));
+  socket.on("call:addMyIce", addIce({socket, io}));
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
