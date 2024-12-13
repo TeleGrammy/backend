@@ -61,6 +61,29 @@ callSchema.virtual("duration").get(function () {
   return 0;
 });
 
+callSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "chatId",
+    select: "_id isGroup isChannel participants.userId groupId channelId",
+    populate: [
+      {
+        path: "participants.userId",
+        select: "_id username picture",
+      },
+      {
+        path: "groupId",
+        select: "_id image",
+      },
+      {
+        path: "channelId",
+        select: "_id image",
+      },
+    ],
+  });
+
+  next();
+});
+
 callSchema.set("toJSON", {virtuals: true});
 callSchema.set("toObject", {virtuals: true});
 

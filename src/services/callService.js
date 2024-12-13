@@ -15,27 +15,31 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
     },
   });
   console.log(call);
-  call = await Call.findById(call._id).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  call = await Call.findById(call._id)
+    .populate({
+      path: "chatId",
+      select: "_id isGroup isChannel groupId channelId participants",
+      populate: [
+        {
+          path: "groupId",
+          select: "_id picture",
+        },
+        {
+          path: "channelId",
+          select: "_id image",
+        },
+      ],
+    })
+    .populate({
+      path: "chatId.participants.userId",
+      select: "_id username pictureUrl",
+    });
   return call;
 };
 
 // Add a participant to a call
 module.exports.addParticipant = async (callId, participantId) => {
-  const call = await Call.findById(callId).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
   call.participants.push({userId: participantId});
@@ -45,14 +49,7 @@ module.exports.addParticipant = async (callId, participantId) => {
 
 // Update the call with an answer
 module.exports.setAnswer = async (userId, callId, answer) => {
-  const call = await Call.findById(callId).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
   call.callObj.answer = answer;
@@ -63,14 +60,7 @@ module.exports.setAnswer = async (userId, callId, answer) => {
 
 // Add ICE candidates for a participant
 module.exports.addIceCandidate = async (callId, userId, candidate) => {
-  const call = await Call.findById(callId).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
   if (!call.callObj.participantsICE.has(userId.toString())) {
@@ -90,14 +80,7 @@ const removeUnwantedData = async (call) => {
 
 // End a call
 module.exports.endCall = async (userId, callId, status) => {
-  const call = await Call.findById(callId).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
   // Remove the user from participants
@@ -117,27 +100,14 @@ module.exports.endCall = async (userId, callId, status) => {
 
 // Fetch a call by ID
 module.exports.getCallById = async (callId) => {
-  const call = await Call.findById(callId).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  const call = await Call.findById(callId);
+
   if (!call) throw new Error("Call not found");
   return call;
 };
 
 module.exports.updateStatus = async (callId, status) => {
-  const call = await Call.findById(callId).populate({
-    path: "chatId",
-    select: "_id isGroup isChannel participants.userId",
-    populate: {
-      path: "participants.userId",
-      select: "username picture",
-    },
-  });
+  const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
   const chat = Chat.findById(call.cahtId);
   if (!chat.isChannel && !chat.isGroup) {
