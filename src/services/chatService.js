@@ -268,7 +268,9 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("lastMessage");
+  })
+    .populate("lastMessage")
+    .populate("participants.userId");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
@@ -279,7 +281,6 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
-  console.log(chat, userId);
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
@@ -291,9 +292,7 @@ const checkUserParticipant = async (chatId, userId) => {
 };
 
 const checkUserAdmin = async (chatId, userId) => {
-  console.log(chatId);
   const chat = await Chat.findById(chatId);
-  console.log(chat);
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );

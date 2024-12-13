@@ -37,7 +37,7 @@ exports.getChatById = catchAsync(async (req, res, next) => {
 
   // Check if the user is a participant in the chat
   const userExists = chat.participants.some((participant) =>
-    participant.userId.equals(req.user.id)
+    participant.userId._id.equals(req.user.id)
   );
 
   if (!userExists) {

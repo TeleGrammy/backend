@@ -71,5 +71,10 @@ router.get(
   isAuth,
   channelController.fetchThreadsMesssage
 );
+router.get(
+  "/:channelId/participants",
+  isAuth,
+  channelController.fetchChannelParticipants
+);
 
 module.exports = router;
