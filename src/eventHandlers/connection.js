@@ -1,5 +1,6 @@
 const userService = require("../services/userService");
 const groupService = require("../services/groupService");
+const chatService = require("../services/chatService");
 const {
   sendMessage,
   updateMessageViewres,
@@ -53,7 +54,20 @@ const joinGroupChats = async (io, socket) => {
   await Promise.all(
     userData.groups.map(async (group) => {
       const groupData = await groupService.findGroupById(group);
+
       if (groupData) socket.join(`chat:${groupData.chatId}`);
+    })
+  );
+};
+
+const joinChannelChats = async (io, socket) => {
+  const userData = await userService.getUserById(socket.user.id);
+  await Promise.all(
+    userData.channels.map(async (channelId) => {
+      const chatData = await chatService.getChatOfChannel(channelId);
+      console.log(`Joining user:${socket.user.id} to chat:${chatData.id}`);
+
+      if (chatData) socket.join(`chat:${chatData.id}`);
     })
   );
 };
@@ -70,6 +84,7 @@ exports.onConnection = async (socket, io, connectedUsers) => {
 
   await joinChatsOfUsers(io, socket);
   await joinGroupChats(io, socket);
+  await joinChannelChats(io, socket);
 
   socket.on("message:test", (payload, callback) => {
     console.log("Received 'message:test' event from client:", payload);

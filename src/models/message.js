@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
-// const {generateSignedUrl} = require("../middlewares/AWS");
+const {generateSignedUrl} = require("../middlewares/AWS");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -164,7 +164,7 @@ messageSchema.methods.updateMessageRecivers = async function (
 messageSchema.methods.generateSignedUrl = async function () {
   try {
     if (this.mediaKey) {
-      // this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
+      this.mediaUrl = await generateSignedUrl(this.mediaKey, 24 * 60 * 60);
     }
   } catch (err) {
     console.error(`Error generating url for story ${this._id}:`, err);
@@ -188,7 +188,7 @@ messageSchema.pre("save", function (next) {
       "document",
       "file",
     ].includes(this.messageType) &&
-    !this.mediaUrl
+    !this.mediaKey
   ) {
     return next(
       new Error(`${this.messageType} message must have a media URL.`)
@@ -198,7 +198,7 @@ messageSchema.pre("save", function (next) {
   return next();
 });
 
-// this middleware is responsible for creating signed URLs to the retreived stories from the database
+// this middleware is responsible for creating signed URLs to the retreived messages from the database
 messageSchema.post(/^find/, async function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
     return next();
