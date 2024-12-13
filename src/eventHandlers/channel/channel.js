@@ -169,19 +169,19 @@ const removeParticipant = (io, socket, connectedUsers) => {
         if (userSocket.get("chat"))
           userSocket.get("chat").leave(`chat:${chatOfChannel.id}`);
 
-        logThenEmit(
-          participantId,
-          "channel:memberRemoved",
-          {
-            chatId: chatOfChannel.id,
-            channelId: channel._id,
-            removerId: userId,
-            memberId: participantId,
-            removerName: adminName.username,
-            exMemberName: removedMemberData.username,
-          },
-          io.to(`channel:${channelId}`)
-        );
+        // logThenEmit(
+        //   participantId,
+        //   "channel:memberRemoved",
+        //   {
+        //     chatId: chatOfChannel.id,
+        //     channelId: channel._id,
+        //     removerId: userId,
+        //     memberId: participantId,
+        //     removerName: adminName.username,
+        //     exMemberName: removedMemberData.username,
+        //   },
+        //   io.to(`channel:${channelId}`)
+        // );
         callback({
           status: "ok",
           message: "Member has been removed",
@@ -259,15 +259,6 @@ const addMember = (io, socket, connectedUsers) => {
           if (!updatedChat) {
             throw new AppError("Failed to update the channel's chat.", 500);
           }
-          const newMember = await userService.findByIdAndUpdate(
-            subscriberId,
-            {
-              $push: {channels: channelId},
-            },
-            {new: true}
-          );
-
-          const memberName = newMember.username;
 
           const userSocket = connectedUsers.get(subscriberId);
           if (userSocket) {
@@ -275,21 +266,34 @@ const addMember = (io, socket, connectedUsers) => {
               userSocket.get("channel").join(`channel:${channelId}`);
             if (userSocket.get("chat"))
               userSocket.get("chat").join(`chat:${chatOfChannel.id}`);
+            userSocket.get("channel").emit("user:addedToChannel", {
+              channelId,
+              inviterId: userId,
+              inviterName,
+            });
           }
 
-          logThenEmit(
-            userId,
-            "channel:memberAdded",
-            {
-              channelId,
-              chatId: chatOfChannel.id,
-              memberId: subscriberId,
-              inviterId: userId,
-              memberName,
-              inviterName,
-            },
-            io.to(`channel:${channelId}`)
-          );
+          // const newMember = await userService.findByIdAndUpdate(
+          //   subscriberId,
+          //   {
+          //     $push: {channels: channelId},
+          //   },
+          //   {new: true}
+          // );
+          // const memberName = newMember.username;
+          // logThenEmit(
+          //   userId,
+          //   "channel:memberAdded",
+          //   {
+          //     channelId,
+          //     chatId: chatOfChannel.id,
+          //     memberId: subscriberId,
+          //     inviterId: userId,
+          //     memberName,
+          //     inviterName,
+          //   },
+          //   io.to(`channel:${channelId}`)
+          // );
         })
       );
       callback({
