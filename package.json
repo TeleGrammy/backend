@@ -43,6 +43,7 @@
     "express-session": "^1.18.1",
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
+    "mediasoup": "^3.15.2",
     "mime": "^4.0.4",
     "mime-types": "^2.1.35",
     "mongo-connect": "^0.0.6",
