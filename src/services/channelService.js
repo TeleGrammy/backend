@@ -141,8 +141,9 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
 
 const checkUserParticipant = async (channelId, userId) => {
   const chat = await ChatService.getChatOfChannel(channelId);
+  console.log(userId, chat);
   const currentUser = chat.participants.find(
-    (participant) => participant.userId.toString() === userId
+    (participant) => participant.userId._id.toString() === userId.toString()
   );
 
   if (!currentUser) {

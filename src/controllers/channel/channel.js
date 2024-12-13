@@ -47,12 +47,14 @@ const createChannel = catchAsync(async (req, res, next) => {
   }
 
   const userId = req.user.id;
-  const {name, description} = req.body;
+  const {name, image, description} = req.body;
 
   try {
     const createdChannel = await channelService.createChannel({
       name,
       description,
+      image,
+      ownerId: userId,
     });
     if (!createdChannel) {
       throw new AppError("Error creating the channel", 500);
@@ -75,6 +77,9 @@ const createChannel = catchAsync(async (req, res, next) => {
     if (!updatedChat) {
       throw new AppError("Error adding user as admin in the channel chat", 500);
     }
+    const ownerData = await userService.getUserByID(userId);
+    ownerData.channels.push(createdChannel.id);
+    await ownerData.save();
 
     const creationMessage = {
       senderId: userId,
@@ -133,7 +138,7 @@ const updateChannel = catchAsync(async (req, res, next) => {
       chatOfChannel.participants.some(
         (participant) =>
           (participant.role === "Admin" || participant.role === "Creator") &&
-          String(participant.userId) === userId
+          String(participant.userId._id) === userId
       );
 
     if (!isAdmin) {
@@ -483,14 +488,51 @@ const addSubscriber = catchAsync(async (req, res, next) => {
       return {
         userData: {
           id: userId._id, // Safe to access since we've checked for existence
-          name: userId.screenName || "No name", // Default if missing
+          name: userId.username || "No name", // Default if missing
           profilePicture: userId.profilePicture || "", // Default empty string if missing
           phone: userId.phone || "N/A", // Default to N/A if missing
         },
         role,
       };
     })
-    .filter((part) => PaymentRequest !== null); // Filter out any null entries
+    .filter((part) => part !== null); // Filter out any null entries
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      participants: transformedParticipants,
+    },
+  });
+});
+const fetchChannelParticipants = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+  console.log(req.user.id);
+  await channelService.checkUserParticipant(channelId, req.user.id);
+
+  const channel = await chatService.getChatOfChannel(channelId);
+  const transformedParticipants = channel.participants
+    .map(({userId, role}) => {
+      // Check if userId is properly populated
+      if (!userId || !userId._id) {
+        // Log the problematic participant for debugging
+        console.log("Skipping participant with invalid userId:", {
+          userId,
+          role,
+        });
+        return null; // Return null for invalid participants
+      }
+
+      return {
+        userData: {
+          id: userId._id, // Safe to access since we've checked for existence
+          name: userId.username || "No name", // Default if missing
+          profilePicture: userId.profilePicture || "", // Default empty string if missing
+          phone: userId.phone || "N/A", // Default to N/A if missing
+        },
+        role,
+      };
+    })
+    .filter((part) => part !== null); // Filter out any null entries
 
   return res.status(200).json({
     status: "success",
@@ -560,4 +602,5 @@ module.exports = {
   fetchChannelChat,
   fetchThreadsMesssage,
   updatePrivacy,
+  fetchChannelParticipants,
 };

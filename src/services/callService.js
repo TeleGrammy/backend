@@ -14,26 +14,8 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
       offer,
     },
   });
-  console.log(call);
-  call = await Call.findById(call._id)
-    .populate({
-      path: "chatId",
-      select: "_id isGroup isChannel groupId channelId participants",
-      populate: [
-        {
-          path: "groupId",
-          select: "_id picture",
-        },
-        {
-          path: "channelId",
-          select: "_id image",
-        },
-      ],
-    })
-    .populate({
-      path: "chatId.participants.userId",
-      select: "_id username pictureUrl",
-    });
+
+  call = await Call.findById(call._id);
   return call;
 };
 

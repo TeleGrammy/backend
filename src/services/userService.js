@@ -450,6 +450,13 @@ const updateMany = async (filter, updateData, options) => {
   return User.updateMany(filter, updateData, options);
 };
 
+const pushChannelToUser = async (userId, channelId) => {
+  return User.findByIdAndUpdate(
+    userId,
+    {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
+    {new: true} // Return the updated document
+  );
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -474,4 +481,5 @@ module.exports = {
   addContact,
   getUserContact,
   updateMany,
+  pushChannelToUser,
 };
