@@ -187,7 +187,6 @@ const addMember = (io, socket, connectedUsers) => {
     const userId = socket.user.id;
     const {channelId} = data;
     const {subscriberIds} = data;
-    console.log("Adding member");
     try {
       if (!Array.isArray(subscriberIds)) {
         throw new AppError("subscriberIds must be an array.", 400);
