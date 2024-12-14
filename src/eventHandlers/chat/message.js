@@ -17,6 +17,7 @@ module.exports.sendMessage = function ({io, socket}) {
       return;
     }
 
+    console.log("Sending message");
     try {
       const messageData = await createMessageData(payload, socket.userId);
       if (messageData.replyOn) {
