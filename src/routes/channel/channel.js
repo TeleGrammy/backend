@@ -64,13 +64,13 @@ router.post(
   isAuth,
   channelController.addSubscriber
 );
-router.patch("/:channelId/privacy", isAuth, channelController.updatePrivacy);
 router.get("/:channelId/chat", isAuth, channelController.fetchChannelChat);
 router.get(
   "/thread/:postId/messages",
   isAuth,
   channelController.fetchThreadsMesssage
 );
+router.patch("/:channelId/privacy", isAuth, channelController.updatePrivacy);
 router.get(
   "/:channelId/participants",
   isAuth,
