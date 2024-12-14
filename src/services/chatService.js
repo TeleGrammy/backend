@@ -33,12 +33,10 @@ const createChat = async (chatData) => {
  */
 const getChatById = async (chatId) => {
   try {
-    const chat = await Chat.findById(chatId)
-      .populate("lastMessage pinnedMessages")
-      .populate({
-        path: "participants.userId",
-        select: "username email phone picture screenName lastSeen status",
-      });
+    const chat = await Chat.findById(chatId).populate("lastMessage").populate({
+      path: "participants.userId",
+      select: "username email phone picture screenName lastSeen status",
+    });
 
     return chat;
   } catch (error) {
@@ -70,16 +68,18 @@ const getUserChats = async (userId, skip, limit) => {
       .limit(limit)
       .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
       )
       .populate(
         "participants.userId",
         "username email phone picture screenName lastSeen status"
       )
       .populate("groupId", "name image description")
+      .populate("channelId", "name image description")
       .populate({
         path: "lastMessage",
-        select: "content senderId messageType status timestamp mediaUrl",
+        select:
+          "content senderId messageType status timestamp mediaUrl isPinned",
         populate: {
           path: "senderId",
           select: "username",
@@ -119,6 +119,7 @@ const updateLastMessage = async (chatId, messageId) => {
       {lastMessageTimestamp: Date.now()},
       {new: true}
     );
+    console.log("updating Last Message: ", chat);
     if (!chat) throw new Error("Chat not found");
     return chat;
   } catch (error) {
@@ -214,51 +215,6 @@ const restoreChat = async (chatId) => {
 };
 
 /**
- * Pins a message in a chat.
- * @param {String} chatId - The ID of the chat to update.
- * @param {String} messageId - The ID of the message to pin.
- * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
- */
-const pinMessage = async (chatId, messageId) => {
-  try {
-    const message = await Message.findById(messageId);
-    if (!message) throw new Error("Message not found");
-    if (message.chatId.toString() !== chatId) {
-      throw new Error("Message is not part of the provided chat");
-    }
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {$addToSet: {pinnedMessages: messageId}},
-      {new: true}
-    );
-    if (!chat) throw new Error("Chat not found");
-    return chat;
-  } catch (error) {
-    throw new Error(`Error pinning message: ${error.message}`);
-  }
-};
-
-/**
- * Unpins a message in a chat.
- * @param {String} chatId - The ID of the chat to update.
- * @param {String} messageId - The ID of the message to unpin.
- * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
- */
-const unpinMessage = async (chatId, messageId) => {
-  try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {$pull: {pinnedMessages: messageId}},
-      {new: true}
-    );
-    if (!chat) throw new Error("Chat not found");
-    return chat;
-  } catch (error) {
-    throw new Error(`Error unpinning message: ${error.message}`);
-  }
-};
-
-/**
  * Creates a one-to-one chat between two users if it doesn't already exist.
  * @param {String} userId1 - ID of the first user.
  * @param {String} userId2 - ID of the second user.
@@ -312,7 +268,9 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("participants.userId lastMessage pinnedMessages");
+  })
+    .populate("lastMessage")
+    .populate("participants.userId");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
@@ -321,23 +279,66 @@ const getChatOfChannel = async (channelId) => {
   return chat;
 };
 
-const changeUserRole = async (chatId, userId, newRole) => {
-  const currentChat = await getChatById(chatId);
+const checkUserParticipant = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  const currentUser = chat.participants.find(
+    (participant) => participant.userId.toString() === userId
+  );
 
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  return currentUser;
+};
+
+const checkUserAdmin = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  const currentUser = chat.participants.find(
+    (participant) => participant.userId.toString() === userId
+  );
+
+  if (!currentUser) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  if (currentUser.role !== "Admin" && currentUser.role !== "Creator") {
+    throw new AppError("User not Authorized for the following operation", 401);
+  }
+  return currentUser;
+};
+
+const checkChatChannel = async (chatId) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    return false;
+  }
+  if (chat.isChannel) {
+    return chat.channelId.toString();
+  }
+  return false;
+};
+const changeUserRole = async (chatId, userId, newRole) => {
+  const validRoles = ["Admin", "Subscriber"];
+  if (!validRoles.includes(newRole)) {
+    throw new AppError("Invalid role", 400);
+  }
+
+  // Fetch the chat
+  const currentChat = await Chat.findById(chatId);
   if (!currentChat) {
     throw new AppError("Chat not found", 404);
   }
 
-  const currentUser = currentChat.participants.find(
-    (participant) => participant.userId._id.toString() === userId
+  // Find the participant and update their role
+  const participantIndex = currentChat.participants.findIndex(
+    (p) => p.userId.toString() === userId
   );
-
-  if (!currentUser) {
-    throw new AppError("User not found in the chat participants", 404);
+  if (participantIndex === -1) {
+    throw new AppError("User not found in chat participants", 404);
   }
 
-  currentUser.role = newRole;
+  currentChat.participants[participantIndex].role = newRole;
 
+  // Save the updated participants to the database
   const updatedChat = await Chat.findByIdAndUpdate(
     chatId,
     {participants: currentChat.participants},
@@ -370,11 +371,14 @@ module.exports = {
   removeParticipant,
   softDeleteChat,
   restoreChat,
-  pinMessage,
-  unpinMessage,
+  // pinMessage,
+  // unpinMessage,
   createOneToOneChat,
   countUserChats,
   getChatOfChannel,
   changeUserRole,
+  checkUserParticipant,
+  checkUserAdmin,
+  checkChatChannel,
   removeChat,
 };
