@@ -2,6 +2,7 @@ const chatService = require("../../services/chatService");
 const catchAsync = require("../../utils/catchAsync");
 const userService = require("../../services/userService");
 const messageServices = require("../../services/messageService");
+const groupServices = require("../../services/groupService");
 const AppError = require("../../errors/appError");
 
 exports.getChat = catchAsync(async (req, res, next) => {
@@ -46,8 +47,32 @@ exports.getChatById = catchAsync(async (req, res, next) => {
     );
   }
 
+  const filter = {chatId: id};
+  if (chat.isGroup) {
+    const group = await groupServices.findGroupById(chat.groupId);
+    const user = group.members
+      .concat(group.admins)
+      .find(
+        (member) =>
+          member.memberId?.equals(req.user.id) ||
+          member.adminId?.equals(req.user.id)
+      );
+
+    if (!user)
+      return next(
+        new AppError("You are not authorized to access this chat", 401)
+      );
+
+    if (user.leftAt) filter.timestamp = {$gte: user.leftAt};
+  }
+
   // Fetch messages related to this chat with pagination
-  const messages = await messageServices.fetchChatMessages(id, skip, limit);
+  const messages = await messageServices.fetchChatMessages(
+    id,
+    filter,
+    skip,
+    limit
+  );
 
   // Count total messages for pagination info
   const totalMessages = await messageServices.countChatMessages(id);

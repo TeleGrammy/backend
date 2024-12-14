@@ -44,9 +44,9 @@ module.exports.getMessagesByChatId = async (chatId) => {
   return messages;
 };
 
-module.exports.fetchChatMessages = (chatId, skip, limit) => {
+module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
   // Fetch messages related to this chat with pagination
-  return Message.find({chatId: new mongoose.Types.ObjectId(chatId)})
+  return Message.find(filter)
     .sort({timestamp: -1}) // Sort messages by latest first
     .skip(skip)
     .limit(limit)
@@ -246,4 +246,16 @@ module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
   await message.unpin();
   message.isPinned = false;
   return message;
+};
+
+module.exports.findMessage = async (filter, populateOptions) => {
+  let query = Message.findOne(filter);
+  if (populateOptions) {
+    query = query.populate(populateOptions);
+  }
+  return query;
+};
+
+module.exports.deleteGroupMessage = async (filter) => {
+  return Message.deleteOne(filter);
 };

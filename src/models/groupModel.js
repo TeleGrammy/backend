@@ -77,6 +77,14 @@ const memberSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
+    downloadVideos: {
+      type: Boolean,
+      default: true,
+    },
+    downloadVoiceMessages: {
+      type: Boolean,
+      default: true,
+    },
   },
 });
 
@@ -198,6 +206,10 @@ const groupSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
   groupType: {
     type: String,
     enum: ["Public", "Private"],
@@ -214,43 +226,41 @@ const groupSchema = new mongoose.Schema({
       default: true,
     },
     sendMedia: {
-      type: {
-        photos: {
-          type: Boolean,
-          default: true,
-        },
-        videos: {
-          type: Boolean,
-          default: true,
-        },
-        files: {
-          type: Boolean,
-          default: true,
-        },
-        music: {
-          type: Boolean,
-          default: true,
-        },
-        voiceMessages: {
-          type: Boolean,
-          default: true,
-        },
-        videoMessages: {
-          type: Boolean,
-          default: true,
-        },
-        stickers: {
-          type: Boolean,
-          default: true,
-        },
-        polls: {
-          type: Boolean,
-          default: true,
-        },
-        embedLinks: {
-          type: Boolean,
-          default: true,
-        },
+      photos: {
+        type: Boolean,
+        default: true,
+      },
+      videos: {
+        type: Boolean,
+        default: true,
+      },
+      files: {
+        type: Boolean,
+        default: true,
+      },
+      music: {
+        type: Boolean,
+        default: true,
+      },
+      voiceMessages: {
+        type: Boolean,
+        default: true,
+      },
+      videoMessages: {
+        type: Boolean,
+        default: true,
+      },
+      stickers: {
+        type: Boolean,
+        default: true,
+      },
+      polls: {
+        type: Boolean,
+        default: true,
+      },
+      embedLinks: {
+        type: Boolean,
+        default: true,
       },
     },
     addUsers: {
@@ -281,6 +291,7 @@ const groupSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Chat",
   },
+  pinnedMessages: [{type: mongoose.Types.ObjectId, ref: "Message"}],
 });
 
 const Group = mongoose.model("Group", groupSchema);
