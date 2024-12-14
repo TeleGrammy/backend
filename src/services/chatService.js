@@ -297,6 +297,7 @@ const checkUserAdmin = async (chatId, userId) => {
     (participant) => participant.userId.toString() === userId
   );
 
+  console.log(currentUser);
   if (!currentUser) {
     throw new AppError("User not found in the chat participants", 401);
   }
