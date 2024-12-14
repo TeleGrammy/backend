@@ -45,9 +45,9 @@ module.exports.getMessagesByChatId = async (chatId) => {
   return messages;
 };
 
-module.exports.fetchChatMessages = (chatId, skip, limit) => {
+module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
   // Fetch messages related to this chat with pagination
-  return Message.find({chatId: new mongoose.Types.ObjectId(chatId)})
+  return Message.find(filter)
     .sort({timestamp: -1}) // Sort messages by latest first
     .skip(skip)
     .limit(limit)
@@ -203,4 +203,33 @@ module.exports.createForwardMessageData = async (
 
 module.exports.removeChatMessages = async (filter) => {
   return Message.deleteMany(filter);
+};
+
+module.exports.markMessageAsPinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.pin();
+  return message;
+};
+
+module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.unpin();
+  message.isPinned = false;
+  return message;
+};
+
+module.exports.findMessage = async (filter) => {
+  return Message.find(filter);
 };
