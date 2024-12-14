@@ -1,4 +1,6 @@
 const Call = require("../models/call");
+const User = require("../models/user");
+const chatService = require("./chatService");
 
 // Create a new call
 module.exports.createCall = async ({chatId, callerId, offer}) => {
@@ -9,6 +11,7 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
         userId: callerId,
       },
     ],
+
     callObj: {
       offer,
     },
@@ -101,4 +104,38 @@ module.exports.rejectCall = async (callId, userId) => {
   }
   await call.save();
   return call;
+};
+
+module.exports.getCallsOfUser = async (userId) => {
+  const user = await User.findById(userId).populate("groups");
+
+  if (!user) throw new Error("User not found");
+
+  const contactCalls = await Promise.all(
+    user.contacts.map((contact) =>
+      Call.find({chatId: contact.chatId}).select(
+        "duration startedAt endedAt status chatId"
+      )
+    )
+  );
+
+  const groupCalls = await Promise.all(
+    user.groups.map((group) =>
+      Call.find({chatId: group.chatId}).select(
+        "duration startedAt endedAt status chatId groupId"
+      )
+    )
+  );
+
+  const allCalls = [...contactCalls.flat(), ...groupCalls.flat()];
+
+  return allCalls;
+};
+
+module.exports.getCallsOfChat = async (chatId, userId) => {
+  await chatService.checkUserParticipant(chatId, userId);
+  const calls = await Call.find({chatId}).select(
+    "duration startedAt endedAt status chatId groupId"
+  );
+  return calls;
 };

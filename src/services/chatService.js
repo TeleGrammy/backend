@@ -281,6 +281,9 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new AppError("Chat not found", 404);
+  }
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
