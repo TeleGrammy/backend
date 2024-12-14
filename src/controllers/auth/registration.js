@@ -5,6 +5,7 @@ const AppError = require("../../errors/appError");
 const PendingUser = require("../../models/pending-user");
 
 const userService = require("../../services/userService");
+const pendingUserService = require("../../services/pendingUserService");
 
 const catchAsync = require("../../utils/catchAsync");
 
@@ -55,12 +56,7 @@ exports.postRegistration = catchAsync(async (req, res, next) => {
       "Registration successful. Please check your email for the verification code.",
   });
 });
-const findUserByEmail = (email) => {
-  if (!validator.isEmail(email)) {
-    throw new AppError("Invalid email format", 400);
-  }
-  return PendingUser.findOne({email});
-};
+
 exports.postVerify = catchAsync(async (req, res) => {
   const {email, verificationCode} = req.body;
 
@@ -71,7 +67,7 @@ exports.postVerify = catchAsync(async (req, res) => {
     return res.status(400).json({message: "Verification code is required"});
   }
 
-  const pendingUser = await findUserByEmail(email);
+  const pendingUser = await pendingUserService.findUserByEmail(email);
 
   if (!pendingUser) {
     return res
@@ -123,7 +119,7 @@ exports.resendVerification = catchAsync(async (req, res) => {
     return res.status(400).json({message: "Email is required"});
   }
 
-  const pendingUser = await findUserByEmail(email);
+  const pendingUser = await pendingUserService.findUserByEmail(email);
 
   if (!pendingUser) {
     return res
