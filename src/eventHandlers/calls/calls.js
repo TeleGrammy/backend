@@ -55,7 +55,7 @@ module.exports.rejectCall = function ({socket, io}) {
       const call = await callService.rejectCall(payload.callId, socket.userId);
 
       if (call.status === "rejected") {
-        io.to(`chat:${call.chatId._id}`).emit("call:endedCall", call);
+        io.to(`${call.participants[0].userId}`).emit("call:endedCall", call);
       }
       callBack({status: "ok", call});
     } catch (err) {
@@ -75,7 +75,9 @@ module.exports.endCall = function ({socket, io}) {
         payload.status
       );
 
-      io.to(`chat:${call.chatId._id}`).emit("call:endedCall", call);
+      socket.broadcast
+        .to(`chat:${call.chatId._id}`)
+        .emit("call:endedCall", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
