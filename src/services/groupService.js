@@ -57,10 +57,19 @@ const updateParticipant = (
   return user;
 };
 
+const findGroup = (filter, populateOptions) => {
+  let query = Group.findOne(filter);
+  if (populateOptions) {
+    query = query.populate(populateOptions);
+  }
+  return query;
+};
+
 module.exports = {
   createGroup,
   findGroupById,
   deleteGroup,
   findAndUpdateGroup,
   updateParticipant,
+  findGroup,
 };
