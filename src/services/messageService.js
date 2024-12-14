@@ -230,6 +230,14 @@ module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
   return message;
 };
 
-module.exports.findMessage = async (filter) => {
-  return Message.find(filter);
+module.exports.findMessage = async (filter, populateOptions) => {
+  let query = Message.findOne(filter);
+  if (populateOptions) {
+    query = query.populate(populateOptions);
+  }
+  return query;
+};
+
+module.exports.deleteGroupMessage = async (filter) => {
+  return Message.deleteOne(filter);
 };
