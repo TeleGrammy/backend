@@ -10,7 +10,7 @@ const findUserByEmail = (email) => {
   if (!validator.isEmail(email)) {
     throw new AppError("Invalid email format", 400);
   }
-  return PendingUser.findOne({email});
+  return PendingUser.findOne({email: `${email}`});
 };
 
 module.exports = {
