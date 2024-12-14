@@ -77,6 +77,14 @@ const memberSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
+    downloadVideos: {
+      type: Boolean,
+      default: true,
+    },
+    downloadVoiceMessages: {
+      type: Boolean,
+      default: true,
+    },
   },
 });
 
@@ -281,6 +289,7 @@ const groupSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Chat",
   },
+  pinnedMessages: [{type: mongoose.Types.ObjectId, ref: "Message"}],
 });
 
 const Group = mongoose.model("Group", groupSchema);
