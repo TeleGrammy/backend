@@ -20,20 +20,29 @@ const callSchema = new mongoose.Schema(
       offer: {
         type: Object,
       },
+      senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
       answer: {
         type: Object,
         default: null,
       },
-      participantsICE: {
-        type: Map,
-        of: Array,
-        default: () => new Map(),
+      participantICE: {
+        type: Object,
+        default: null,
       },
     },
     chatId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
       required: true,
+    },
+    participantsWhoRejected: {
+      type: Map,
+      of: Boolean,
+      default: () => new Map(),
     },
     status: {
       type: String,

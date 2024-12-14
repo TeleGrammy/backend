@@ -11,9 +11,8 @@ module.exports.sendCall = function ({socket, io}) {
         offer: payload.offer,
       });
 
-      // send out to all connected sockets
       socket.broadcast
-        .to(`chat:${call.chatId}`)
+        .to(`chat:${payload.chatId}`)
         .emit("call:incomingCall", call);
 
       callBack({
@@ -38,7 +37,7 @@ module.exports.answerCall = function ({socket, io}) {
       );
 
       socket.broadcast
-        .to(`chat:${call.chatId}`)
+        .to(`chat:${call.chatId._id}`)
         .emit("call:answeredCall", call);
       callBack({status: "ok", call});
     } catch (err) {
@@ -52,9 +51,12 @@ module.exports.rejectCall = function ({socket, io}) {
     try {
       if (typeof callBack !== "function") return;
 
-      const call = await callService.updateStatus(payload.callId, "rejected");
+      // const call = await callService.updateStatus(payload.callId, "rejected");
+      const call = await callService.rejectCall(payload.callId, socket.userId);
 
-      io.to(`chat:${call.chatId}`).emit("call:rejectedCall", call);
+      if (call.status === "rejected") {
+        io.to(`chat:${call.chatId._id}`).emit("call:endedCall", call);
+      }
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -73,7 +75,7 @@ module.exports.endCall = function ({socket, io}) {
         payload.status
       );
 
-      io.to(`chat:${call.chatId}`).emit("call:endedCall", call);
+      io.to(`chat:${call.chatId._id}`).emit("call:endedCall", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -91,7 +93,9 @@ module.exports.addIce = function ({socket, io}) {
         socket.userId,
         payload.IceCandidate
       );
-      socket.broadcast.to(`chat:${call.chatId}`).emit("call:addedICE", call);
+      socket.broadcast
+        .to(`chat:${call.chatId._id}`)
+        .emit("call:addedICE", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});

@@ -1,5 +1,4 @@
 const Call = require("../models/call");
-const Chat = require("../models/chat");
 
 // Create a new call
 module.exports.createCall = async ({chatId, callerId, offer}) => {
@@ -14,7 +13,7 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
       offer,
     },
   });
-
+  // call the find method to populate the data using the middleware of the modael
   call = await Call.findById(call._id);
   return call;
 };
@@ -33,8 +32,9 @@ module.exports.addParticipant = async (callId, participantId) => {
 module.exports.setAnswer = async (userId, callId, answer) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
-
+  call.callObj.senderId = userId;
   call.callObj.answer = answer;
+  call.callObj.participantICE = null;
   call.participants.push({userId});
   await call.save();
   return call;
@@ -45,11 +45,9 @@ module.exports.addIceCandidate = async (callId, userId, candidate) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
-  if (!call.callObj.participantsICE.has(userId.toString())) {
-    call.callObj.participantsICE.set(userId.toString(), []);
-  }
-
-  call.callObj.participantsICE.get(userId.toString()).push(candidate);
+  call.callObj.senderId = userId;
+  call.callObj.participantICE = candidate;
+  call.callObj.answer = null;
   await call.save();
   return call;
 };
@@ -75,7 +73,6 @@ module.exports.endCall = async (userId, callId, status) => {
     if (status === "ended") call.endedAt = new Date();
     removeUnwantedData(call);
   }
-  console.log(call);
   await call.save();
   return call;
 };
@@ -88,12 +85,19 @@ module.exports.getCallById = async (callId) => {
   return call;
 };
 
-module.exports.updateStatus = async (callId, status) => {
-  const call = await Call.findById(callId);
+module.exports.rejectCall = async (callId, userId) => {
+  const call = await Call.findById(callId).populate("chatId");
   if (!call) throw new Error("Call not found");
-  const chat = Chat.findById(call.cahtId);
-  if (!chat.isChannel && !chat.isGroup) {
-    call.status = status;
+
+  if (!call.participantsWhoRejected.has(userId.toString())) {
+    call.participantsWhoRejected.set(userId.toString(), true);
+  }
+
+  if (
+    call.participantsWhoRejected.size ===
+    call.chatId.participants.length - 1
+  ) {
+    call.status = "rejected";
   }
   await call.save();
   return call;
