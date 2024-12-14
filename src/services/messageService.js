@@ -1,9 +1,7 @@
+const {default: mongoose} = require("mongoose");
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
-const filterObject = require("../utils/utilitiesFunc");
-const User = require("../models/user");
-const {default: mongoose} = require("mongoose");
 /**
  * Creates a new message.
  * @memberof Service.Message
@@ -14,7 +12,6 @@ const {default: mongoose} = require("mongoose");
  */
 module.exports.createMessage = async (messageData) => {
   const message = await Message.create(messageData);
-
   return message;
 };
 
@@ -54,9 +51,10 @@ module.exports.fetchChatMessages = (chatId, skip, limit) => {
     .skip(skip)
     .limit(limit)
     .select(
-      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
+      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned"
     ) // Only fetch relevant fields
-    .populate("senderId mentions", "username"); // Populate sender details (only username)
+    .populate("senderId mentions", "username") // Populate sender details (only username)
+    .populate("replyOn");
 };
 
 module.exports.countChatMessages = (chatId) => {
@@ -82,7 +80,7 @@ module.exports.updateMessageStatus = async (messageId, status) => {
 };
 
 module.exports.updateChatViewers = async (chatId, messageId, viewerId) => {
-  const message = await this.getMessageById(messageId);
+  let message = await this.getMessageById(messageId);
   const lastMessageTimeStamp = message.timestamp;
 
   // Find all messages in the chat up to the last message timestamp
@@ -106,6 +104,8 @@ module.exports.updateChatViewers = async (chatId, messageId, viewerId) => {
       await mes.updateMessageViewer(viewerId, numberOfMembers);
     })
   );
+
+  message = await this.getMessageById(messageId);
   return message;
 };
 module.exports.updateMessageRecivers = async (
@@ -113,7 +113,7 @@ module.exports.updateMessageRecivers = async (
   messageId,
   recieverId
 ) => {
-  const message = await this.getMessageById(messageId);
+  let message = await this.getMessageById(messageId);
   const lastMessageTimeStamp = message.timestamp;
 
   // Find all messages in the chat up to the last message timestamp
@@ -137,6 +137,8 @@ module.exports.updateMessageRecivers = async (
       await mes.updateMessageRecivers(recieverId, numberOfMembers);
     })
   );
+
+  message = await this.getMessageById(messageId);
   return message;
 };
 
@@ -163,6 +165,9 @@ module.exports.updateMessage = async (payload) => {
 
 module.exports.deleteMessage = async (messageId, senderId) => {
   const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
   if (message.senderId.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }
@@ -193,4 +198,52 @@ module.exports.createForwardMessageData = async (
     mediaUrl: message.mediaUrl,
   };
   return newMessageData;
+};
+
+module.exports.checkChannelPost = async (postId, chatId) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+  const post = await Message.findById(postId);
+  if (!chat.isChannel) {
+    throw new Error("This Chat is not a Channel");
+  }
+
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  if (post.chatId.toString() !== chatId) {
+    throw new Error("This Post does not belong to Channel");
+  }
+  return true;
+};
+
+module.exports.removeChatMessages = async (filter) => {
+  return Message.deleteMany(filter);
+};
+
+module.exports.markMessageAsPinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.pin();
+  return message;
+};
+
+module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
+  }
+  if (message.chatId.toString() !== chatId) {
+    throw new AppError("Message is not part of the provided chat", 400);
+  }
+  await message.unpin();
+  message.isPinned = false;
+  return message;
 };

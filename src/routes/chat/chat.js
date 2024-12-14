@@ -5,10 +5,11 @@ const {
   getAllChats,
   fetchContacts,
 } = require("../../controllers/chat/chat");
+const isAuthenticated = require("../../middlewares/isAuthenticated");
 
-router.get("/chat/:id", getChatById);
-router.get("/user-chat", getChat);
-router.get("/all-chats", getAllChats);
-router.post("/fetch-contacts", fetchContacts);
+router.get("/chat/:id", isAuthenticated, getChatById);
+router.get("/user-chat", isAuthenticated, getChat);
+router.get("/all-chats", isAuthenticated, getAllChats);
+router.post("/fetch-contacts", isAuthenticated, fetchContacts);
 
 module.exports = router;

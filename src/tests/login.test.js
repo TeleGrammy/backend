@@ -1,6 +1,6 @@
-/* eslint-disable node/no-unpublished-require */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-expressions */
+
 const {expect} = require("chai");
 const sinon = require("sinon");
 
@@ -15,7 +15,9 @@ const sessionManagementModule = require("../utils/sessionManagement");
 const login = require("../controllers/auth/login");
 
 describe("Login Function", () => {
-  let req, res, next;
+  let req;
+  let res;
+  let next;
   let user;
 
   beforeEach(() => {

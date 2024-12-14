@@ -5,15 +5,40 @@
     "plugin:prettier/recommended"
   ],
   "plugins": ["prettier"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
+      }
+    }
+  },
+  "rules": {
+    "linebreak-style": ["error", "unix"],
+    "no-console": "warn",
+    "no-bitwise": "off",
+    "no-unused-vars": [
+      "error",
+      {"argsIgnorePattern": "req|res|next|err|io|socket"}
+    ],
+    "no-underscore-dangle": "off",
+    "func-names": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js"],
+      "rules": {
+        "node/no-unpublished-require": "off"
+      }
+    }
+  ],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module"
-  },
-  "rules": {
-    "linebreak-style": ["error", "windows"],
-    "no-console": "warn",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "req|res|next|err"}],
-    "no-underscore-dangle": "off",
-    "func-names": "off"
   }
 }

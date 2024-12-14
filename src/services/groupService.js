@@ -1,14 +1,66 @@
-const AppError = require("../errors/appError");
+const Group = require("../models/groupModel");
 
-const Group = require("../models/group");
+const createGroup = (name, image, ownerId) => {
+  const admin = {
+    adminId: ownerId,
+    joinedAt: Date.now(),
+    customTitle: "Owner",
+    superAdminId: ownerId,
+    permissions: {
+      postStories: false,
+      editStories: false,
+      deleteStories: false,
+      remainAnonymous: false,
+    },
+  };
 
-const changeGroupsPolicy = async (groupIds, newPolicy) => {
-  return await Group.updateMany(
-    {_id: {$in: groupIds}},
-    {$set: {addingMembersPolicy: newPolicy}}
+  const newGroup = {
+    name,
+    image,
+    ownerId,
+    admins: [admin],
+  };
+  return Group.create(newGroup);
+};
+
+const deleteGroup = async (filter) => Group.deleteOne(filter);
+
+const findGroupById = (groupId) => {
+  return Group.findById(groupId);
+};
+
+const findAndUpdateGroup = (groupId, newData, options) => {
+  const group = Group.findByIdAndUpdate(groupId, newData, options);
+  return group;
+};
+
+const updateParticipant = (
+  groupId,
+  arrayField,
+  userField,
+  userFilter,
+  newData,
+  options
+) => {
+  const user = Group.findByIdAndUpdate(
+    {
+      _id: groupId,
+      [`${userField}`]: userFilter,
+    },
+    {
+      $set: {
+        [`${arrayField}`]: newData,
+      },
+    },
+    options
   );
+  return user;
 };
 
 module.exports = {
-  changeGroupsPolicy,
+  createGroup,
+  findGroupById,
+  deleteGroup,
+  findAndUpdateGroup,
+  updateParticipant,
 };

@@ -10,11 +10,11 @@ module.exports.getMainPage = (req, res, next) => {
 
 module.exports.updatePublicKey = async (req, res, next) => {
   let {publicKey} = req.body;
-  publicKey =
-    "-----BEGIN PUBLIC KEY-----\n" + publicKey + "\n-----END PUBLIC KEY-----";
   if (!publicKey) {
     next(new AppError("Please provide a public key", 400));
   }
+  publicKey = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`;
+
   const user = await userService.findByIdAndUpdate(
     req.user.id,
     {publicKey},

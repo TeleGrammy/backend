@@ -4,7 +4,6 @@ const AppError = require("../errors/appError");
 
 const User = require("../models/user");
 
-
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -218,8 +217,19 @@ const getUserByID = async (ID) => {
 const findByIdAndUpdate = async (id, updateData, options) => {
   return User.findByIdAndUpdate(id, updateData, options);
 };
-const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+const getUserById = async (id, select = "", populate = null) => {
+  const query = User.findById(id).select(select);
+  if (populate) {
+    query.populate(populate);
+  }
+  return query.exec();
+};
+
+const getUserContact = async (id) => {
+  return User.findById(id).select("contacts -_id").populate({
+    path: "contacts.contactId", // Path to the field to populate
+    select: "username", // Optional: Specify which fields to include from the referenced document
+  });
 };
 
 const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
@@ -367,7 +377,9 @@ const setWhoCanAddMe = async (userId, newPolicy) => {
 
 const ackEvent = async (id, chatId, offset) => {
   const user = await User.findById(id);
-
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
     ? user.userChats.get(`${chatId}`)
@@ -391,6 +403,60 @@ const updateDraftOfUserInChat = async (chatId, userId, draft) => {
   await user.save();
   return user;
 };
+
+const addContact = async (userId, chatId, contactId, isMe) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  if (isMe === true) {
+    if (!user.contacts) {
+      user.contacts = [];
+    }
+    const contactIndex = user.contacts.findIndex(
+      (contact) => contact.contactId.toString() === contactId
+    );
+
+    if (contactIndex === -1) {
+      user.contacts.push({
+        contactId,
+        chatId,
+        addedByMe: true,
+      });
+    } else {
+      user.contacts[contactIndex].addedByMe = true;
+    }
+  } else {
+    if (!user.contacts) {
+      user.contacts = [];
+    }
+    const contactIndex = user.contacts.findIndex(
+      (contact) => contact.contactId.toString() === contactId
+    );
+
+    if (contactIndex === -1) {
+      user.contacts.push({
+        contactId,
+        chatId,
+        addedByMe: false,
+      });
+    }
+  }
+  return user.save();
+};
+
+const updateMany = async (filter, updateData, options) => {
+  return User.updateMany(filter, updateData, options);
+};
+
+const pushChannelToUser = async (userId, channelId) => {
+  return User.findByIdAndUpdate(
+    userId,
+    {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
+    {new: true} // Return the updated document
+  );
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -412,4 +478,8 @@ module.exports = {
   ackEvent,
   updateDraftOfUserInChat,
   updateRefreshToken,
+  addContact,
+  getUserContact,
+  updateMany,
+  pushChannelToUser,
 };

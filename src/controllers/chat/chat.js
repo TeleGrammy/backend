@@ -26,17 +26,18 @@ exports.getChatById = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page, 10) || 1; // Default to page 1
   const limit = parseInt(req.query.limit, 10) || 30; // Default to 10 messages per page
   const skip = (page - 1) * limit;
-
+  if (id === "undefined") {
+    return next(new AppError("id must be a chat id", 400));
+  }
   // Fetch the chat by ID
   const chat = await chatService.getChatById(id);
-
   if (!chat) {
     return next(new AppError("Chat not found", 404));
   }
 
   // Check if the user is a participant in the chat
   const userExists = chat.participants.some((participant) =>
-    participant.userId.equals(req.user.id)
+    participant.userId._id.equals(req.user.id)
   );
 
   if (!userExists) {
@@ -63,6 +64,64 @@ exports.getChatById = catchAsync(async (req, res, next) => {
   });
 });
 
+const handlePrivateChat = (chatObj, userId) => {
+  const otherUser = chatObj.participants.find(
+    (participant) => participant.userId._id.toString() !== userId
+  );
+  const myUser = chatObj.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+  const chat = {
+    id: chatObj._id,
+    name: otherUser.userId.username,
+    email: otherUser.userId.email,
+    photo: otherUser.userId.picture,
+    status: otherUser.userId.status,
+    lastSeen: otherUser.userId.lastSeen,
+    joinedAt: otherUser.joinedAt,
+    role: otherUser.role,
+    lastMessage: chatObj.lastMessage,
+    draftMessage: myUser?.draft_message,
+  };
+
+  return chat;
+};
+
+const handleGroupChat = (chatObj, userId) => {
+  const myUser = chatObj.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+  const chat = {
+    id: chatObj._id,
+    name: chatObj.groupId.name,
+    photo: chatObj.groupId.image,
+    description: chatObj.groupId.description,
+    groupId: chatObj.groupId._id,
+    lastMessage: chatObj.lastMessage,
+    draftMessage: myUser?.draft_message,
+    isGroup: true,
+  };
+
+  return chat;
+};
+
+const handleChannelChat = (chatObj, userId) => {
+  const myUser = chatObj.participants.find(
+    (participant) => participant.userId._id.toString() === userId
+  );
+  const chat = {
+    id: chatObj._id,
+    name: chatObj.channelId.name,
+    photo: chatObj.channelId.image,
+    description: chatObj.channelId.description,
+    channelId: chatObj.channelId._id,
+    lastMessage: chatObj.lastMessage,
+    draftMessage: myUser?.draft_message,
+    isChannel: true,
+  };
+
+  return chat;
+};
 exports.getAllChats = catchAsync(async (req, res, next) => {
   const userId = req.user.id; // User ID passed as query parameter
 
@@ -70,8 +129,21 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 50; // Default to 50 items per page
   const skip = (page - 1) * limit;
 
-  const chats = await chatService.getUserChats(userId, skip, limit);
+  let chats = await chatService.getUserChats(userId, skip, limit);
 
+  chats = chats.map((chat) => {
+    if (!chat.isGroup && !chat.isChannel) {
+      return handlePrivateChat(chat, userId);
+    }
+    if (chat.isGroup) {
+      return handleGroupChat(chat);
+    }
+    if (chat.isChannel) {
+      return handleChannelChat(chat);
+    }
+    return chat;
+  });
+  // const chats = await userService.getUserContactsChats(userId);
   // Count total documents for pagination info
   const totalChats = await chatService.countUserChats(userId);
 

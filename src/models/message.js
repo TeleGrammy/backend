@@ -13,6 +13,19 @@ const messageSchema = new mongoose.Schema({
     ref: "Chat",
     required: [true, "Chat ID is required"],
   },
+  parentPost: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message",
+    default: null,
+  },
+  isPost: {
+    type: Boolean,
+    default: false,
+  },
+  commentsCount: {
+    type: Number,
+    default: 0,
+  },
   messageType: {
     type: String,
     enum: {
@@ -49,7 +62,6 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
   mentions: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "User",
@@ -87,6 +99,10 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isPinned: {
+    type: Boolean,
+    default: false,
+  },
   selfDestructTime: {type: Number}, // Time-to-live in seconds
   expiresAt: {type: Date}, // Exact expiration time for TTL
 });
@@ -96,6 +112,23 @@ messageSchema.pre("save", function (next) {
     this.expiresAt = new Date(
       this.timestamp.getTime() + this.selfDestructTime * 1000
     );
+  }
+  next();
+});
+
+messageSchema.post("save", async function (doc, next) {
+  if (doc.parentPost) {
+    try {
+      // Increment the commentsCount of the parent post
+      await mongoose.model("Message").findByIdAndUpdate(doc.parentPost, {
+        $inc: {commentsCount: 1},
+      });
+      console.log(
+        `Incremented commentsCount for parentPost: ${doc.parentPost}`
+      );
+    } catch (error) {
+      console.error("Error updating commentsCount:", error);
+    }
   }
   next();
 });
@@ -155,7 +188,7 @@ messageSchema.pre("save", function (next) {
       "document",
       "file",
     ].includes(this.messageType) &&
-    !this.mediaUrl
+    !this.mediaKey
   ) {
     return next(
       new Error(`${this.messageType} message must have a media URL.`)
@@ -165,14 +198,13 @@ messageSchema.pre("save", function (next) {
   return next();
 });
 
-// this middleware is responsible for creating signed URLs to the retreived stories from the database
+// this middleware is responsible for creating signed URLs to the retreived messages from the database
 messageSchema.post(/^find/, async function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
     return next();
   }
 
   const documents = Array.isArray(docs) ? docs : [docs];
-  console.log(documents);
   await Promise.all(
     documents.map(async (doc) => {
       await doc.generateSignedUrl();
@@ -182,6 +214,15 @@ messageSchema.post(/^find/, async function (docs, next) {
   return next();
 });
 
+messageSchema.methods.pin = async function () {
+  this.isPinned = true;
+  await this.save();
+};
+
+messageSchema.methods.unpin = async function () {
+  this.isPinned = false;
+  await this.save();
+};
 // messageSchema.post("remove", function (doc) {
 //   // TODO: put proper socket path and test this socket
 //   // const io = require("SOCKET PATH");

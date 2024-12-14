@@ -1,10 +1,9 @@
-/* eslint-disable node/no-unpublished-require */
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-expressions */
+// eslint-disable-next-line node/no-unpublished-require
 const supertest = require("supertest");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const app = require("../app");
+const app = require("../expressApp");
 
 const userService = require("../services/userService");
 const AppError = require("../errors/appError");

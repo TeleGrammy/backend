@@ -1,10 +1,11 @@
 const Story = require("../models/story");
 const User = require("../models/user");
-const {getBasicProfileInfo} = require("../services/userProfileService");
+const {getBasicProfileInfo} = require("./userProfileService");
+const {generateSignedUrl} = require("../middlewares/AWS");
 
 exports.create = async (data) => {
-  const {userId, content, mediaKey} = data;
-  return Story.create({userId, content, mediaKey});
+  const {userId, content, mediaKey, mediaType} = data;
+  return Story.create({userId, content, mediaKey, mediaType});
 };
 
 exports.getStoriesByUserId = async (userId) => {
@@ -44,8 +45,17 @@ exports.getStoriesOfContacts = async (id, page, limit) => {
 
   await Promise.all(
     docs.map(async (user) => {
+      user.profile = await getBasicProfileInfo(user._id);
       await Promise.all(
         user.stories.map(async (story) => {
+          try {
+            if (story.mediaKey)
+              story.media = await generateSignedUrl(story.mediaKey, 15 * 60);
+          } catch (err) {
+            console.error(`Error generating url for story ${story._id}:`, err);
+            story.media = null;
+          }
+          story.mediaKey = undefined;
           if (story.viewers) {
             const arr = Object.values(story.viewers); // Converts viewers (JSON object) to an array of [key, value] pairs
             await Promise.all(

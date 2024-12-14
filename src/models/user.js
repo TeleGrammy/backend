@@ -18,6 +18,10 @@ const contactSchema = new mongoose.Schema({
     ref: "Chat",
     required: true,
   },
+  addedByMe: {
+    type: Boolean,
+    default: false,
+  },
   blockDetails: {
     status: {
       type: String,
@@ -113,7 +117,7 @@ const userSchema = new mongoose.Schema({
   },
   screenName: {
     type: String,
-    default: "User",
+    default: null,
   },
   pictureKey: {
     type: String, // contain media key of the profile picture
@@ -227,115 +231,23 @@ const userSchema = new mongoose.Schema({
     enum: ["EveryOne", "Admins"],
     default: "EveryOne",
   },
+
+  groups: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Group",
+    default: [],
+  },
+  channels: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Channel",
+    default: [],
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {
   if (!doc || (Array.isArray(doc) && doc.length === 0)) {
     next();
     return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-    return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-    return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
-    return;
-  }
-
-  if (!doc.length) {
-    await doc.generateSignedUrl();
-  } else {
-    await Promise.all(
-      doc.map(async (document) => {
-        await document.generateSignedUrl();
-      })
-    );
-  }
-  next();
-});
-
-userSchema.pre(/Delete$/, async function (next) {
-  if (this.pictureKey) {
-    await deleteFile(this.pictureKey);
-  }
-
-  next();
-});
-
-userSchema.post(/^find/, async function (doc, next) {
-  if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-    next();
   }
 
   if (!doc.length) {
@@ -362,14 +274,12 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
   }
-  console.log("WHY");
 
   this.passwordModifiedAt = Date.now();
   return next();
 });
 
 userSchema.pre("save", async function (next) {
-  console.log("WHY");
   if (this.isModified("password")) {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
@@ -385,10 +295,6 @@ userSchema.pre("findOneAndUpdate", async function (next) {
     const saltRounds = 12;
     update.password = await bcrypt.hash(update.password, saltRounds);
     update.passwordConfirm = update.password;
-    console.log(update.password === update.passwordConfirm);
-    console.log(update.password);
-    console.log(update.passwordConfirm);
-
     update.passwordModifiedAt = Date.now();
   }
   next();
@@ -460,7 +366,7 @@ userSchema.methods.verifyConfirmationCode = function (confirmationCode) {
 
 userSchema.methods.generateSignedUrl = async function () {
   if (this.pictureKey) {
-    this.picture = await generateSignedUrl(this.pictureKey, 15 * 60);
+    this.picture = await generateSignedUrl(this.pictureKey);
   }
 };
 

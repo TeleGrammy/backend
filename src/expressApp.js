@@ -4,8 +4,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const requestIp = require("request-ip");
 const passport = require("passport");
+const MongoStore = require("connect-mongo");
 const {swaggerUi, specs} = require("../swaggerConfig");
-const cronJobs = require("./middlewares/cronJobs");
 
 require("dotenv").config({
   path: "../env",
@@ -20,6 +20,8 @@ const userPrivacyRouter = require("./routes/userPrivacy/userPrivacy");
 const storyRouter = require("./routes/userProfile/story");
 const mediaRouter = require("./routes/messaging/media");
 const chatRouter = require("./routes/chat/chat");
+const channelRouter = require("./routes/channel/channel");
+const groupRouter = require("./routes/group/groupRoutes");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 const isAuthenticated = require("./middlewares/isAuthenticated");
@@ -28,9 +30,6 @@ const app = express();
 
 app.set("trust-proxy", true);
 app.set(requestIp.mw());
-
-// use cron job script to automatically delete expired stories
-cronJobs();
 
 app.use(
   cors({
@@ -45,11 +44,27 @@ if (process.env.NODE_ENV === "development") {
   const morgan = require("morgan");
   app.use(morgan("dev"));
 }
-
-app.use(
-  session({secret: "supersecretkey", resave: false, saveUninitialized: true})
-);
-
+if (process.env.NODE_ENV === "test") {
+  app.use(
+    session({secret: "supersecretkey", resave: false, saveUninitialized: true})
+  );
+} else {
+  app.use(
+    session({
+      secret: "supersecretkey",
+      resave: false,
+      saveUninitialized: true,
+      store: MongoStore.create({
+        mongoUrl: process.env.DB_HOST,
+        collectionName: "sessionsUsers",
+      }),
+      cookie: {
+        secure: false, // Set true in production with HTTPS
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
+      },
+    })
+  );
+}
 app.use(cookieParser());
 app.use(express.json({limit: "10kb"}));
 app.use(express.urlencoded({extended: true}));
@@ -64,7 +79,10 @@ app.use("/api/v1/user/stories", storyRouter);
 
 app.use("/api/v1/messaging/upload", isAuthenticated, mediaRouter);
 app.use("/api/v1/privacy/settings", userPrivacyRouter);
-app.use("/api/v1/chats", isAuthenticated, chatRouter);
+app.use("/api/v1/chats", chatRouter);
+app.use("/api/v1/channels", channelRouter);
+app.use("/api/v1/groups", isAuthenticated, groupRouter);
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(globalErrorHandler);

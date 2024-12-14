@@ -1,9 +1,8 @@
-const jwt = require("jsonwebtoken");
 const {Server} = require("socket.io");
-const socketConfig = require("./config/socketConfig");
 const {onConnection} = require("./eventHandlers/connection");
-
-const AppError = require("./errors/appError");
+const groupConnection = require("./eventHandlers/groupNameSpace");
+const channelConnection = require("./eventHandlers/channelNameSpace");
+const isAuth = require("./middlewares/isAuthenticatedSocket");
 
 const createIoApp = (httpServer) => {
   console.log("Setup Socket.IO");
@@ -12,20 +11,20 @@ const createIoApp = (httpServer) => {
       origin: "*", // Allow any origin for testing. Restrict this in production.
     },
   });
-  module.exports.io = io;
-  io.use(async (socket, next) => {
-    const token = socket.handshake.auth.token || socket.handshake.query.token;
-    let decodedAccessToken = null;
-    try {
-      decodedAccessToken = jwt.verify(token, process.env.JWT_SECRET);
-      socket.user = decodedAccessToken;
-    } catch (error) {
-      return next(new Error("Invalid refresh token, please log in again", 401));
-    }
-    return next();
-  });
+  const connectedUsers = new Map();
+  const groupIO = io.of("/group/");
+  const channelIO = io.of("/channel/");
+  io.use(isAuth);
+  groupIO.use(isAuth);
+  channelIO.use(isAuth);
 
-  io.on("connection", (socket) => onConnection(socket, io));
+  io.on("connection", (socket) => onConnection(socket, io, connectedUsers));
+  groupIO.on("connection", (socket) =>
+    groupConnection(socket, groupIO, connectedUsers)
+  );
+  channelIO.on("connection", (socket) =>
+    channelConnection(socket, channelIO, connectedUsers)
+  );
 };
 
 module.exports = createIoApp;

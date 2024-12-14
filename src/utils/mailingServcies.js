@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 const sgMail = require("@sendgrid/mail");
 require("dotenv").config();
 

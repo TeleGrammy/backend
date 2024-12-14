@@ -6,11 +6,15 @@ const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
 exports.createStory = catchAsync(async (req, res, next) => {
-  const {content} = req.body;
+  const {content, mediaType} = req.body;
   const mediaKey = req.file ? req.file.key : null;
   if (!content && !mediaKey) {
     return next(new AppError("No content or media provided.", 400));
   }
+  if (mediaKey && !mediaType) {
+    return next(new AppError("No media type provided.", 400));
+  }
+
   const user = await userService.getUserById(req.user.id);
   if (!user) {
     return next(new AppError("User not found", 404));
@@ -19,6 +23,7 @@ exports.createStory = catchAsync(async (req, res, next) => {
     userId: user._id,
     content,
     mediaKey,
+    mediaType,
   });
 
   return res.status(201).json({

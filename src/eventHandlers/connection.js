@@ -1,27 +1,41 @@
 const userService = require("../services/userService");
-const AppError = require("../errors/appError");
+const groupService = require("../services/groupService");
+const chatService = require("../services/chatService");
 const {
   sendMessage,
   updateMessageViewres,
   updateMessage,
   deleteMessage,
-  forwardMessage,
   updateDraftOfUserInChat,
   pinMessage,
   unpinMessage,
 } = require("./chat/message");
+
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
-
+const {
+  sendCall,
+  answerCall,
+  endCall,
+  rejectCall,
+  addIce,
+} = require("./calls/calls");
 
 const joinChatsOfUsers = async (io, socket) => {
   // user join it is own room
+  console.log("user join it is own room");
   socket.join(`${socket.userId}`);
-  // TODO : user should also handle the offset of the events sent for him only
-
   const user = await userService.getUserByID(socket.userId);
+  const offsetOfUserIndvidualchat = user.userChats.get(socket.userId);
+  await sendMissedEvents({
+    io,
+    userId: socket.userId,
+    chatId: socket.userId,
+    offset: offsetOfUserIndvidualchat,
+  });
   await Promise.all(
     user.contacts.map(async (contact) => {
+      console.log("user join room", `chat:${contact.chatId}`);
       socket.join(`chat:${contact.chatId}`);
       const draft = user.userDrafts.get(contact.chatId);
       if (draft) {
@@ -42,13 +56,49 @@ const joinChatsOfUsers = async (io, socket) => {
   );
 };
 
-exports.onConnection = async (socket, io) => {
+const joinGroupChats = async (io, socket) => {
+  const userData = await userService.getUserById(socket.user.id);
+  await Promise.all(
+    userData.groups.map(async (group) => {
+      const groupData = await groupService.findGroupById(group);
+
+      if (groupData) socket.join(`chat:${groupData.chatId}`);
+    })
+  );
+};
+
+const joinChannelChats = async (io, socket) => {
+  const userData = await userService.getUserById(socket.user.id);
+  await Promise.all(
+    userData.channels.map(async (channelId) => {
+      const chatData = await chatService.getChatOfChannel(channelId);
+      console.log(`Joining user:${socket.user.id} to chat:${chatData.id}`);
+
+      if (chatData) socket.join(`chat:${chatData.id}`);
+    })
+  );
+};
+
+exports.onConnection = async (socket, io, connectedUsers) => {
   console.log("User connected:", socket.id);
 
   socket.userId = socket.user.id;
   console.log("User id connected:", socket.userId);
 
+  if (connectedUsers.get(socket.userId))
+    connectedUsers.get(socket.userId).set("chat", socket);
+  else connectedUsers.set(socket.userId, new Map([["chat", socket]]));
+
   await joinChatsOfUsers(io, socket);
+  await joinGroupChats(io, socket);
+  await joinChannelChats(io, socket);
+
+  socket.on("message:test", (payload, callback) => {
+    console.log("Received 'message:test' event from client:", payload);
+    if (callback) {
+      callback({status: "success", message: "Voice note received"});
+    }
+  });
 
   socket.on("message:send", sendMessage({io, socket}));
   socket.on("message:update", updateMessage({io, socket}));
@@ -61,22 +111,14 @@ exports.onConnection = async (socket, io) => {
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
 
-  socket.on("message", (msg) => {
-    console.log("Message from Client:", msg);
-  });
-  socket.on("message:send_voicenote", (payload, callback) => {
-    console.log(
-      "Received 'message:send_voicenote' event from client:",
-      payload
-    );
-
-    // Acknowledge receipt if needed
-    if (callback) {
-      callback({status: "success", message: "Voice note received"});
-    }
-  });
+  socket.on("call:newCall", sendCall({socket, io}));
+  socket.on("call:answer", answerCall({socket, io}));
+  socket.on("call:end", endCall({socket, io}));
+  socket.on("call:reject", rejectCall({socket, io}));
+  socket.on("call:addMyIce", addIce({socket, io}));
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+    connectedUsers.get(socket.userId).delete("chat");
   });
 };

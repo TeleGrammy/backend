@@ -2,9 +2,14 @@
 const messageService = require("../../services/messageService");
 const userService = require("../../services/userService");
 const chatService = require("../../services/chatService");
+const channelService = require("../../services/channelService");
 const {uploadVoiceNote} = require("../../middlewares/AWS");
 
-const {logThenEmit, createMessageData} = require("../utils/utilsFunc");
+const {
+  logThenEmit,
+  createMessageData,
+  checkChannelRules,
+} = require("../utils/utilsFunc");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
@@ -12,24 +17,30 @@ module.exports.sendMessage = function ({io, socket}) {
       return;
     }
 
+    console.log("Sending message");
     try {
       const messageData = await createMessageData(payload, socket.userId);
-
       if (messageData.replyOn) {
         await messageService.checkChatOfMessage(
           messageData.replyOn,
           messageData.chatId
         );
       }
-      const message = await messageService.createMessage(messageData);
-
-      chatService.updateLastMessage(messageData.chatId, message.id);
+      await chatService.checkUserParticipant(messageData.chatId, socket.userId);
+      const channelId = await chatService.checkChatChannel(messageData.chatId);
+      if (channelId) {
+        await checkChannelRules(socket.userId, channelId, messageData);
+      }
+      let message = await messageService.createMessage(messageData);
+      if (!channelId || messageData.isPost) {
+        chatService.updateLastMessage(messageData.chatId, message.id);
+      }
 
       logThenEmit(
         socket.userId,
         "message:sent",
         {...message._doc},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        io.to(`chat:${payload.chatId}`)
       );
 
       // i think this is useless since at the event of new message
@@ -46,11 +57,11 @@ module.exports.sendMessage = function ({io, socket}) {
         },
       });
 
-      await messageService.updateMessageStatus(message.id, "sent");
+      message = await messageService.updateMessageStatus(message.id, "sent");
 
       logThenEmit(
         socket.userId,
-        "message:sent",
+        "message:isSent",
         {
           message,
           chatId: message.senderId,
@@ -114,7 +125,7 @@ module.exports.deleteMessage = function ({io, socket}) {
         socket.userId,
         "message:deleted",
         message._doc,
-        socket.broadcast.to(`chat:${message.chatId}`)
+        io.to(`chat:${message.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -141,12 +152,15 @@ module.exports.updateDraftOfUserInChat = function ({io, socket}) {
 module.exports.pinMessage = function ({io, socket}) {
   return async (payload) => {
     try {
-      await chatService.pinMessage(payload.chatId, payload.messageId);
+      const message = await messageService.markMessageAsPinned(
+        payload.chatId,
+        payload.messageId
+      );
       logThenEmit(
         socket.userId,
         "message:pin",
-        {...payload, userId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        {message, chatId: message.chatId, userId: socket.userId},
+        io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -157,12 +171,15 @@ module.exports.pinMessage = function ({io, socket}) {
 module.exports.unpinMessage = function ({io, socket}) {
   return async (payload) => {
     try {
-      await chatService.unpinMessage(payload.chatId, payload.messageId);
+      const message = await messageService.markMessageAsUnpinned(
+        payload.chatId,
+        payload.messageId
+      );
       logThenEmit(
         socket.userId,
         "message:unpin",
-        {...payload, userId: socket.userId},
-        socket.broadcast.to(`chat:${payload.chatId}`)
+        {message, chatId: message.chatId, userId: socket.userId},
+        io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
