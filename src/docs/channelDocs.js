@@ -18,11 +18,15 @@
  *                description:
  *                  type: string
  *                  description: The description of the channel
+ *                image:
+ *                  type: string
+ *                  description: The image of the channel
  *              required:
  *                - name
  *            example:
  *              name: name of channel
  *              description: description of the channel
+ *              image: "media/media/test.jpg"
  *      responses:
  *        '201':
  *          description: The channel is created successfully
@@ -43,6 +47,7 @@
  *                  id: df64663131fds
  *                  name: channel name
  *                  description: The channel description
+ *                  chatId: df646656223aks
  *                message: The channel is created Successfully
  *        '400':
  *          description: Bad request
@@ -75,9 +80,13 @@
  *                description:
  *                  type: string
  *                  description: The description of the channel
+ *                image:
+ *                  type: string
+ *                  description: The image of the channel
  *            example:
  *              name: name of channel
  *              description: description of the channel
+ *              image: "media/media/test.jpg"
  *      responses:
  *        '200':
  *          description: The channel is updated successfully
@@ -241,86 +250,6 @@
  *        '400':
  *          description: Bad request
  */
-
-/**
- * @swagger
- *  /channels/{channelId}/messages:
- *    post:
- *      summary: Post messages to channels
- *      description: >-
- *        This endpoint allows only admins of the channel to post messages.
- *        Regular users cannot access this endpoint
- *      tags:
- *        - Channels
- *      parameters:
- *        - in: path
- *          name: channelId
- *          schema:
- *            type: string
- *          required: true
- *          description: the channel id you want to post a new message to
- *      requestBody:
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                content:
- *                  type: string
- *                  description: the content of the message
- *                media:
- *                  type: string
- *                  enum:
- *                    - image
- *                    - video
- *                    - document
- *                  description: Type of media attached to the message
- *                url:
- *                  type: string
- *                  description: The URL of the media file
- *              required:
- *                - content
- *      responses:
- *        '201':
- *          description: The message was posted successfully
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  data:
- *                    type: object
- *                    properties:
- *                      groupId:
- *                        type: string
- *                      messageId:
- *                        type: string
- *                      content:
- *                        type: string
- *                        description: the content of the message
- *                      media:
- *                        type: string
- *                        description: Type of media attached to the message
- *                      url:
- *                        type: string
- *                        description: The URL of the media file
- *                  message:
- *                    type: string
- *              example:
- *                status: success
- *                data:
- *                  groupId: gf1sdfs2fs
- *                  messageId: gf1s15sfs
- *                  content: The message content
- *                  media: the media used in the message
- *                  url: the url of the media
- *                message: Message posted successfully
- *        '400':
- *          description: Bad request
- */
-
 /**
  * @swagger
  *  /channels/{channelId}/privacy:
@@ -449,168 +378,6 @@
  *                message: You do not have permission to invite users to this channel
  */
 
-/**
- * @swagger
- *  /channels/{channelId}/comments:
- *    patch:
- *      summary: Enable or disable comments (threads) on channel posts
- *      tags:
- *        - Channels
- *      parameters:
- *        - in: path
- *          name: channelId
- *          schema:
- *            type: string
- *          required: true
- *          description: the channel id you want to change its comment settings
- *      requestBody:
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                comment:
- *                  type: boolean
- *                  description: Enable or disable comments on channel posts
- *              required:
- *                - comment
- *            example:
- *              comment: true
- *      responses:
- *        '200':
- *          description: Comment settings updated successfully
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: success
- *                message: Comment settings updated successfully
- *        '400':
- *          description: Bad request due to invalid input
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: fail
- *                message: Invalid request. Please check your input
- *        '403':
- *          description: The user does not have permission to change comment settings
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: fail
- *                message: >-
- *                  You do not have permission to change comment settings for this
- *                  channel
- */
-
-/**
- * @swagger
- *  /channels/{channelId}/permissions/{userId}:
- *    patch:
- *      summary: Change downloading permission of the user
- *      tags:
- *        - Channels
- *      parameters:
- *        - in: path
- *          name: channelId
- *          schema:
- *            type: string
- *          required: true
- *          description: >-
- *            The ID of the channel for which download permissions are being
- *            modified
- *        - in: path
- *          name: userId
- *          schema:
- *            type: string
- *          required: true
- *          description: the user id who his permission will be changed
- *      requestBody:
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                downloadVideo:
- *                  type: boolean
- *                  description: Enable or disable downloading videos
- *                downloadAudio:
- *                  type: boolean
- *                  description: Enable or disable downloading audios
- *              required:
- *                - video
- *                - audio
- *            example:
- *              video: true
- *              audio: false
- *      responses:
- *        '200':
- *          description: Downloading permissions are updated successfully
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: success
- *                message: Downloading permissions are updated successfully
- *        '400':
- *          description: Bad request due to invalid input
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: fail
- *                message: Invalid request. Please check your input
- *        '403':
- *          description: >-
- *            The user does not have permission to change user's downloading
- *            permission
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: fail
- *                message: >-
- *                  You do not have permission to change user's downloading
- *                  permission
- */
 /**
  * @swagger
  * /channels/{channelId}/chat:
@@ -796,4 +563,106 @@
  *                 message:
  *                   type: string
  *                   description: Error message indicating the channel was not found.
+ */
+/**
+ * @swagger
+ *  /channels/{channelId}/participants:
+ *    get:
+ *      summary: Fetch participants of a channel
+ *      tags:
+ *        - Channels
+ *      parameters:
+ *        - in: path
+ *          name: channelId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the channel to fetch participants from
+ *      responses:
+ *        '200':
+ *          description: Successfully fetched channel participants
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  participants:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userData:
+ *                          type: object
+ *                          properties:
+ *                            id:
+ *                              type: string
+ *                              description: The unique ID of the user
+ *                            name:
+ *                              type: string
+ *                              description: The name of the user
+ *                            profilePicture:
+ *                              type: string
+ *                              description: URL of the user's profile picture
+ *                            phone:
+ *                              type: string
+ *                              description: Phone number of the user
+ *                        role:
+ *                          type: string
+ *                          description: Role of the user in the channel
+ *              example:
+ *                participants:
+ *                  - userData:
+ *                      id: "60c72b2f5f1b2c001c8e4d4a"
+ *                      name: "John Doe"
+ *                      profilePicture: "https://example.com/profile.jpg"
+ *                      phone: "123-456-7890"
+ *                    role: "admin"
+ *                  - userData:
+ *                      id: "60c72b2f5f1b2c001c8e4d4b"
+ *                      name: "Jane Smith"
+ *                      profilePicture: ""
+ *                      phone: "N/A"
+ *                    role: "member"
+ *        '400':
+ *          description: Invalid channel ID
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *              example:
+ *                status: fail
+ *                message: Invalid channel ID
+ *        '403':
+ *          description: Unauthorized access
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *              example:
+ *                status: fail
+ *                message: You do not have permission to view this channel's participants
+ *        '500':
+ *          description: Internal server error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                    type: string
+ *              example:
+ *                status: error
+ *                message: An unexpected error occurred
  */

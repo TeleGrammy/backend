@@ -11,7 +11,6 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
         userId: callerId,
       },
     ],
-
     callObj: {
       offer,
     },
@@ -21,7 +20,6 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
   return call;
 };
 
-// Add a participant to a call
 module.exports.addParticipant = async (callId, participantId) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
@@ -31,7 +29,6 @@ module.exports.addParticipant = async (callId, participantId) => {
   return call;
 };
 
-// Update the call with an answer
 module.exports.setAnswer = async (userId, callId, answer) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
@@ -43,7 +40,6 @@ module.exports.setAnswer = async (userId, callId, answer) => {
   return call;
 };
 
-// Add ICE candidates for a participant
 module.exports.addIceCandidate = async (callId, userId, candidate) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
@@ -61,12 +57,10 @@ const removeUnwantedData = async (call) => {
   return call;
 };
 
-// End a call
 module.exports.endCall = async (userId, callId, status) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
-  // Remove the user from participants
   call.participants = call.participants.filter(
     (participant) => participant.userId.toString() !== userId
   );
@@ -80,7 +74,6 @@ module.exports.endCall = async (userId, callId, status) => {
   return call;
 };
 
-// Fetch a call by ID
 module.exports.getCallById = async (callId) => {
   const call = await Call.findById(callId);
 

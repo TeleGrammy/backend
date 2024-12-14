@@ -60,7 +60,10 @@ chatSchema.pre("findOneAndUpdate", async function (next) {
 
     if (chat && chat.isChannel) {
       // Perform async operation with userId and chat._id
-      await UserService.pushChannelToUser(participantData.userId, chat.channelId);
+      await UserService.pushChannelToUser(
+        participantData.userId,
+        chat.channelId
+      );
     }
   }
   next();

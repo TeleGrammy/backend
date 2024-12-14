@@ -81,11 +81,11 @@ callSchema.pre(/^find/, function (next) {
       },
       {
         path: "groupId",
-        select: "_id image",
+        select: "_id image name",
       },
       {
         path: "channelId",
-        select: "_id image",
+        select: "_id image name",
       },
     ],
   });

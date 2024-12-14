@@ -10,6 +10,7 @@ class SnowflakeID {
     this.epoch = BigInt(1577836800000); // Custom epoch (Jan 1, 2020)
   }
 
+  // eslint-disable-next-line class-methods-use-this
   currentTimestamp() {
     return BigInt(Date.now());
   }

@@ -3,6 +3,8 @@ const {
   deleteChannel,
   removeParticipant,
   addMember,
+  promoteSubscriber,
+  demoteAdmin,
 } = require("./channel/channel");
 
 const joinChannels = async (io, socket) => {
@@ -33,6 +35,8 @@ const channelConnection = async (socket, io, connectedUsers) => {
     removeParticipant(io, socket, connectedUsers)
   );
   socket.on("addingChannelSubscriper", addMember(io, socket, connectedUsers));
+  socket.on("promoteSubscriper", promoteSubscriber(io, socket, connectedUsers));
+  socket.on("demoteAdmin", demoteAdmin(io, socket, connectedUsers));
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
