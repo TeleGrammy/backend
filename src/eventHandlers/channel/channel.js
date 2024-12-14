@@ -99,10 +99,9 @@ const removeParticipant = (io, socket, connectedUsers) => {
       return;
     }
 
-    console.log("removeParticipant: ", data);
     const userId = socket.user.id;
     const {channelId} = data;
-    const {participantId} = data;
+    const {subscriberId} = data;
 
     try {
       const channel = await channelService.getChannelInformation(channelId);
@@ -120,7 +119,7 @@ const removeParticipant = (io, socket, connectedUsers) => {
       );
 
       const member = chatOfChannel.participants.find(
-        (part) => String(part.userId._id) === participantId
+        (part) => String(part.userId._id) === subscriberId
       );
 
       if (!member) {
@@ -143,10 +142,10 @@ const removeParticipant = (io, socket, connectedUsers) => {
         );
       }
 
-      await chatService.removeParticipant(chatOfChannel.id, participantId);
+      await chatService.removeParticipant(chatOfChannel.id, subscriberId);
 
-      const removedMemberData = await userService.findByIdAndUpdate(
-        participantId,
+      await userService.findByIdAndUpdate(
+        subscriberId,
         {$pull: {channels: channelId}},
         {new: true}
       );
@@ -156,32 +155,18 @@ const removeParticipant = (io, socket, connectedUsers) => {
         "screenName username"
       );
 
-      const userSocket = connectedUsers.get(participantId);
+      const userSocket = connectedUsers.get(subscriberId);
       if (userSocket) {
         if (userSocket.get("channel")) {
           userSocket.get("channel").leave(`channel:${channelId}`);
           userSocket.get("channel").emit("user:removedFromChannel", {
             channelId,
-            removerId: participantId,
+            removerId: subscriberId,
             removerName: adminName.username,
           });
         }
         if (userSocket.get("chat"))
           userSocket.get("chat").leave(`chat:${chatOfChannel.id}`);
-
-        // logThenEmit(
-        //   participantId,
-        //   "channel:memberRemoved",
-        //   {
-        //     chatId: chatOfChannel.id,
-        //     channelId: channel._id,
-        //     removerId: userId,
-        //     memberId: participantId,
-        //     removerName: adminName.username,
-        //     exMemberName: removedMemberData.username,
-        //   },
-        //   io.to(`channel:${channelId}`)
-        // );
         callback({
           status: "ok",
           message: "Member has been removed",
@@ -202,7 +187,7 @@ const addMember = (io, socket, connectedUsers) => {
     const userId = socket.user.id;
     const {channelId} = data;
     const {subscriberIds} = data;
-
+    console.log("Adding member");
     try {
       if (!Array.isArray(subscriberIds)) {
         throw new AppError("subscriberIds must be an array.", 400);
@@ -272,28 +257,6 @@ const addMember = (io, socket, connectedUsers) => {
               inviterName,
             });
           }
-
-          // const newMember = await userService.findByIdAndUpdate(
-          //   subscriberId,
-          //   {
-          //     $push: {channels: channelId},
-          //   },
-          //   {new: true}
-          // );
-          // const memberName = newMember.username;
-          // logThenEmit(
-          //   userId,
-          //   "channel:memberAdded",
-          //   {
-          //     channelId,
-          //     chatId: chatOfChannel.id,
-          //     memberId: subscriberId,
-          //     inviterId: userId,
-          //     memberName,
-          //     inviterName,
-          //   },
-          //   io.to(`channel:${channelId}`)
-          // );
         })
       );
       callback({
@@ -306,8 +269,190 @@ const addMember = (io, socket, connectedUsers) => {
   };
 };
 
+const promoteSubscriber = (io, socket, connectedUsers) => {
+  return async (data, callback) => {
+    if (typeof callback !== "function") {
+      return;
+    }
+    const userId = socket.user.id;
+    const {channelId} = data;
+    const {subscriberId} = data;
+    try {
+      const [userChannel, chatOfChannel] = await Promise.all([
+        channelService.getChannelInformation(channelId),
+        chatService.getChatOfChannel(channelId),
+      ]);
+
+      if (!userChannel) {
+        throw new AppError(
+          "Failed to retrieve channel data. Please try again later.",
+          500
+        );
+      }
+      if (!chatOfChannel) {
+        throw new AppError(
+          "Failed to retrieve chat data. Please try again later.",
+          500
+        );
+      }
+
+      const participant = chatOfChannel.participants.find(
+        (p) => String(p.userId._id) === userId
+      );
+      if (!participant) {
+        throw new AppError("You are not a member of this channel.", 400);
+      }
+      if (!["Admin", "Creator"].includes(participant.role)) {
+        throw new AppError("You do not have the required permissions.", 403);
+      }
+
+      const admin = await userService.getUserById(userId);
+
+      const promoterName = admin.username;
+
+      const targetSubscriber = chatOfChannel.participants.find(
+        (p) => String(p.userId._id) === subscriberId
+      );
+
+      if (!targetSubscriber) {
+        throw new AppError(
+          "The specified user is not part of this channel.",
+          404
+        );
+      }
+
+      if (targetSubscriber.role === "Admin") {
+        throw new AppError("The user is already an Admin.", 400);
+      }
+      if (targetSubscriber.role === "Creator") {
+        throw new AppError("The user is already a Creator.", 400);
+      }
+
+      const updatedChat = await chatService.changeUserRole(
+        chatOfChannel._id,
+        subscriberId,
+        "Admin"
+      );
+
+      if (!updatedChat) {
+        throw new AppError("Failed to update the chat.", 500);
+      }
+
+      const userSocket = connectedUsers.get(subscriberId);
+      if (userSocket) {
+        if (userSocket.get("channel"))
+          userSocket.get("channel").join(`channel:${channelId}`);
+        if (userSocket.get("chat"))
+          userSocket.get("chat").join(`chat:${chatOfChannel.id}`);
+        userSocket.get("channel").emit("user:promotedToAdmin", {
+          channelId,
+          promotedById: userId,
+          promotedBy: promoterName,
+        });
+      }
+
+      callback({
+        status: "ok",
+        message: "Subscriber has been promoted to Admin",
+      });
+    } catch (err) {
+      handleSocketError(socket, err);
+    }
+  };
+};
+const demoteAdmin = (io, socket, connectedUsers) => {
+  return async (data, callback) => {
+    if (typeof callback !== "function") {
+      return;
+    }
+    const userId = socket.user.id;
+    const {channelId} = data;
+    const {subscriberId} = data;
+    try {
+      const [userChannel, chatOfChannel] = await Promise.all([
+        channelService.getChannelInformation(channelId),
+        chatService.getChatOfChannel(channelId),
+      ]);
+
+      if (!userChannel) {
+        throw new AppError("Channel is not found.", 404);
+      }
+      if (!chatOfChannel) {
+        throw new AppError(
+          "Failed to retrieve chat data. Please try again later.",
+          500
+        );
+      }
+
+      const participant = chatOfChannel.participants.find(
+        (p) => String(p.userId._id) === userId
+      );
+      if (!participant) {
+        throw new AppError("You are not a member of this channel.", 400);
+      }
+      if (!["Admin", "Creator"].includes(participant.role)) {
+        throw new AppError("You do not have the required permissions.", 403);
+      }
+
+      const admin = await userService.getUserById(userId);
+
+      const demotedBy = admin.username;
+
+      const targetSubscriber = chatOfChannel.participants.find(
+        (p) => String(p.userId._id) === subscriberId
+      );
+
+      if (!targetSubscriber) {
+        throw new AppError(
+          "The specified user is not part of this channel.",
+          404
+        );
+      }
+
+      if (targetSubscriber.role === "Creator") {
+        throw new AppError("Admin can not demote Creator.", 400);
+      }
+
+      if (targetSubscriber.role === "Subscriber") {
+        throw new AppError("The user is already a Subscriber.", 400);
+      }
+
+      const updatedChat = await chatService.changeUserRole(
+        chatOfChannel._id,
+        subscriberId,
+        "Subscriber"
+      );
+
+      if (!updatedChat) {
+        throw new AppError("Failed to update the chat.", 500);
+      }
+
+      const userSocket = connectedUsers.get(subscriberId);
+      if (userSocket) {
+        if (userSocket.get("channel"))
+          userSocket.get("channel").join(`channel:${channelId}`);
+        if (userSocket.get("chat"))
+          userSocket.get("chat").join(`chat:${chatOfChannel.id}`);
+        userSocket.get("channel").emit("user:demoteOfAdmin", {
+          channelId,
+          demotedById: userId,
+          demotedBy,
+        });
+      }
+
+      callback({
+        status: "ok",
+        message: "Admin has been demoted to Subscriber",
+      });
+    } catch (err) {
+      handleSocketError(socket, err);
+    }
+  };
+};
 module.exports = {
   deleteChannel,
   removeParticipant,
   addMember,
+  promoteSubscriber,
+  demoteAdmin,
 };

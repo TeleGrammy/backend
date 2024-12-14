@@ -317,16 +317,28 @@ const checkChatChannel = async (chatId) => {
   return false;
 };
 const changeUserRole = async (chatId, userId, newRole) => {
-  const currentChat = await getChatById(chatId);
+  const validRoles = ["Admin", "Subscriber"];
+  if (!validRoles.includes(newRole)) {
+    throw new AppError("Invalid role", 400);
+  }
 
+  // Fetch the chat
+  const currentChat = await Chat.findById(chatId);
   if (!currentChat) {
     throw new AppError("Chat not found", 404);
   }
 
-  const currentUser = checkUserParticipant(currentChat, userId);
+  // Find the participant and update their role
+  const participantIndex = currentChat.participants.findIndex(
+    (p) => p.userId.toString() === userId
+  );
+  if (participantIndex === -1) {
+    throw new AppError("User not found in chat participants", 404);
+  }
 
-  currentUser.role = newRole;
+  currentChat.participants[participantIndex].role = newRole;
 
+  // Save the updated participants to the database
   const updatedChat = await Chat.findByIdAndUpdate(
     chatId,
     {participants: currentChat.participants},
