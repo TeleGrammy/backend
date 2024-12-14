@@ -1,4 +1,5 @@
 const groupService = require("../../services/groupService");
+const messageService = require("../../services/messageService");
 const AppError = require("../../errors/appError");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -13,6 +14,7 @@ const getListOfParticipants = (tempMembers) => {
       picture: memberData.picture,
       lastSeen: memberData.lastSeen,
       customTitle: member.customTitle,
+      permissions: member.permissions,
     };
     members.push(data);
   });
@@ -469,6 +471,136 @@ const updateGroupBasicInfo = catchAsync(async (req, res, next) => {
   });
 });
 
+const pinMessage = catchAsync(async (req, res, next) => {
+  const {userType} = req;
+  const {userIndex} = req;
+  if (userType === undefined && userIndex === undefined) {
+    throw new AppError(
+      "Forbidden access. You do not have permission to pin a message.",
+      403
+    );
+  }
+
+  const {group} = req;
+  const {messageId} = req.params;
+
+  const userData = group.admins[userIndex];
+
+  if (!userData.permissions.pinMessages)
+    throw new AppError("You don't have permission to pin a message", 403);
+
+  const message = messageService.findMessage({
+    _id: messageId,
+    chatId: group.chatId,
+  });
+
+  if (!message) throw new AppError("Message not found", 404);
+
+  if (group.pinnedMessages.includes(messageId)) {
+    throw new AppError("Message is already pinned", 400);
+  }
+
+  if (group.pinnedMessages.length >= 5) {
+    throw new AppError("You can't pin more than 5 messages", 400);
+  }
+
+  group.pinnedMessages.push(messageId);
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {pinnedMessages: group.pinnedMessages},
+    message: "The message has been pinned successfully.",
+  });
+});
+
+const unpinMessage = catchAsync(async (req, res, next) => {
+  const {userType} = req;
+  const {userIndex} = req;
+  if (userType === undefined && userIndex === undefined) {
+    throw new AppError(
+      "Forbidden access. You do not have permission to pin a message.",
+      403
+    );
+  }
+
+  const {group} = req;
+  const {messageId} = req.params;
+
+  const userData = group.admins[userIndex];
+
+  if (!userData.permissions.pinMessages)
+    throw new AppError("You don't have permission to unpin a message", 403);
+
+  const messageIndex = group.pinnedMessages.indexOf(messageId);
+
+  if (messageIndex === -1) {
+    throw new AppError("Message is not pinned", 400);
+  }
+
+  group.pinnedMessages.splice(messageIndex, 1);
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      pinnedMessages: group.pinnedMessages,
+    },
+    message: "The message has been unpinned successfully.",
+  });
+});
+
+const downloadMedia = catchAsync(async (req, res, next) => {
+  const {userType} = req;
+  const {userIndex} = req;
+  if (userType === undefined && userIndex === undefined) {
+    throw new AppError("User not found in the group", 404);
+  }
+
+  const {group} = req;
+  const {messageId} = req.params;
+
+  const message = await messageService.findMessage({
+    chatId: group.chatId,
+    _id: messageId,
+  });
+
+  if (!message) throw new AppError("Message not found", 404);
+
+  if (message.chatId.toString() !== group.chatId.toString())
+    throw new AppError("Message not found in the group", 404);
+
+  if (!message.mediaUrl) throw new AppError("Media not found", 404);
+
+  const {messageType} = message;
+
+  let userData;
+  if (userType === "admin")
+    res.status(200).json({
+      status: "success",
+      data: {
+        mediaUrl: message.mediaUrl,
+      },
+      message: `You can download ${messageType} media`,
+    });
+  else userData = group.members[userIndex];
+
+  if (
+    (messageType === "video" && !userData.permissions.downloadVideos) ||
+    (messageType === "audio" && !userData.permissions.downloadVoiceMessages)
+  )
+    throw new AppError(
+      `You don't have permission to download ${messageType} media`,
+      403
+    );
+
+  res.status(200).json({
+    status: "success",
+    mediaUrl: message.mediaUrl,
+    message: `You can download ${messageType} media`,
+  });
+});
+
 module.exports = {
   findGroup,
   addAdmin,
@@ -481,4 +613,7 @@ module.exports = {
   updateMemberPermission,
   updateAdminPermission,
   updateGroupBasicInfo,
+  pinMessage,
+  unpinMessage,
+  downloadMedia,
 };

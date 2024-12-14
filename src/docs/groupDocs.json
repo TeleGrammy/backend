@@ -644,6 +644,16 @@
                                 "enum": ["Public", "Private"],
                                 "nullable": true,
                                 "description": "The custom title assigned to the member in the group."
+                              },
+                              "permissions": {
+                                "oneOf": [
+                                  {
+                                    "$ref": "#/components/schemas/adminPermissions"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/memberPermissions"
+                                  }
+                                ]
                               }
                             }
                           }
@@ -774,6 +784,9 @@
                               "customTitle": {
                                 "type": "string",
                                 "description": "The custom title assigned to the admin in the group."
+                              },
+                              "permissions": {
+                                "$ref": "#/components/schemas/adminPermissions"
                               }
                             }
                           }
@@ -1327,6 +1340,416 @@
                         "message": {
                           "type": "string",
                           "example": "Group not found"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{groupId}/pin-message/{messageId}": {
+      "patch": {
+        "summary": "Pin a message",
+        "description": "Allows an admin to pin a message in a group chat.",
+        "tags": ["Groups"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the group in which the message will be pinned."
+          },
+          {
+            "in": "path",
+            "name": "messageId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the message to be pinned."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message pinned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "pinnedMessages": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The message has been pinned successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request: the message is already pinned  OR the limit of pinned messages is reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "example": "The limit of pinned messages is reached"
+                        },
+                        {
+                          "type": "string",
+                          "example": "The message is already pinned"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "You don't have permission to pin a message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found: the group or message could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Message not found"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Group not found"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{groupId}/unpin-message/{messageId}": {
+      "patch": {
+        "summary": "Unpin a message",
+        "description": "Allows an admin to unpin a message in a group chat.",
+        "tags": ["Groups"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the group in which the message will be unpinned."
+          },
+          {
+            "in": "path",
+            "name": "messageId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the message to be unpinned."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message unpinned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "pinnedMessages": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The message has been unpinned successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request: the message is not pinned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Message is not pinned"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "You don't have permission to unpin a message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found: the group or message could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Message not found"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Group not found"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{groupId}/download-media/{messageId}": {
+      "get": {
+        "summary": "Download media",
+        "description": "check if the user has permission to download the media and then download the media",
+        "tags": ["Groups"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the group in which the media is located."
+          },
+          {
+            "in": "path",
+            "name": "messageId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the message containing the media to be downloaded."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user has a permission to download the media.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "mediaUrl": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "You can download video media."
+                    }
+                  }
+                }
+              }
+            }
+          },
+
+          "403": {
+            "description": "Unauthorized action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "You don't have permission to download video media"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found: the group or message or user could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Message not found"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Group not found"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "fail"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "User not found in the group"
                         }
                       }
                     }

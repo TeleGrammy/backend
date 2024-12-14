@@ -1,5 +1,10 @@
 const express = require("express");
 const groupController = require("../../controllers/group/groupController");
+const {
+  groupExists,
+  isRegularMember,
+  isAdmin,
+} = require("../../middlewares/groupMiddlewares");
 
 const router = express.Router();
 
@@ -31,5 +36,17 @@ router
   .patch(groupController.updateAdminPermission);
 
 router.route("/:groupId/info").patch(groupController.updateGroupBasicInfo);
+
+router
+  .route("/:groupId/pin-message/:messageId")
+  .patch(groupExists, isAdmin, groupController.pinMessage);
+
+router
+  .route("/:groupId/unpin-message/:messageId")
+  .patch(groupExists, isAdmin, groupController.unpinMessage);
+
+router
+  .route("/:groupId/download-media/:messageId")
+  .get(groupExists, isAdmin, isRegularMember, groupController.downloadMedia);
 
 module.exports = router;
