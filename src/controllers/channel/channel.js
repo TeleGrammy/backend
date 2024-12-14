@@ -17,11 +17,11 @@ const updateChannelHelper = async (
   chatOfChannel
 ) => {
   try {
-    const {name, description} = req.body;
+    const {name, image, description} = req.body;
 
     userChannel.name = chatOfChannel.name = name;
     userChannel.description = chatOfChannel.description = description;
-
+    userChannel.image = image;
     await Promise.all([userChannel.save(), chatOfChannel.save()]);
 
     return res.status(200).json({
@@ -75,7 +75,10 @@ const createChannel = catchAsync(async (req, res, next) => {
       currentUserData
     );
     if (!updatedChat) {
-      throw new AppError("Error adding user as admin in the channel chat", 500);
+      throw new AppError(
+        "Error adding user as creator in the channel chat",
+        500
+      );
     }
     const ownerData = await userService.getUserByID(userId);
     ownerData.channels.push(createdChannel.id);
@@ -93,12 +96,10 @@ const createChannel = catchAsync(async (req, res, next) => {
     }
 
     return res.status(200).json({
-      status: "success",
-      data: {
-        channelId: createdChannel._id,
-        channelName: createdChannel.name,
-        channelDescription: createdChannel.description,
-      },
+      channelId: createdChannel._id,
+      channelName: createdChannel.name,
+      channelDescription: createdChannel.description,
+      chatId: updatedChat._id,
     });
   } catch (error) {
     return next(error);
@@ -507,10 +508,11 @@ const addSubscriber = catchAsync(async (req, res, next) => {
 const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
   console.log(req.user.id);
-  await channelService.checkUserParticipant(channelId, req.user.id);
 
-  const channel = await chatService.getChatOfChannel(channelId);
-  const transformedParticipants = channel.participants
+  const chat = await chatService.getChatOfChannel(channelId);
+  await chatService.checkUserAdmin(chat.id, req.user.id);
+
+  const transformedParticipants = chat.participants
     .map(({userId, role}) => {
       // Check if userId is properly populated
       if (!userId || !userId._id) {
@@ -535,10 +537,7 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
     .filter((part) => part !== null); // Filter out any null entries
 
   return res.status(200).json({
-    status: "success",
-    data: {
-      participants: transformedParticipants,
-    },
+    participants: transformedParticipants,
   });
 });
 
