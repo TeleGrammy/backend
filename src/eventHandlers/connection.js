@@ -14,6 +14,7 @@ const {
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
 const {
+  createCall,
   sendCall,
   answerCall,
   endCall,
@@ -111,6 +112,7 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
 
+  socket.on("call:createCall", createCall({socket, io}));
   socket.on("call:newCall", sendCall({socket, io}));
   socket.on("call:answer", answerCall({socket, io}));
   socket.on("call:end", endCall({socket, io}));
