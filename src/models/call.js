@@ -93,6 +93,10 @@ callSchema.pre(/^find/, function (next) {
   next();
 });
 
+callSchema.pre("find", function () {
+  this.sort({startedAt: -1});
+});
+
 callSchema.set("toJSON", {virtuals: true});
 callSchema.set("toObject", {virtuals: true});
 
