@@ -59,6 +59,13 @@ module.exports.answerCall = function ({socket, io}) {
       socket.broadcast
         .to(`chat:${call.chatId._id}`)
         .emit("call:answeredCall", call);
+
+      if (call.callObj.offererIceCandidate.length > 0) {
+        io.to(`${socket.userId}`).emit(
+          "call:iceCandidate",
+          call.callObj.offererIceCandidate
+        );
+      }
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});

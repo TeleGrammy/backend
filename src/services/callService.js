@@ -45,9 +45,8 @@ module.exports.addParticipant = async (callId, participantId) => {
 module.exports.setAnswer = async (userId, callId, answer) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
-  call.callObj.senderId = userId;
+  call.callObj.recieverId = userId;
   call.callObj.answer = answer;
-  call.callObj.participantICE = null;
   call.participants.push({userId});
   await call.save();
   return call;
@@ -56,10 +55,12 @@ module.exports.setAnswer = async (userId, callId, answer) => {
 module.exports.addIceCandidate = async (callId, userId, candidate) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
-
-  call.callObj.senderId = userId;
-  call.callObj.participantICE = candidate;
-  call.callObj.answer = null;
+  if (!candidate) return call;
+  if (call.callObj.senderId.to_string() === userId) {
+    call.callObj.offererIceCandidate.push(candidate);
+  } else {
+    call.callObj.answererIceCandiate.push(candidate);
+  }
   await call.save();
   return call;
 };
@@ -107,6 +108,7 @@ module.exports.rejectCall = async (callId, userId) => {
     call.chatId.participants.length - 1
   ) {
     call.status = "rejected";
+    removeUnwantedData(call);
   }
   await call.save();
   return call;
