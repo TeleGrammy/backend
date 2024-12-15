@@ -25,13 +25,22 @@ const callSchema = new mongoose.Schema(
         ref: "User",
         default: null,
       },
+      offererIceCandidate: {
+        type: Array,
+        default: [],
+      },
+      recieverId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
       answer: {
         type: Object,
         default: null,
       },
-      participantICE: {
-        type: Object,
-        default: null,
+      answererIceCandiate: {
+        type: Array,
+        default: [],
       },
     },
     chatId: {
