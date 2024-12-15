@@ -169,7 +169,7 @@ const deleteChannel = catchAsync(async (req, res, next) => {
     return next(new AppError("You are not a member of this channel", 403));
   }
 
-  if (["Admin", "Creator"].includes(participant.role)) {
+  if (participant.role === "Creator") {
     const [deletedChannel, deletedChatOfChannel] = await Promise.all([
       channelService.deleteChannel(channelId),
       chatService.softDeleteChat(chatOfChannel._id),
@@ -185,7 +185,7 @@ const deleteChannel = catchAsync(async (req, res, next) => {
       new AppError("An error occurred while deleting the channel", 500)
     );
   }
-  if (participant.role === "Subscriber") {
+  if (participant.role === "Subscriber" || participant.role === "Admin") {
     const updatedChat = await chatService.removeParticipant(
       chatOfChannel._id,
       userId

@@ -169,7 +169,7 @@ module.exports.deleteMessage = function ({io, socket}) {
 };
 
 module.exports.updateDraftOfUserInChat = function ({io, socket}) {
-  return async (payload) => {
+  return async (payload, callback) => {
     try {
       await userService.updateDraftOfUserInChat(
         payload.chatId,
@@ -177,6 +177,12 @@ module.exports.updateDraftOfUserInChat = function ({io, socket}) {
         payload.draft
       );
 
+      if (callback) {
+        callback({
+          status: "ok",
+          payload,
+        });
+      }
       io.to(`${socket.userId}`).emit("draft", payload);
     } catch (err) {
       socket.emit("error", {message: err.message});
