@@ -3,7 +3,7 @@ const User = require("../models/user");
 const chatService = require("./chatService");
 
 // Create a new call
-module.exports.createCall = async ({chatId, callerId, offer}) => {
+module.exports.createCall = async ({chatId, callerId}) => {
   let call = await Call.create({
     chatId,
     participants: [
@@ -11,12 +11,24 @@ module.exports.createCall = async ({chatId, callerId, offer}) => {
         userId: callerId,
       },
     ],
-    callObj: {
-      offer,
-    },
   });
   // call the find method to populate the data using the middleware of the modael
   call = await Call.findById(call._id);
+  return call;
+};
+module.exports.addOffer = async ({callId, callerId, offer}) => {
+  const call = await Call.findByIdAndUpdate(
+    callId,
+    {
+      callObj: {
+        offer,
+        senderId: callerId,
+      },
+    },
+    {
+      new: true,
+    }
+  );
   return call;
 };
 
