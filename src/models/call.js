@@ -72,6 +72,15 @@ const callSchema = new mongoose.Schema(
   }
 );
 
+callSchema.methods.clearIceCandidates = function (userId) {
+  if (this.callObj.senderId.toString() === userId) {
+    this.callObj.offererIceCandidate = [];
+  } else {
+    this.callObj.answererIceCandiate = [];
+  }
+  this.save();
+};
+
 callSchema.virtual("duration").get(function () {
   if (this.endedAt && this.startedAt) {
     return this.endedAt.getTime() - this.startedAt.getTime();

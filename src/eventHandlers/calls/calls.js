@@ -65,6 +65,7 @@ module.exports.answerCall = function ({socket, io}) {
           "call:iceCandidate",
           call.callObj.offererIceCandidate
         );
+        call.clearIceCandidates(call.callObj.senderId);
       }
       callBack({status: "ok", call});
     } catch (err) {
@@ -122,9 +123,13 @@ module.exports.addIce = function ({socket, io}) {
         socket.userId,
         payload.IceCandidate
       );
-      socket.broadcast
-        .to(`chat:${call.chatId._id}`)
-        .emit("call:addedICE", call);
+
+      if (call.callObj.answer !== null) {
+        socket.broadcast
+          .to(`chat:${call.chatId._id}`)
+          .emit("call:addedICE", call);
+        call.clearIceCandidates(socket.userId);
+      }
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});

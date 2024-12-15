@@ -56,7 +56,8 @@ module.exports.addIceCandidate = async (callId, userId, candidate) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
   if (!candidate) return call;
-  if (call.callObj.senderId.to_string() === userId) {
+
+  if (call.callObj.senderId.toString() === userId) {
     call.callObj.offererIceCandidate.push(candidate);
   } else {
     call.callObj.answererIceCandiate.push(candidate);
