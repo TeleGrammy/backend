@@ -1,4 +1,5 @@
 const callService = require("../../services/callService");
+
 module.exports.createCall = function ({socket, io}) {
   return async (payload, callBack) => {
     try {
@@ -31,7 +32,7 @@ module.exports.sendCall = function ({socket, io}) {
       });
 
       socket.broadcast
-        .to(`chat:${payload.chatId}`)
+        .to(`chat:${call.chatId._id}`)
         .emit("call:incomingCall", call);
 
       callBack({

@@ -1,7 +1,8 @@
+const mongoose = require("mongoose");
+
 const Call = require("../models/call");
 const User = require("../models/user");
 const chatService = require("./chatService");
-
 // Create a new call
 module.exports.createCall = async ({chatId, callerId}) => {
   let call = await Call.create({
@@ -112,29 +113,105 @@ module.exports.rejectCall = async (callId, userId) => {
 };
 
 module.exports.getCallsOfUser = async (userId) => {
-  const user = await User.findById(userId).populate("groups");
-
-  if (!user) throw new Error("User not found");
-
-  const contactCalls = await Promise.all(
-    user.contacts.map((contact) =>
-      Call.find({chatId: contact.chatId}).select(
-        "duration startedAt endedAt status chatId"
-      )
-    )
-  );
-
-  const groupCalls = await Promise.all(
-    user.groups.map((group) =>
-      Call.find({chatId: group.chatId}).select(
-        "duration startedAt endedAt status chatId groupId"
-      )
-    )
-  );
-
-  const allCalls = [...contactCalls.flat(), ...groupCalls.flat()];
-
-  return allCalls;
+  const calls = await User.aggregate([
+    {
+      $match: {_id: new mongoose.Types.ObjectId(userId)}, // matches the user table for the userId
+    },
+    {
+      $project: {contacts: 1, groups: 1, _id: 0}, // select `contacts` and `groups`
+    },
+    {
+      $unwind: {path: "$contacts", preserveNullAndEmptyArrays: true},
+    },
+    {
+      $lookup: {
+        // get the calls of the contact.chatId from the calls table and name it as contactCalls
+        from: "calls",
+        let: {chatId: "$contacts.chatId"},
+        pipeline: [
+          {$match: {$expr: {$eq: ["$chatId", "$$chatId"]}}},
+          {
+            $addFields: {
+              duration: {
+                $cond: [
+                  {
+                    $and: [
+                      {$ne: ["$endedAt", null]},
+                      {$ne: ["$startedAt", null]},
+                    ],
+                  },
+                  {$subtract: ["$endedAt", "$startedAt"]},
+                  null,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              duration: 1,
+              startedAt: 1,
+              endedAt: 1,
+              status: 1,
+              chatId: 1,
+            },
+          },
+        ],
+        as: "contactCalls",
+      },
+    },
+    {
+      $unwind: {path: "$groups", preserveNullAndEmptyArrays: true},
+    },
+    {
+      $lookup: {
+        // get the calls of the user.groups.chatId from the calls table and name it as groupCalls
+        from: "calls",
+        let: {chatId: "$groups.chatId"},
+        pipeline: [
+          {$match: {$expr: {$eq: ["$chatId", "$$chatId"]}}},
+          {
+            $addFields: {
+              duration: {
+                $cond: [
+                  {
+                    $and: [
+                      {$ne: ["$endedAt", null]},
+                      {$ne: ["$startedAt", null]},
+                    ],
+                  },
+                  {$subtract: ["$endedAt", "$startedAt"]},
+                  null,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              duration: 1,
+              startedAt: 1,
+              endedAt: 1,
+              status: 1,
+              chatId: 1,
+            },
+          },
+        ],
+        as: "groupCalls", // Alias for group-based calls
+      },
+    },
+    {
+      // concat two type of calls to sort them
+      $addFields: {
+        allCalls: {$concatArrays: ["$contactCalls", "$groupCalls"]}, // Combine both arrays
+      },
+    },
+    {
+      $project: {allCalls: 1},
+    },
+    {
+      $sort: {"allCalls.startedAt": -1}, // Sort by `startedAt`
+    },
+  ]);
+  return calls[0].allCalls;
 };
 
 module.exports.getCallsOfChat = async (chatId, userId) => {
