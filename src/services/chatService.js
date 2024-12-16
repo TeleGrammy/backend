@@ -291,6 +291,9 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new AppError("Chat not found", 404);
+  }
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
@@ -307,7 +310,6 @@ const checkUserAdmin = async (chatId, userId) => {
     (participant) => participant.userId.toString() === userId
   );
 
-  console.log(currentUser);
   if (!currentUser) {
     throw new AppError("User not found in the chat participants", 401);
   }
@@ -382,8 +384,6 @@ module.exports = {
   removeParticipant,
   softDeleteChat,
   restoreChat,
-  // pinMessage,
-  // unpinMessage,
   createOneToOneChat,
   countUserChats,
   getChatOfChannel,

@@ -94,4 +94,4 @@ dist
 .vscode/
 
 test.js
-telegrammy-firebase.json
+src/telegrammy-firebase.json

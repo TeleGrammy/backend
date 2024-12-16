@@ -20,20 +20,29 @@ const callSchema = new mongoose.Schema(
       offer: {
         type: Object,
       },
+      senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
       answer: {
         type: Object,
         default: null,
       },
-      participantsICE: {
-        type: Map,
-        of: Array,
-        default: () => new Map(),
+      participantICE: {
+        type: Object,
+        default: null,
       },
     },
     chatId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
       required: true,
+    },
+    participantsWhoRejected: {
+      type: Map,
+      of: Boolean,
+      default: () => new Map(),
     },
     status: {
       type: String,
@@ -59,6 +68,33 @@ callSchema.virtual("duration").get(function () {
     return this.endedAt.getTime() - this.startedAt.getTime();
   }
   return 0;
+});
+
+callSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "chatId",
+    select: "_id isGroup isChannel participants.userId groupId channelId",
+    populate: [
+      {
+        path: "participants.userId",
+        select: "_id username picture",
+      },
+      {
+        path: "groupId",
+        select: "_id image name",
+      },
+      {
+        path: "channelId",
+        select: "_id image name",
+      },
+    ],
+  });
+
+  next();
+});
+
+callSchema.pre("find", function () {
+  this.sort({startedAt: -1});
 });
 
 callSchema.set("toJSON", {virtuals: true});
