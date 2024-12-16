@@ -44,6 +44,16 @@ const getChatById = async (chatId) => {
   }
 };
 
+const getBasicChatById = async (chatId) => {
+  try {
+    const chat = await Chat.findById(chatId).select("-participants");
+
+    return chat;
+  } catch (error) {
+    throw new Error(`Error retrieving chat: ${error.message}`);
+  }
+};
+
 const getChatsByIds = async (chatIds) => {
   try {
     const chats = await Chat.find({_id: {$in: chatIds}});
@@ -382,4 +392,5 @@ module.exports = {
   checkUserAdmin,
   checkChatChannel,
   removeChat,
+  getBasicChatById,
 };

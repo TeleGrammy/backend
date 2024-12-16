@@ -3,7 +3,8 @@ const messageService = require("../../services/messageService");
 const userService = require("../../services/userService");
 const chatService = require("../../services/chatService");
 const channelService = require("../../services/channelService");
-const {uploadVoiceNote} = require("../../middlewares/AWS");
+const groupService = require("../../services/groupService");
+const firebaseUtils = require("../../utils/firebaseMessaging");
 
 const {
   logThenEmit,
@@ -26,6 +27,8 @@ module.exports.sendMessage = function ({io, socket}) {
           messageData.chatId
         );
       }
+      const {name} = socket.user;
+      console.log(socket.user);
       await chatService.checkUserParticipant(messageData.chatId, socket.userId);
       const channelId = await chatService.checkChatChannel(messageData.chatId);
       if (channelId) {
@@ -36,6 +39,34 @@ module.exports.sendMessage = function ({io, socket}) {
         chatService.updateLastMessage(messageData.chatId, message.id);
       }
 
+      const chat = await chatService.getBasicChatById(messageData.chatId);
+      let title = `A new Message from ${name}`;
+      let body = "";
+      let chatName = "";
+      if (chat.isGroup) {
+        const groupData = await groupService.findGroupById(chat.groupId);
+        title = `A new Group Message from ${groupData.name}`;
+        chatName = `Group: ${groupData.name}`;
+      }
+      if (chat.isChannel && messageData.isPost) {
+        const channelData = await channelService.getChannelInformation(
+          chat.channelId
+        );
+        title = `A new Channel Post from ${channelData.name}`;
+        chatName = `Channel: ${channelData.name}`;
+      }
+
+      if (messageData.messageType === "text") {
+        body = messageData.content;
+      } else {
+        body = messageData.messageType;
+      }
+
+      await firebaseUtils.sendNotificationToTopic(
+        `chat-${messageData.chatId}`,
+        title,
+        body
+      );
       logThenEmit(
         socket.userId,
         "message:sent",
@@ -44,8 +75,17 @@ module.exports.sendMessage = function ({io, socket}) {
       );
 
       // i think this is useless since at the event of new message
-      // the user will have the mentions and can know if he is mentioned or not
-      message.mentions.forEach((userId) => {
+      // the user will have the mentions and can know if he is mentioned or not'
+      message.mentions.forEach(async (userId) => {
+        let newTitle = `${name} mentioned You`;
+        if (chatName !== "") {
+          newTitle = `${name} mentioned You in ${chatName}`;
+        }
+        await firebaseUtils.sendNotificationToTopic(
+          `user-${userId}`,
+          newTitle,
+          body
+        );
         io.to(`${userId}`).emit("message:mention", message);
       });
 

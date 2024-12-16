@@ -5,6 +5,7 @@ const sessionService = require("../../services/sessionService");
 
 const logout = async (req, res, next) => {
   try {
+    const {token} = req.body;
     const currentDeviceType = req.headers["user-agent"];
     await sessionService.deleteSession(
       req.user.currentSession._id,
@@ -21,6 +22,9 @@ const logout = async (req, res, next) => {
       httpOnly: true,
       secure: true,
     });
+    if (token) {
+      userService.unjoinFirebaseTopic(req.user._id, token);
+    }
 
     res.status(200).json({
       status: "success",

@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("../telegrammy-firebase.json")
+const serviceAccount = require("../telegrammy-firebase.json");
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -40,7 +40,7 @@ async function sendNotificationToTopic(topic, title, body, data = {}) {
 async function subscribeToTopic(token, topic) {
   try {
     await admin.messaging().subscribeToTopic(token, topic);
-    console.log(`Token successfully subscribed to topic: ${topic}`);
+    console.log(`Token ${token} successfully subscribed to topic: ${topic}`);
   } catch (error) {
     console.error("Error subscribing to topic:", error);
   }
@@ -54,7 +54,7 @@ async function subscribeToTopic(token, topic) {
 async function unsubscribeFromTopic(token, topic) {
   try {
     await admin.messaging().unsubscribeFromTopic(token, topic);
-    console.log(`Token unsubscribed from topic: ${topic}`);
+    console.log(`Token ${token} unsubscribed from topic: ${topic}`);
   } catch (error) {
     console.error("Error unsubscribing from topic:", error);
   }

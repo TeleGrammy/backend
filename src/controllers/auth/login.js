@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const AppError = require("../../errors/appError");
 
 const userService = require("../../services/userService");
+const userDeviceService = require("../../services/userDeviceService");
 
 const catchAsync = require("../../utils/catchAsync");
 const sessionManagementModule = require("../../utils/sessionManagement");
@@ -16,7 +17,7 @@ const sessionManagementModule = require("../../utils/sessionManagement");
  */
 
 const login = catchAsync(async (req, res, next) => {
-  const {UUID, password} = req.body;
+  const {UUID, password, token} = req.body;
 
   const user = await userService.getUserBasicInfoByUUID(UUID);
   if (!user) {
@@ -29,6 +30,10 @@ const login = catchAsync(async (req, res, next) => {
     return next(new AppError("Wrong password entered", 401));
   }
 
+  if (token) {
+    await userDeviceService.saveDevice(user._id, token);
+    await userService.joinFirebaseTopic(user._id, token);
+  }
   const {updatedUser, accessToken} = await sessionManagementModule.default(
     req,
     res,

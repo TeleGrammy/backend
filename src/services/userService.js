@@ -4,6 +4,10 @@ const AppError = require("../errors/appError");
 
 const User = require("../models/user");
 
+const firebaseUtils = require("../utils/firebaseMessaging");
+
+const chatService = require("./chatService");
+
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -457,6 +461,31 @@ const pushChannelToUser = async (userId, channelId) => {
     {new: true} // Return the updated document
   );
 };
+
+const joinFirebaseTopic = async (userId, token) => {
+  const allChats = await chatService.getUserChats(userId);
+  firebaseUtils.subscribeToTopic(token, `user-${userId}`);
+  firebaseUtils.subscribeToTopic(token, `call-${userId}`);
+  firebaseUtils.subscribeToTopic(token, `missed-${userId}`);
+  allChats.forEach((chat) => {
+    if (chat._id) {
+      firebaseUtils.subscribeToTopic(token, `chat-${chat._id}`);
+    }
+  });
+};
+
+const unjoinFirebaseTopic = async (userId, token) => {
+  const allChats = await chatService.getUserChats(userId);
+  firebaseUtils.unsubscribeFromTopic(token, `user-${userId}`);
+  firebaseUtils.unsubscribeFromTopic(token, `call-${userId}`);
+  firebaseUtils.unsubscribeFromTopic(token, `missed-${userId}`);
+  allChats.forEach((chat) => {
+    if (chat._id) {
+      firebaseUtils.unsubscribeFromTopic(token, `chat-${chat._id}`);
+    }
+  });
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -482,4 +511,6 @@ module.exports = {
   getUserContact,
   updateMany,
   pushChannelToUser,
+  joinFirebaseTopic,
+  unjoinFirebaseTopic
 };

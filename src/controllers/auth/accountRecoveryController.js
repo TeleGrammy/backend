@@ -10,6 +10,8 @@ const manageSessionForUser = require("../../utils/sessionManagement");
 
 const AppError = require("../../errors/appError");
 
+const userDeviceService = require("../../services/userDeviceService");
+
 const sendPasswordResetEmail = (req, user) => {
   const resetToken = user.createResetPasswordToken();
   const resetURL = `${req.protocol}://${req.get("host")}/api/v1/auth/reset-password/${resetToken}`;
@@ -174,6 +176,12 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
   );
   updatedUser.password = undefined;
 
+  const tokens = await userDeviceService.getDevicesByUser(user._id);
+  if (tokens) {
+    await tokens.forEach(async (token) => {
+      await userServices.unjoinFirebaseTopic(user._id, token);
+    });
+  }
   res.status(200).json({
     status: "success",
     data: {
