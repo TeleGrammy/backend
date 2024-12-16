@@ -7,7 +7,7 @@ const UserDevice = require("../models/userDevice");
  * @param {String} data.deviceToken - The device token.
  * @returns {Promise<Object>} The saved user device.
  */
-const saveDevice = async ({userId, deviceToken}) => {
+const saveDevice = async (userId, deviceToken) => {
   try {
     const newDevice = await UserDevice.create({userId, deviceToken});
     return newDevice;
@@ -49,10 +49,16 @@ const removeDeviceByToken = async (deviceToken) => {
  * @param {String} deviceToken - The device token to check.
  * @returns {Promise<Boolean>} Whether the device token exists.
  */
-const isDeviceTokenExists = async (deviceToken) => {
+const isDeviceTokenExists = async (deviceToken, userId) => {
   try {
-    const exists = await UserDevice.exists({deviceToken});
-    return !!exists;
+    const tokens = await UserDevice.find({deviceToken});
+    let exist = false;
+    tokens.forEach((token) => {
+      if (token.userId.toString() === userId) {
+        exist = true;
+      }
+    });
+    return exist;
   } catch (error) {
     throw new Error(`Failed to check device token: ${error.message}`);
   }

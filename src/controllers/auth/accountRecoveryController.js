@@ -179,6 +179,7 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
   const tokens = await userDeviceService.getDevicesByUser(user._id);
   if (tokens) {
     await tokens.forEach(async (token) => {
+      await userDeviceService.removeDeviceByToken(token);
       await userServices.unjoinFirebaseTopic(user._id, token);
     });
   }

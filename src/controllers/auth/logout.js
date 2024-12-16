@@ -1,6 +1,7 @@
 const AppError = require("../../errors/appError");
 
 const userService = require("../../services/userService");
+const userDeviceService = require("../../services/userDeviceService");
 const sessionService = require("../../services/sessionService");
 
 const logout = async (req, res, next) => {
@@ -23,7 +24,8 @@ const logout = async (req, res, next) => {
       secure: true,
     });
     if (token) {
-      userService.unjoinFirebaseTopic(req.user._id, token);
+      await userService.unjoinFirebaseTopic(req.user._id, token);
+      await userDeviceService.removeDeviceByToken(token);
     }
 
     res.status(200).json({

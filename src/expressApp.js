@@ -89,7 +89,7 @@ app.use("/ice-servers", serversConfig.getIceServers);
 
 app.use("/api/v1/channels", channelRouter);
 app.use("/api/v1/groups", isAuthenticated, groupRouter);
-app.use("/api/v1/notification", isAuthenticated, notificationRouter);
+app.use("/api/v1/notification", notificationRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(globalErrorHandler);

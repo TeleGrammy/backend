@@ -12,6 +12,8 @@ exports.muteNotification = catchAsync(async (req, res, next) => {
   if (!chat) {
     throw new AppError("This Chat is not found", 404);
   }
+  const updatedChat = await chatService.updateChatMute(chatId, userId, true);
+  console.log(updatedChat);
   const userTokens = await userDeviceService.getDevicesByUser(userId);
   if (userTokens) {
     userTokens.forEach(async (token) => {
@@ -31,6 +33,7 @@ exports.unmuteNotification = catchAsync(async (req, res, next) => {
   if (!chat) {
     throw new AppError("This Chat is not found", 404);
   }
+  await chatService.updateChatMute(chatId, userId, false);
   const userTokens = await userDeviceService.getDevicesByUser(userId);
   if (userTokens) {
     userTokens.forEach(async (token) => {

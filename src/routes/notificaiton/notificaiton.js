@@ -5,8 +5,9 @@ const {
   muteNotification,
   unmuteNotification,
 } = require("../../controllers/notification/notification");
+const isAuth = require("../../middlewares/isAuthenticated");
 
-router.patch("/mute", muteNotification);
+router.patch("/mute", isAuth, muteNotification);
 
-router.patch("/unmute", unmuteNotification);
+router.patch("/unmute", isAuth, unmuteNotification);
 module.exports = router;

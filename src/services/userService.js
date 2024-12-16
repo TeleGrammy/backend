@@ -463,19 +463,24 @@ const pushChannelToUser = async (userId, channelId) => {
 };
 
 const joinFirebaseTopic = async (userId, token) => {
-  const allChats = await chatService.getUserChats(userId);
+  const allChats = await chatService.getFullUserChats(userId);
   firebaseUtils.subscribeToTopic(token, `user-${userId}`);
   firebaseUtils.subscribeToTopic(token, `call-${userId}`);
   firebaseUtils.subscribeToTopic(token, `missed-${userId}`);
   allChats.forEach((chat) => {
-    if (chat._id) {
-      firebaseUtils.subscribeToTopic(token, `chat-${chat._id}`);
+    if (
+      chat._id &&
+      chat.participants &&
+      chat.participants.length > 0 &&
+      !chat.participants[0].isMute
+    ) {
+      firebaseUtils.subscribeToTopic(token, `chat-${chat._id.toString()}`);
     }
   });
 };
 
 const unjoinFirebaseTopic = async (userId, token) => {
-  const allChats = await chatService.getUserChats(userId);
+  const allChats = await chatService.getFullUserChats(userId);
   firebaseUtils.unsubscribeFromTopic(token, `user-${userId}`);
   firebaseUtils.unsubscribeFromTopic(token, `call-${userId}`);
   firebaseUtils.unsubscribeFromTopic(token, `missed-${userId}`);
@@ -512,5 +517,5 @@ module.exports = {
   updateMany,
   pushChannelToUser,
   joinFirebaseTopic,
-  unjoinFirebaseTopic
+  unjoinFirebaseTopic,
 };

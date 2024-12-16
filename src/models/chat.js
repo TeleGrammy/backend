@@ -11,6 +11,10 @@ const participantSchema = new mongoose.Schema({
     enum: ["Creator", "Admin", "Member", "Subscriber", "Peer"],
     default: "Member",
   },
+  isMute: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const chatSchema = new mongoose.Schema({

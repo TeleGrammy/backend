@@ -53,6 +53,33 @@ const getBasicChatById = async (chatId) => {
     throw new Error(`Error retrieving chat: ${error.message}`);
   }
 };
+const updateChatMute = async (chatId, userId, muteStatus) => {
+  // Step 1: Find the chat document
+  const chat = await Chat.findOne({_id: chatId});
+
+  if (!chat) {
+    throw new AppError(`Chat not found`, 404);
+  }
+
+  // Step 2: Find the participant by userId and update `isMute`
+  console.log(userId);
+  console.log(chat.participants);
+  const participant = chat.participants.find(
+    (p) => p.userId.toString() === userId
+  );
+
+  if (!participant) {
+    throw new AppError(`Participant not found`, 404);
+  }
+
+  // Update the `isMute` field
+  participant.isMute = muteStatus;
+
+  // Save the updated chat document
+  await chat.save();
+
+  return chat;
+};
 
 const getChatsByIds = async (chatIds) => {
   try {
@@ -95,6 +122,18 @@ const getUserChats = async (userId, skip, limit) => {
           select: "username",
         },
       });
+    return chats;
+  } catch (error) {
+    throw new Error(`Error retrieving user chats: ${error.message}`);
+  }
+};
+
+const getFullUserChats = async (userId) => {
+  try {
+    const chats = await Chat.find(
+      {"participants.userId": userId}, // Match chats where participants array contains the userId
+      {participants: {$elemMatch: {userId}}} // Project only the matched element
+    );
     return chats;
   } catch (error) {
     throw new Error(`Error retrieving user chats: ${error.message}`);
@@ -393,4 +432,6 @@ module.exports = {
   checkChatChannel,
   removeChat,
   getBasicChatById,
+  getFullUserChats,
+  updateChatMute,
 };

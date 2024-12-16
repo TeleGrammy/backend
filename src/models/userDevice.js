@@ -10,7 +10,6 @@ const userDeviceSchema = new mongoose.Schema(
     deviceToken: {
       type: String,
       required: true,
-      unique: true, // Optional: Ensures each device token is unique
     },
   },
   {
