@@ -15,8 +15,8 @@ const getUsers = async (adminId) => {
 };
 
 const restrictUser = async (userId, newData, options) => {
-  if (!mongoose.Types.ObjectId.isValid(adminId)) {
-    throw new AppError("Invalid adminId provided", 400);
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid userId provided", 400);
   }
 
   return User.findByIdAndUpdate(userId, newData, options).select(
