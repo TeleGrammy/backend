@@ -15,6 +15,15 @@ const participantSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  lastMessageSeen: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message",
+    required: true,
+  },
+  unreadCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const chatSchema = new mongoose.Schema({

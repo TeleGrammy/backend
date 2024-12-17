@@ -413,6 +413,26 @@ const removeChat = (filter) => {
   return Chat.deleteOne(filter);
 };
 
+const updateUserSeen = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  chat.participants.forEach((part) => {
+    if (part.userId.toString() === userId) {
+      part.unreadCount = 0;
+    }
+  });
+  await chat.save();
+};
+
+const updateLastMessageCount = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  chat.participants.forEach((part) => {
+    if (part.userId.toString() !== userId) {
+      part.unreadCount += 1;
+    }
+  });
+  await chat.save();
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -434,4 +454,6 @@ module.exports = {
   getBasicChatById,
   getFullUserChats,
   updateChatMute,
+  updateLastMessageCount,
+  updateUserSeen,
 };
