@@ -41,7 +41,10 @@ const changeUserStatus = catchAsync(async (req, res, next) => {
     );
 
     if (!restrictedUser) {
-      throw new AppError("An error ocuured while updating the user's status");
+      throw new AppError(
+        "An error ocuured while updating the user's status",
+        500
+      );
     }
 
     return res.status(200).json({
