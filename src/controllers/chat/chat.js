@@ -86,6 +86,7 @@ const handlePrivateChat = (chatObj, userId) => {
     role: otherUser.role,
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
+    unreadCount: myUser?.unreadCount,
     isMute: myUser?.isMute ? myUser.isMute : false,
   };
 
@@ -109,6 +110,7 @@ const handleGroupChat = (chatObj, userId) => {
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
     isGroup: true,
+    unreadCount: myUser?.unreadCount,
     isMute: myUser?.isMute ? myUser.isMute : false,
   };
 
@@ -131,6 +133,7 @@ const handleChannelChat = (chatObj, userId) => {
     channelId: chatObj.channelId._id,
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
+    unreadCount: myUser?.unreadCount,
     isChannel: true,
     isMute: myUser?.isMute ? myUser.isMute : false,
   };

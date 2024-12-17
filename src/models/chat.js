@@ -15,11 +15,11 @@ const participantSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  lastMessageSeen: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Message",
-    required: true,
-  },
+  // lastMessageSeen: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Message",
+  //   default: null,
+  // },
   unreadCount: {
     type: Number,
     default: 0,

@@ -38,6 +38,7 @@ module.exports.sendMessage = function ({io, socket}) {
         chatService.updateLastMessage(messageData.chatId, message.id);
       }
 
+      chatService.updateLastMessageCount(messageData.chatId, socket.userId);
       const chat = await chatService.getBasicChatById(messageData.chatId);
       let title = `A new Message from ${name}`;
       let body = "";
@@ -121,7 +122,7 @@ module.exports.updateMessageViewres = function ({io, socket}) {
         payload.messageId,
         socket.userId
       );
-
+      await chatService.updateUserSeen(payload.chatId, socket.userId);
       logThenEmit(
         socket.userId,
         "message:seen",

@@ -3,10 +3,9 @@ const mongoose = require("mongoose");
 const AppError = require("../errors/appError");
 
 const User = require("../models/user");
+const Chat = require("../models/chat");
 
 const firebaseUtils = require("../utils/firebaseMessaging");
-
-const chatService = require("./chatService");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -463,7 +462,10 @@ const pushChannelToUser = async (userId, channelId) => {
 };
 
 const joinFirebaseTopic = async (userId, token) => {
-  const allChats = await chatService.getFullUserChats(userId);
+  const allChats = await Chat.find(
+    {"participants.userId": userId}, // Match chats where participants array contains the userId
+    {participants: {$elemMatch: {userId}}} // Project only the matched element
+  );
   firebaseUtils.subscribeToTopic(token, `user-${userId}`);
   firebaseUtils.subscribeToTopic(token, `call-${userId}`);
   firebaseUtils.subscribeToTopic(token, `missed-${userId}`);
@@ -480,7 +482,10 @@ const joinFirebaseTopic = async (userId, token) => {
 };
 
 const unjoinFirebaseTopic = async (userId, token) => {
-  const allChats = await chatService.getFullUserChats(userId);
+  const allChats = await Chat.find(
+    {"participants.userId": userId}, // Match chats where participants array contains the userId
+    {participants: {$elemMatch: {userId}}} // Project only the matched element
+  );
   firebaseUtils.unsubscribeFromTopic(token, `user-${userId}`);
   firebaseUtils.unsubscribeFromTopic(token, `call-${userId}`);
   firebaseUtils.unsubscribeFromTopic(token, `missed-${userId}`);
