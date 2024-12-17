@@ -366,7 +366,7 @@ const retrieveGroupChatData = async (chatId) => {
     throw new AppError("Invalid chatId provided", 400);
   }
 
-  return Chat.findOne(chatId).populate({
+  return Chat.findById(chatId).populate({
     path: "groupId",
     select: "applyFilter",
   });
