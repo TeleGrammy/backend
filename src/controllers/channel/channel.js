@@ -503,7 +503,7 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
         userData: {
           id: userId._id, // Safe to access since we've checked for existence
           name: userId.username || "No name", // Default if missing
-          profilePicture: userId.profilePicture || "", // Default empty string if missing
+          profilePicture: userId.picture || "", // Default empty string if missing
           phone: userId.phone || "N/A", // Default to N/A if missing
         },
         role,
