@@ -13,7 +13,6 @@ const {
   createMessageData,
   checkChannelRules,
 } = require("../utils/utilsFunc");
-const AIModelFactory = require("../../classes/AIModelFactory");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
