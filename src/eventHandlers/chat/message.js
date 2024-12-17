@@ -26,21 +26,17 @@ module.exports.sendMessage = function ({io, socket}) {
         payload.chatId
       );
 
-      const messageData = await createMessageData(payload, socket.userId);
-      if (messageData.replyOn) {
-        await messageService.checkChatOfMessage(
-          messageData.replyOn,
-          messageData.chatId
-        );
-      }
-      if (currentGroupChat.groupId.applyFilter) {
+      const obj = currentGroupChat._doc.groupId;
+      const newObj = {...obj};
+      const {applyFilter} = newObj._doc;
+      if (applyFilter) {
         const factory = new AIModelFactory();
 
         let model_payload = {strategy: null, toBeClassified: null};
-        if (messageData.messageType === "text") {
+        if (payload.messageType === "text") {
           model_payload.strategy = factory.createStrategy("text");
           model_payload.toBeClassified = payload.content;
-        } else if (messageData.messageType === "image") {
+        } else if (payload.messageType === "image") {
           model_payload.strategy = factory.createStrategy("image");
           model_payload.toBeClassified = payload.mediaKey;
         }
@@ -51,7 +47,7 @@ module.exports.sendMessage = function ({io, socket}) {
             model_payload.toBeClassified
           );
 
-          if (modelResult == 1) {
+          if (modelResult === 1) {
             if (model_payload.toBeClassified === payload.content) {
               payload.content = "******";
             } else {
@@ -59,6 +55,13 @@ module.exports.sendMessage = function ({io, socket}) {
             }
           }
         }
+      }
+      const messageData = await createMessageData(payload, socket.userId);
+      if (messageData.replyOn) {
+        await messageService.checkChatOfMessage(
+          messageData.replyOn,
+          messageData.chatId
+        );
       }
       await chatService.checkUserParticipant(messageData.chatId, socket.userId);
       const channelId = await chatService.checkChatChannel(messageData.chatId);
