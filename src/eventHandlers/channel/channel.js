@@ -167,11 +167,11 @@ const removeParticipant = (io, socket, connectedUsers) => {
         }
         if (userSocket.get("chat"))
           userSocket.get("chat").leave(`chat:${chatOfChannel.id}`);
-        callback({
-          status: "ok",
-          message: "Member has been removed",
-        });
       }
+      callback({
+        status: "ok",
+        message: "Member has been removed",
+      });
     } catch (err) {
       console.log(err);
       handleSocketError(socket, err);
