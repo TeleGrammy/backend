@@ -35,6 +35,19 @@ router.patch(
   adminController.changeUserStatus
 );
 
-router.get("/filter", adminController.filterContents);
+router.patch(
+  "/filter/:groupId",
+  [
+    body("applyFilter")
+      .exists()
+      .withMessage("Filter status is required")
+      .isBoolean()
+      .withMessage("Filter Status should be a boolean")
+      .notEmpty()
+      .withMessage("Filter status should not be empty"),
+  ],
+  validationErrorCatcher,
+  adminController.applyFilterContents
+);
 
 module.exports = router;

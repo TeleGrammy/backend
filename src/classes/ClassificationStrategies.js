@@ -1,5 +1,4 @@
 const InferenceStrategy = require("./InferenceStrategy");
-const vision = require("@google-cloud/vision");
 
 class TextClassificationStrategy extends InferenceStrategy {
   async classify(text) {
@@ -22,32 +21,38 @@ class TextClassificationStrategy extends InferenceStrategy {
 }
 
 class ImageClassificationStrategy extends InferenceStrategy {
-  async classify(imageUrl) {
-    const client = new vision.ImageAnnotatorClient();
-    const [result] = await client.safeSearchDetection(imageUrl);
-    const imageResult = result.safeSearchAnnotation;
+  async classify(imageKey) {
+    const {
+      DetectModerationLabelsCommand,
+      RekognitionClient,
+    } = require("@aws-sdk/client-rekognition");
 
-    return imageResult.adult === "VERY_LIKELY" ||
-      imageResult.violence === "VERY_LIKELY"
-      ? 1
-      : 0;
+    const rekogClient = new RekognitionClient({
+      region: process.env.AWS_REGION,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
 
-    // await this.init();
-    //
-    // try {
-    //   const imageClassifier = await pipeline(
-    //     "image-classification",
-    //     "Xenova/vit-base-patch16-224"
-    //   );
-    //   const urls = [
-    //     "https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/tiger.jpg",
-    //     "https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/cats.jpg",
-    //   ];
-    //   const output = await classifier(urls);
-    //   return imageResult[0].label === "inappropriate" ? 1 : 0;
-    // } catch (error) {
-    //   console.error("Error loading model:", error);
-    // }
+    const bucket = process.env.AWS_BUCKET_NAME;
+
+    const params = {
+      Image: {
+        S3Object: {
+          Bucket: bucket,
+          Name: imageKey,
+        },
+      },
+    };
+
+    const response = await rekogClient.send(
+      new DetectModerationLabelsCommand(params)
+    );
+
+    const imageLabel = response.ModerationLabels.some((label) => {
+      return label.TaxonomyLevel == 1 || label.TaxonomyLevel == 2;
+    });
+
+    return imageLabel ? 1 : 0;
   }
 }
 
