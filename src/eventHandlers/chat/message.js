@@ -5,11 +5,15 @@ const chatService = require("../../services/chatService");
 const channelService = require("../../services/channelService");
 const {uploadVoiceNote} = require("../../middlewares/AWS");
 
+const AIModelFactory = require("../../classes/AIModelFactory");
+const AIInferenceContext = require("../../classes/AIInferenceContext");
+
 const {
   logThenEmit,
   createMessageData,
   checkChannelRules,
 } = require("../utils/utilsFunc");
+const AIModelFactory = require("../../classes/AIModelFactory");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
@@ -19,12 +23,43 @@ module.exports.sendMessage = function ({io, socket}) {
 
     console.log("Sending message");
     try {
+      const currentGroupChat = await chatService.retrieveGroupChatData(
+        payload.chatId
+      );
+
       const messageData = await createMessageData(payload, socket.userId);
       if (messageData.replyOn) {
         await messageService.checkChatOfMessage(
           messageData.replyOn,
           messageData.chatId
         );
+      }
+      if (currentGroupChat.groupId.applyFilter) {
+        const factory = new AIModelFactory();
+
+        let model_payload = {strategy: null, toBeClassified: null};
+        if (messageData.messageType === "text") {
+          model_payload.strategy = factory.createStrategy("text");
+          model_payload.toBeClassified = payload.content;
+        } else if (messageData.messageType === "image") {
+          model_payload.strategy = factory.createStrategy("image");
+          model_payload.toBeClassified = payload.mediaKey;
+        }
+
+        if (model_payload.strategy !== null) {
+          const context = new AIInferenceContext(model_payload.strategy);
+          const modelResult = await context.executeInference(
+            model_payload.toBeClassified
+          );
+
+          if (modelResult == 1) {
+            if (model_payload.toBeClassified === payload.content) {
+              payload.content = "******";
+            } else {
+              //TODO: Make the +18 Media Key
+            }
+          }
+        }
       }
       await chatService.checkUserParticipant(messageData.chatId, socket.userId);
       const channelId = await chatService.checkChatChannel(messageData.chatId);
