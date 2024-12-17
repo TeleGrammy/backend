@@ -3,9 +3,7 @@ const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../errors/appError");
 
 const adminService = require("../../services/adminService");
-
-const AIModelFactory = require("../../classes/AIModelFactory");
-const AIInferenceContext = require("../../classes/AIINterfernceContext");
+const groupService = require("../../services/groupService");
 
 const validStatuses = ["banned", "active", "inactive"];
 
@@ -55,30 +53,32 @@ const changeUserStatus = catchAsync(async (req, res, next) => {
   }
 });
 
-const filterContents = catchAsync(async (req, res, next) => {
-  const factory = new AIModelFactory();
+const applyFilterContents = catchAsync(async (req, res, next) => {
+  try {
+    const {groupId} = req.params;
+    const {applyFilter} = req.body;
 
-  // Create strategies
-  const textStrategy = factory.createStrategy("text");
-  const imageStrategy = factory.createStrategy("image");
+    const updatedGroup = await groupService.findAndUpdateGroup(
+      groupId,
+      {applyFilter},
+      {new: true}
+    );
 
-  // Create context and classify content
-  const context = new AIInferenceContext(textStrategy);
-  const textLabel = await context.executeInference("Hi I am Johnny");
-  context.setStrategy(imageStrategy);
-  const imageLabel = await context.executeInference(
-    "https://www.shutterstock.com/image-photo/very-beautiful-photo-blue-sky-few-2452470957"
-  );
-  console.log(imageLabel);
+    if (!updatedGroup) {
+      throw new AppError("An error occurred while updating the group", 500);
+    }
 
-  return res.status(200).json({
-    status: "success",
-    data: textLabel === 1 || imageLabel === 1 ? 1 : 0,
-  });
+    return res.status(200).json({
+      status: "success",
+      message: "Group's filtering status has been updated",
+    });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 module.exports = {
   getRegisteredUsers,
   changeUserStatus,
-  filterContents,
+  applyFilterContents,
 };

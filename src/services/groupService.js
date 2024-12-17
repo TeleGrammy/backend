@@ -1,4 +1,5 @@
 const Group = require("../models/groupModel");
+const mongoose = require("mongoose");
 
 const createGroup = (name, image, ownerId) => {
   const admin = {
@@ -26,10 +27,18 @@ const createGroup = (name, image, ownerId) => {
 const deleteGroup = async (filter) => Group.deleteOne(filter);
 
 const findGroupById = (groupId) => {
+  if (!mongoose.Types.ObjectId.isValid(groupId)) {
+    throw new AppError("Invalid groupdId provided", 400);
+  }
+
   return Group.findById(groupId);
 };
 
 const findAndUpdateGroup = (groupId, newData, options) => {
+  if (!mongoose.Types.ObjectId.isValid(groupId)) {
+    throw new AppError("Invalid groupdId provided", 400);
+  }
+
   const group = Group.findByIdAndUpdate(groupId, newData, options);
   return group;
 };
@@ -42,6 +51,10 @@ const updateParticipant = (
   newData,
   options
 ) => {
+  if (!mongoose.Types.ObjectId.isValid(groupId)) {
+    throw new AppError("Invalid groupdId provided", 400);
+  }
+
   const user = Group.findByIdAndUpdate(
     {
       _id: groupId,

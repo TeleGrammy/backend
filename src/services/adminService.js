@@ -5,21 +5,22 @@ const AppError = require("../errors/appError");
 const User = require("../models/user");
 
 const getUsers = async (adminId) => {
-  if (!adminId) {
-    throw new AppError("Admin's Id should be passed", 500);
+  if (!mongoose.Types.ObjectId.isValid(adminId)) {
+    throw new AppError("Invalid adminId provided", 400);
   }
-  return await User.find({_id: {$ne: adminId}}).select(
-    "username screenName phone email bio status picture"
+
+  return User.find({_id: {$ne: adminId}}).select(
+    "username screenName phone email bio status pictureKey picture"
   );
 };
 
 const restrictUser = async (userId, newData, options) => {
-  if (!userId) {
-    throw new AppError("User's Id should be passed", 500);
+  if (!mongoose.Types.ObjectId.isValid(adminId)) {
+    throw new AppError("Invalid adminId provided", 400);
   }
 
-  return await User.findByIdAndUpdate(userId, newData, options).select(
-    "username screenName phone email bio status picture"
+  return User.findByIdAndUpdate(userId, newData, options).select(
+    "username screenName phone email bio status pictureKey picture"
   );
 };
 
