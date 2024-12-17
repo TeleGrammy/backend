@@ -23,6 +23,13 @@ const login = catchAsync(async (req, res, next) => {
     return next(new AppError("No user has been found with that UUID", 404));
   }
 
+  if (user.status == "banned" || user.status == "inactive") {
+    return res.status(200).json({
+      status: "success",
+      message: "User is forbiddened to access the application",
+    });
+  }
+
   const storedPassword = user.password;
   const isPasswordValid = await bcrypt.compare(password, storedPassword);
   if (!isPasswordValid) {
