@@ -36,9 +36,9 @@ const login = catchAsync(async (req, res, next) => {
       user._id.toString()
     );
     if (!isExist) {
-      await userDeviceService.saveDevice(user._id.toString(), token);
+      userDeviceService.saveDevice(user._id.toString(), token);
     }
-    await userService.joinFirebaseTopic(user._id.toString(), token);
+    userService.joinFirebaseTopic(user._id.toString(), token);
   }
   const {updatedUser, accessToken} = await sessionManagementModule.default(
     req,

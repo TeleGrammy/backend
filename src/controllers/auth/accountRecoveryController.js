@@ -176,13 +176,22 @@ const logOutFromAllDevices = catchAsync(async (req, res, next) => {
   );
   updatedUser.password = undefined;
 
-  const tokens = await userDeviceService.getDevicesByUser(user._id);
-  if (tokens) {
-    await tokens.forEach(async (token) => {
-      await userDeviceService.removeDeviceByToken(token);
-      await userServices.unjoinFirebaseTopic(user._id, token);
-    });
+  if (user._id) {
+    const tokens = await userDeviceService.getDevicesByUser(
+      user._id.toString()
+    );
+    if (tokens) {
+      tokens.forEach(async (token) => {
+        console.log(token);
+        userDeviceService.removeDeviceByToken(token.deviceToken);
+        userServices.unjoinFirebaseTopic(
+          user._id.toString(),
+          token.deviceToken
+        );
+      });
+    }
   }
+
   res.status(200).json({
     status: "success",
     data: {
