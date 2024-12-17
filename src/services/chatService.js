@@ -137,6 +137,7 @@ const updateLastMessage = async (chatId, messageId) => {
  * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
  */
 const addParticipant = async (chatId, participantData) => {
+  console.log("Adding Participant");
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,

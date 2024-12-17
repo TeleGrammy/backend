@@ -17,14 +17,6 @@ router.post(
       .withMessage("Name field must be a string")
       .notEmpty()
       .withMessage("Name field can not be empty"),
-
-    body("description")
-      .exists()
-      .withMessage("Description field is required")
-      .isString()
-      .withMessage("Description field must be a string")
-      .notEmpty()
-      .withMessage("Description field can not be empty"),
   ],
   isAuth,
   channelController.createChannel
@@ -40,14 +32,6 @@ router
       .withMessage("Name field must be a string")
       .notEmpty()
       .withMessage("Name field can not be empty"),
-
-    body("description")
-      .exists()
-      .withMessage("Description field is required")
-      .isString()
-      .withMessage("Description field must be a string")
-      .notEmpty()
-      .withMessage("Description field can not be empty"),
     isAuth,
     channelController.updateChannel
   )

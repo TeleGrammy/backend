@@ -55,6 +55,7 @@ const createChannel = catchAsync(async (req, res, next) => {
       description,
       image,
       ownerId: userId,
+      membersCount: 0,
     });
     if (!createdChannel) {
       throw new AppError("Error creating the channel", 500);
@@ -80,9 +81,6 @@ const createChannel = catchAsync(async (req, res, next) => {
         500
       );
     }
-    const ownerData = await userService.getUserByID(userId);
-    ownerData.channels.push(createdChannel.id);
-    await ownerData.save();
 
     const creationMessage = {
       senderId: userId,
@@ -208,44 +206,21 @@ const deleteChannel = catchAsync(async (req, res, next) => {
 const getChannel = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
 
-  const [channelData, chatData] = await Promise.all([
-    channelService.getChannelInformation(channelId),
-    chatService.getChatOfChannel(channelId),
-  ]);
+  const channelData = await channelService.getChannelInformation(channelId);
 
   if (!channelData) {
     return next(new AppError("Channel not found. Please check its ID.", 404));
   }
-
-  if (!chatData) {
-    return next(
-      new AppError("Channel's chat not found. Please try again later.", 500)
-    );
-  }
-
-  const ownerId = chatData.participants.find(
-    (participant) => participant.role === "Creator"
-  );
-  if (!ownerId) {
-    return next(
-      new AppError(
-        "Channel owner's data is missing. Please try again later.",
-        500
-      )
-    );
-  }
-  const ownerData = userService.getUserByID(ownerId.userId);
-
   return res.status(200).json({
     channelId,
     channelName: channelData.name,
     channelDescription: channelData.description,
     subscribersCount: channelData.membersCount,
     channelOwner: {
-      id: ownerData.id,
-      name: ownerData.screenName,
-      phone: ownerData.phone,
-      profilePicture: ownerData.profilePicture,
+      id: channelData.ownerId._id,
+      name: channelData.ownerId.screenName || channelData.ownerId.username,
+      phone: channelData.ownerId.phone,
+      profilePicture: channelData.ownerId.picture,
     },
     channelCreationDate: channelData.createdAt,
   });
@@ -528,7 +503,7 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
         userData: {
           id: userId._id, // Safe to access since we've checked for existence
           name: userId.username || "No name", // Default if missing
-          profilePicture: userId.profilePicture || "", // Default empty string if missing
+          profilePicture: userId.picture || "", // Default empty string if missing
           phone: userId.phone || "N/A", // Default to N/A if missing
         },
         role,
