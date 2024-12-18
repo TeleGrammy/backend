@@ -488,7 +488,7 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   await chatService.checkUserAdmin(chat.id, req.user.id);
 
   const transformedParticipants = chat.participants
-    .map(({userId, role}) => {
+    .map(({userId, role, canDownload}) => {
       // Check if userId is properly populated
       if (!userId || !userId._id) {
         // Log the problematic participant for debugging
@@ -505,6 +505,7 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
           name: userId.username || "No name", // Default if missing
           profilePicture: userId.picture || "", // Default empty string if missing
           phone: userId.phone || "N/A", // Default to N/A if missing
+          canDownload,
         },
         role,
       };
@@ -565,6 +566,41 @@ const updatePrivacy = catchAsync(async (req, res) => {
     .json({message: "Channel updated successfully", data: updatedChannel});
 });
 
+const updateSubscriberSettings = catchAsync(async (req, res) => {
+  const {channelId} = req.params;
+  const {subscriberId, download} = req.body;
+
+  const userId = req.user.id;
+  const chatOfChannel = await chatService.getChatOfChannel(channelId);
+  if (!chatOfChannel) {
+    throw new AppError("Chat of Channel is not found");
+  }
+
+  await chatService.checkUserAdmin(chatOfChannel._id, userId);
+
+  const subscriberUser = await chatService.checkUserParticipant(
+    chatOfChannel._id,
+    subscriberId
+  );
+
+  if (subscriberUser.role === "Admin" || subscriberUser.role === "Creator") {
+    throw new AppError("Operation is not allowed for Admin or Creator");
+  }
+
+  const updatedChat = await chatService.changeParticipantPermission(
+    chatOfChannel._id,
+    subscriberId,
+    download
+  );
+
+  if (!updatedChat) {
+    return res.status(404).json({message: "Channel not found"});
+  }
+  return res.status(200).json({
+    message: "Subscriber permission updated successfully",
+    data: updatedChat,
+  });
+});
 module.exports = {
   createChannel,
   updateChannel,
@@ -577,4 +613,5 @@ module.exports = {
   fetchThreadsMesssage,
   updatePrivacy,
   fetchChannelParticipants,
+  updateSubscriberSettings,
 };

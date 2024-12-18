@@ -12,6 +12,10 @@ const participantSchema = new mongoose.Schema({
     enum: ["Creator", "Admin", "Member", "Subscriber", "Peer"],
     default: "Member",
   },
+  canDownload: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const chatSchema = new mongoose.Schema({

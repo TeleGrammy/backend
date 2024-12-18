@@ -55,6 +55,12 @@ router.get(
   channelController.fetchThreadsMesssage
 );
 router.patch("/:channelId/privacy", isAuth, channelController.updatePrivacy);
+router.patch(
+  "/:channelId/subscriber",
+  isAuth,
+  channelController.updateSubscriberSettings
+);
+
 router.get(
   "/:channelId/participants",
   isAuth,

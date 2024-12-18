@@ -292,6 +292,21 @@ const checkUserParticipant = async (chatId, userId) => {
   return currentUser;
 };
 
+const changeParticipantPermission = async (
+  chatId,
+  userId,
+  canDownload = true
+) => {
+  const chat = await Chat.findById(chatId);
+  const currentUserIndex = chat.participants.findIndex(
+    (participant) => participant.userId.toString() === userId
+  );
+  if (currentUserIndex === -1) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  chat.participants[currentUserIndex].canDownload = canDownload;
+  return chat.save();
+};
 const checkUserAdmin = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
   const currentUser = chat.participants.find(
@@ -383,4 +398,5 @@ module.exports = {
   checkUserAdmin,
   checkChatChannel,
   removeChat,
+  changeParticipantPermission,
 };
