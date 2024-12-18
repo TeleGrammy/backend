@@ -92,7 +92,6 @@ module.exports.endCall = async (userId, callId, status) => {
   if (call.participants.length === 0) {
     call.status = status;
     if (status === "ended") call.endedAt = new Date();
-    // removeUnwantedData(call);
   }
   await call.save();
   return call;
