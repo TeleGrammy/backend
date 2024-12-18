@@ -71,10 +71,7 @@ const handlePrivateChat = (chatObj, userId) => {
   const myUser = chatObj.participants.find(
     (participant) => participant.userId._id.toString() === userId
   );
-  if (!myUser) {
-    return null;
-  }
-  console.log(myUser);
+
   const chat = {
     id: chatObj._id,
     name: otherUser.userId.username,
@@ -97,10 +94,6 @@ const handleGroupChat = (chatObj, userId) => {
   const myUser = chatObj.participants.find(
     (participant) => participant.userId._id.toString() === userId
   );
-  if (!myUser) {
-    return null;
-  }
-  console.log(myUser);
   const chat = {
     id: chatObj._id,
     name: chatObj.groupId.name,
@@ -121,10 +114,6 @@ const handleChannelChat = (chatObj, userId) => {
   const myUser = chatObj.participants.find(
     (participant) => participant.userId._id.toString() === userId
   );
-  if (!myUser) {
-    return null;
-  }
-  console.log(myUser);
   const chat = {
     id: chatObj._id,
     name: chatObj.channelId.name,
@@ -154,10 +143,10 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
       return handlePrivateChat(chat, userId);
     }
     if (chat.isGroup) {
-      return handleGroupChat(chat);
+      return handleGroupChat(chat, userId);
     }
     if (chat.isChannel) {
-      return handleChannelChat(chat);
+      return handleChannelChat(chat, userId);
     }
     return chat;
   });
