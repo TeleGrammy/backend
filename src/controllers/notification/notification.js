@@ -41,6 +41,6 @@ exports.unmuteNotification = catchAsync(async (req, res, next) => {
     });
   }
   res.status(200).send({
-    message: `Chat: ${chatId} has been muted`,
+    message: `Chat: ${chatId} has been unmuted`,
   });
 });
