@@ -48,6 +48,8 @@ router.post(
   isAuth,
   channelController.addSubscriber
 );
+router.post("/:channelId/join", isAuth, channelController.joinChannel);
+
 router.get("/:channelId/chat", isAuth, channelController.fetchChannelChat);
 router.get(
   "/thread/:postId/messages",
