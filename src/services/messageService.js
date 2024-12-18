@@ -2,7 +2,6 @@ const {default: mongoose} = require("mongoose");
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const AppError = require("../errors/appError");
-
 /**
  * Creates a new message.
  * @memberof Service.Message
@@ -52,7 +51,7 @@ module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
     .skip(skip)
     .limit(limit)
     .select(
-      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey"
+      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned"
     ) // Only fetch relevant fields
     .populate("senderId mentions", "username") // Populate sender details (only username)
     .populate("replyOn");
@@ -199,6 +198,25 @@ module.exports.createForwardMessageData = async (
     mediaUrl: message.mediaUrl,
   };
   return newMessageData;
+};
+
+module.exports.checkChannelPost = async (postId, chatId) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+  const post = await Message.findById(postId);
+  if (!chat.isChannel) {
+    throw new Error("This Chat is not a Channel");
+  }
+
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  if (post.chatId.toString() !== chatId) {
+    throw new Error("This Post does not belong to Channel");
+  }
+  return true;
 };
 
 module.exports.removeChatMessages = async (filter) => {

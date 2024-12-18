@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const AppError = require("../errors/appError");
 
 const User = require("../models/user");
+const Chat = require("../models/chat");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -217,8 +218,19 @@ const getUserByID = async (ID) => {
 const findByIdAndUpdate = async (id, updateData, options) => {
   return User.findByIdAndUpdate(id, updateData, options);
 };
-const getUserById = async (id, select = "") => {
-  return User.findById(id).select(select);
+const getUserById = async (id, select = "", populate = null) => {
+  const query = User.findById(id).select(select);
+  if (populate) {
+    query.populate(populate);
+  }
+  return query.exec();
+};
+
+const getUserContact = async (id) => {
+  return User.findById(id).select("contacts -_id").populate({
+    path: "contacts.contactId", // Path to the field to populate
+    select: "username", // Optional: Specify which fields to include from the referenced document
+  });
 };
 
 const setProfileVisibilityOptionsByUserId = async (id, visibilityOptions) => {
@@ -383,14 +395,19 @@ const ackEvent = async (id, chatId, offset) => {
 };
 
 const updateDraftOfUserInChat = async (chatId, userId, draft) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found");
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
   }
-  user.userDrafts.set(`${chatId}`, draft);
-  await user.save();
-  return user;
+  const participantIndex = chat.participants.findIndex(
+    (part) => part.userId.toString() === userId
+  );
+  if (participantIndex === -1) {
+    throw new Error("User is not participant in Chat");
+  }
+  chat.participants[participantIndex].draft_message = draft;
+  await chat.save();
+  return chat;
 };
 
 const addContact = async (userId, chatId, contactId, isMe) => {
@@ -439,6 +456,14 @@ const updateMany = async (filter, updateData, options) => {
   return User.updateMany(filter, updateData, options);
 };
 
+const pushUserChannel = async (userId, channelId) => {
+  console.log("PUSH channel");
+  return User.findByIdAndUpdate(
+    userId,
+    {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
+    {new: true} // Return the updated document
+  );
+};
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -461,5 +486,7 @@ module.exports = {
   updateDraftOfUserInChat,
   updateRefreshToken,
   addContact,
+  getUserContact,
   updateMany,
+  pushUserChannel,
 };

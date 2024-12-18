@@ -208,6 +208,9 @@ const addMemberV2 = (io, socket, connectedUsers) => {
 
       if (
         (!addUsersGroupPermission && participantType === "member") ||
+        (addUsersGroupPermission &&
+          participantType === "member" &&
+          !participantData.permissions.addUsers) ||
         (!addUsersGroupPermission &&
           participantType === "admin" &&
           !participantData.permissions.addUsers)

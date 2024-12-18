@@ -7,6 +7,7 @@ const AppError = require("../../errors/appError");
 const channelService = require("../../services/channelService");
 const chatService = require("../../services/chatService");
 const messageService = require("../../services/messageService");
+const userService = require("../../services/userService");
 
 const updateChannelHelper = async (
   req,
@@ -16,11 +17,11 @@ const updateChannelHelper = async (
   chatOfChannel
 ) => {
   try {
-    const {name, description} = req.body;
+    const {name, image, description} = req.body;
 
     userChannel.name = chatOfChannel.name = name;
     userChannel.description = chatOfChannel.description = description;
-
+    userChannel.image = image;
     await Promise.all([userChannel.save(), chatOfChannel.save()]);
 
     return res.status(200).json({
@@ -42,19 +43,19 @@ const createChannel = catchAsync(async (req, res, next) => {
       errorType: error.type,
       message: error.msg,
     }));
-    return res.status(400).json({
-      status: "fail",
-      errors: transformedErrors,
-    });
+    return res.status(400).json(transformedErrors);
   }
 
   const userId = req.user.id;
-  const {name, description} = req.body;
+  const {name, image, description} = req.body;
 
   try {
     const createdChannel = await channelService.createChannel({
       name,
       description,
+      image,
+      ownerId: userId,
+      membersCount: 0,
     });
     if (!createdChannel) {
       throw new AppError("Error creating the channel", 500);
@@ -75,7 +76,10 @@ const createChannel = catchAsync(async (req, res, next) => {
       currentUserData
     );
     if (!updatedChat) {
-      throw new AppError("Error adding user as admin in the channel chat", 500);
+      throw new AppError(
+        "Error adding user as creator in the channel chat",
+        500
+      );
     }
 
     const creationMessage = {
@@ -90,12 +94,10 @@ const createChannel = catchAsync(async (req, res, next) => {
     }
 
     return res.status(200).json({
-      status: "success",
-      data: {
-        channelId: createdChannel._id,
-        channelName: createdChannel.name,
-        channelDescription: createdChannel.description,
-      },
+      channelId: createdChannel._id,
+      channelName: createdChannel.name,
+      channelDescription: createdChannel.description,
+      chatId: updatedChat._id,
     });
   } catch (error) {
     return next(error);
@@ -158,14 +160,14 @@ const deleteChannel = catchAsync(async (req, res, next) => {
   }
 
   const participant = chatOfChannel.participants.find(
-    (participant) => String(participant.userId._id) === userId
+    (part) => String(part.userId) === userId
   );
 
   if (!participant) {
     return next(new AppError("You are not a member of this channel", 403));
   }
 
-  if (["Admin", "Creator"].includes(participant.role)) {
+  if (participant.role === "Creator") {
     const [deletedChannel, deletedChatOfChannel] = await Promise.all([
       channelService.deleteChannel(channelId),
       chatService.softDeleteChat(chatOfChannel._id),
@@ -180,7 +182,8 @@ const deleteChannel = catchAsync(async (req, res, next) => {
     return next(
       new AppError("An error occurred while deleting the channel", 500)
     );
-  } else if (participant.role === "Subscriber") {
+  }
+  if (participant.role === "Subscriber" || participant.role === "Admin") {
     const updatedChat = await chatService.removeParticipant(
       chatOfChannel._id,
       userId
@@ -203,53 +206,23 @@ const deleteChannel = catchAsync(async (req, res, next) => {
 const getChannel = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
 
-  const [channelData, chatData] = await Promise.all([
-    channelService.getChannelInformation(channelId),
-    chatService.getChatOfChannel(channelId),
-  ]);
+  const channelData = await channelService.getChannelInformation(channelId);
 
   if (!channelData) {
     return next(new AppError("Channel not found. Please check its ID.", 404));
   }
-
-  if (!chatData) {
-    return next(
-      new AppError("Channel's chat not found. Please try again later.", 500)
-    );
-  }
-
-  const ownerData = chatData.participants.find(
-    (participant) => participant.role === "Creator"
-  );
-
-  if (!ownerData) {
-    return next(
-      new AppError(
-        "Channel owner's data is missing. Please try again later.",
-        500
-      )
-    );
-  }
-
-  const channelSubscribers = chatData.participants.filter(
-    (participant) => participant.role === "Subscriber"
-  );
-
   return res.status(200).json({
-    status: "success",
-    data: {
-      channelId,
-      channelSubscribers,
-      channelName: channelData.name,
-      channelDescription: channelData.description,
-      channelOwner: {
-        id: ownerData.userId._id,
-        name: ownerData.userId.screenName,
-        phone: ownerData.userId.phone,
-        profilePicture: ownerData.userId.profilePicture,
-      },
-      channelCreationDate: channelData.createdAt,
+    channelId,
+    channelName: channelData.name,
+    channelDescription: channelData.description,
+    subscribersCount: channelData.membersCount,
+    channelOwner: {
+      id: channelData.ownerId._id,
+      name: channelData.ownerId.screenName || channelData.ownerId.username,
+      phone: channelData.ownerId.phone,
+      profilePicture: channelData.ownerId.picture,
     },
+    channelCreationDate: channelData.createdAt,
   });
 });
 
@@ -409,6 +382,62 @@ const demoteAdmin = catchAsync(async (req, res, next) => {
   });
 });
 
+const joinChannel = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+  const userId = req.user.id;
+
+  const [channel, chatOfChannel] = await Promise.all([
+    channelService.getChannelInformation(channelId),
+    chatService.getChatOfChannel(channelId),
+  ]);
+
+  if (!channel) {
+    return next(new AppError("Channel not found.", 500));
+  }
+  if (!chatOfChannel) {
+    return next(
+      new AppError("Failed to retrieve chat data. Please try again later.", 500)
+    );
+  }
+
+  const isSubscriberExists = chatOfChannel.participants.some((participant) => {
+    return String(participant.userId._id) === userId;
+  });
+
+  if (isSubscriberExists) {
+    return next(new AppError("User already exists in Channel", 400));
+  }
+
+  if (!channel.privacy) {
+    return next(new AppError("You can't join Private Channel", 401));
+  }
+  const subscriberData = {
+    userId,
+    role: "Subscriber",
+  };
+
+  const updatedChat = await chatService.addParticipant(
+    chatOfChannel._id,
+    subscriberData
+  );
+
+  if (!updatedChat) {
+    return next(new AppError("Failed to update the channel's chat.", 500));
+  }
+
+  const chat = {
+    ...chatOfChannel.toObject(), // Convert Mongoose document to plain object
+  };
+  delete chat.participants; // Remove the `participants` property
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      channel,
+      chat,
+    },
+  });
+});
 const addSubscriber = catchAsync(async (req, res, next) => {
   const {channelId, subscriberId} = req.params;
   const userId = req.user.id;
@@ -491,14 +520,14 @@ const addSubscriber = catchAsync(async (req, res, next) => {
       return {
         userData: {
           id: userId._id, // Safe to access since we've checked for existence
-          name: userId.screenName || "No name", // Default if missing
+          name: userId.username || "No name", // Default if missing
           profilePicture: userId.profilePicture || "", // Default empty string if missing
           phone: userId.phone || "N/A", // Default to N/A if missing
         },
         role,
       };
     })
-    .filter((participant) => participant !== null); // Filter out any null entries
+    .filter((part) => part !== null); // Filter out any null entries
 
   return res.status(200).json({
     status: "success",
@@ -507,7 +536,127 @@ const addSubscriber = catchAsync(async (req, res, next) => {
     },
   });
 });
+const fetchChannelParticipants = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+  console.log("Fetch PArt", req.user.id);
 
+  const chat = await chatService.getChatOfChannel(channelId);
+  await chatService.checkUserAdmin(chat.id, req.user.id);
+
+  const transformedParticipants = chat.participants
+    .map(({userId, role, canDownload}) => {
+      // Check if userId is properly populated
+      if (!userId || !userId._id) {
+        // Log the problematic participant for debugging
+        console.log("Skipping participant with invalid userId:", {
+          userId,
+          role,
+        });
+        return null; // Return null for invalid participants
+      }
+
+      return {
+        userData: {
+          id: userId._id, // Safe to access since we've checked for existence
+          name: userId.username || "No name", // Default if missing
+          profilePicture: userId.picture || "", // Default empty string if missing
+          phone: userId.phone || "N/A", // Default to N/A if missing
+          canDownload,
+        },
+        role,
+      };
+    })
+    .filter((part) => part !== null); // Filter out any null entries
+
+  return res.status(200).json({
+    participants: transformedParticipants,
+  });
+});
+
+const fetchChannelChat = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+  const {page = 1, limit = 20} = req.query;
+  await channelService.checkUserParticipant(channelId, req.user.id);
+
+  const result = await channelService.getChannelChatWithThreads(
+    channelId,
+    Number(page),
+    Number(limit)
+  );
+  res.status(200).json(result);
+});
+
+const fetchThreadsMesssage = catchAsync(async (req, res) => {
+  const {postId} = req.params;
+  const {page = 1, limit = 20} = req.query; // Pagination params from query string
+  const result = await channelService.getThreadMessages(
+    postId,
+    req.user.id,
+    Number(page),
+    Number(limit)
+  );
+  res.status(200).json(result);
+});
+
+const updatePrivacy = catchAsync(async (req, res) => {
+  const {channelId} = req.params;
+  const {privacy, comments, download} = req.body;
+
+  // Validate input if needed
+  const updateData = {};
+  if (typeof privacy !== "undefined") updateData.privacy = privacy;
+  if (typeof comments !== "undefined") updateData.comments = comments;
+  if (typeof download !== "undefined") updateData.download = download;
+  // Update the channel document
+  const updatedChannel = await channelService.updateChannelPrivacy(
+    channelId,
+    req.user.id,
+    updateData
+  );
+
+  if (!updatedChannel) {
+    return res.status(404).json({message: "Channel not found"});
+  }
+  return res
+    .status(200)
+    .json({message: "Channel updated successfully", data: updatedChannel});
+});
+
+const updateSubscriberSettings = catchAsync(async (req, res) => {
+  const {channelId} = req.params;
+  const {subscriberId, download} = req.body;
+
+  const userId = req.user.id;
+  const chatOfChannel = await chatService.getChatOfChannel(channelId);
+  if (!chatOfChannel) {
+    throw new AppError("Chat of Channel is not found");
+  }
+
+  await chatService.checkUserAdmin(chatOfChannel._id, userId);
+
+  const subscriberUser = await chatService.checkUserParticipant(
+    chatOfChannel._id,
+    subscriberId
+  );
+
+  if (subscriberUser.role === "Admin" || subscriberUser.role === "Creator") {
+    throw new AppError("Operation is not allowed for Admin or Creator");
+  }
+
+  const updatedChat = await chatService.changeParticipantPermission(
+    chatOfChannel._id,
+    subscriberId,
+    download
+  );
+
+  if (!updatedChat) {
+    return res.status(404).json({message: "Channel not found"});
+  }
+  return res.status(200).json({
+    message: "Subscriber permission updated successfully",
+    data: updatedChat,
+  });
+});
 module.exports = {
   createChannel,
   updateChannel,
@@ -516,4 +665,10 @@ module.exports = {
   promoteSubscriber,
   demoteAdmin,
   addSubscriber,
+  joinChannel,
+  fetchChannelChat,
+  fetchThreadsMesssage,
+  updatePrivacy,
+  fetchChannelParticipants,
+  updateSubscriberSettings,
 };

@@ -237,6 +237,11 @@ const userSchema = new mongoose.Schema({
     ref: "Group",
     default: [],
   },
+  channels: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Channel",
+    default: [],
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {
