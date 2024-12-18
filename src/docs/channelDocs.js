@@ -52,12 +52,11 @@
  *        '400':
  *          description: Bad request
  */
-
 /**
  * @swagger
  *  /channels/{channelId}:
  *    patch:
- *      summary: update the channel
+ *      summary: Update the channel
  *      tags:
  *        - Channels
  *      parameters:
@@ -66,7 +65,7 @@
  *          schema:
  *            type: string
  *          required: true
- *          description: the channel id you want to update its info
+ *          description: The channel ID you want to update
  *      requestBody:
  *        required: true
  *        content:
@@ -82,11 +81,11 @@
  *                  description: The description of the channel
  *                image:
  *                  type: string
- *                  description: The image of the channel
+ *                  description: The image URL of the channel
  *            example:
- *              name: name of channel
- *              description: description of the channel
- *              image: "media/media/test.jpg"
+ *              name: Example Channel
+ *              description: Example channel description
+ *              image: "media/media/example.jpg"
  *      responses:
  *        '200':
  *          description: The channel is updated successfully
@@ -100,11 +99,11 @@
  *                    example: success
  *                  message:
  *                    type: string
- *                    example: The channel is updated Successfully
+ *                    example: The channel is updated successfully
  *        '400':
  *          description: Bad request
  *    delete:
- *      summary: delete the channel
+ *      summary: Delete the channel or leave the channel
  *      tags:
  *        - Channels
  *      parameters:
@@ -113,14 +112,62 @@
  *          schema:
  *            type: string
  *          required: true
- *          description: the channel id you want to delete it
+ *          description: The channel ID to delete or leave
  *      responses:
  *        '204':
- *          description: The channel is deleted successfully
- *        '400':
- *          description: Bad request
+ *          description: The channel is deleted or user has successfully left the channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  message:
+ *                    type: string
+ *                    example: Channel deleted successfully or You have successfully left the channel
+ *        '403':
+ *          description: Unauthorized operation
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: You are not a member of this channel or Invalid role. Operation not allowed
+ *        '404':
+ *          description: Channel not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: Channel not found
+ *        '500':
+ *          description: Internal server error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: An error occurred while processing the request
  *    get:
- *      summary: get the channel info
+ *      summary: Get channel information
  *      tags:
  *        - Channels
  *      parameters:
@@ -129,10 +176,10 @@
  *          schema:
  *            type: string
  *          required: true
- *          description: the channel id you want to get its info
+ *          description: The channel ID to retrieve information for
  *      responses:
  *        '200':
- *          description: Retrieve the channel's info successfully
+ *          description: Successfully retrieved the channel's information
  *          content:
  *            application/json:
  *              schema:
@@ -162,6 +209,88 @@
  *                    type: string
  *        '400':
  *          description: Bad request
+ */
+
+/**
+ * @swagger
+ *  /channels/{channelId}/join:
+ *    post:
+ *      summary: Join a channel as a subscriber
+ *      tags:
+ *        - Channels
+ *      parameters:
+ *        - in: path
+ *          name: channelId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the channel to join
+ *      responses:
+ *        '200':
+ *          description: Successfully joined the channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      channel:
+ *                        type: object
+ *                        description: Details of the channel
+ *                        example:
+ *                          id: "64b7a1e93f3cde0018e22c0e"
+ *                          name: "Tech Community"
+ *                          privacy: true
+ *                      chat:
+ *                        type: object
+ *                        description: Chat details without participants
+ *                        example:
+ *                          id: "64b7a1e93f3cde0018e22c0e"
+ *                          lastMessage: "Welcome to the channel!"
+ *        '400':
+ *          description: User already exists in the channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: User already exists in Channel
+ *        '401':
+ *          description: Cannot join a private channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: You can't join Private Channel
+ *        '500':
+ *          description: Server error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: An error occurred while processing your request
  */
 
 /**

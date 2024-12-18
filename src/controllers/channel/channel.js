@@ -382,6 +382,62 @@ const demoteAdmin = catchAsync(async (req, res, next) => {
   });
 });
 
+const joinChannel = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+  const userId = req.user.id;
+
+  const [channel, chatOfChannel] = await Promise.all([
+    channelService.getChannelInformation(channelId),
+    chatService.getChatOfChannel(channelId),
+  ]);
+
+  if (!channel) {
+    return next(new AppError("Channel not found.", 500));
+  }
+  if (!chatOfChannel) {
+    return next(
+      new AppError("Failed to retrieve chat data. Please try again later.", 500)
+    );
+  }
+
+  const isSubscriberExists = chatOfChannel.participants.some((participant) => {
+    return String(participant.userId._id) === userId;
+  });
+
+  if (isSubscriberExists) {
+    return next(new AppError("User already exists in Channel", 400));
+  }
+
+  if (!channel.privacy) {
+    return next(new AppError("You can't join Private Channel", 401));
+  }
+  const subscriberData = {
+    userId,
+    role: "Subscriber",
+  };
+
+  const updatedChat = await chatService.addParticipant(
+    chatOfChannel._id,
+    subscriberData
+  );
+
+  if (!updatedChat) {
+    return next(new AppError("Failed to update the channel's chat.", 500));
+  }
+
+  const chat = {
+    ...chatOfChannel.toObject(), // Convert Mongoose document to plain object
+  };
+  delete chat.participants; // Remove the `participants` property
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      channel,
+      chat,
+    },
+  });
+});
 const addSubscriber = catchAsync(async (req, res, next) => {
   const {channelId, subscriberId} = req.params;
   const userId = req.user.id;
@@ -609,6 +665,7 @@ module.exports = {
   promoteSubscriber,
   demoteAdmin,
   addSubscriber,
+  joinChannel,
   fetchChannelChat,
   fetchThreadsMesssage,
   updatePrivacy,
