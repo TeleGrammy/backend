@@ -31,7 +31,7 @@ const deleteChannel = (io, socket, connectedUsers) => {
       );
 
       if (!participant) {
-        throw AppError("You are not a member of this channel", 403);
+        throw new AppError("You are not a member of this channel", 403);
       }
 
       if (["Admin", "Creator"].includes(participant.role)) {
