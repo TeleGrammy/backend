@@ -143,6 +143,7 @@ const handleChannelChat = (chatObj, userId) => {
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
     isChannel: true,
+    canDownlaod: myUser?.canDownload,
   };
 
   return chat;
@@ -161,10 +162,10 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
       return handlePrivateChat(chat, userId);
     }
     if (chat.isGroup) {
-      return handleGroupChat(chat);
+      return handleGroupChat(chat, userId);
     }
     if (chat.isChannel) {
-      return handleChannelChat(chat);
+      return handleChannelChat(chat, userId);
     }
     return chat;
   });
