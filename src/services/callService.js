@@ -116,7 +116,6 @@ module.exports.rejectCall = async (callId, userId) => {
     call.chatId.participants.length - 1
   ) {
     call.status = "rejected";
-    removeUnwantedData(call);
   }
   await call.save();
   return call;
