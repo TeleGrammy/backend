@@ -71,7 +71,6 @@ module.exports.addIceCandidate = async (callId, userId, candidate) => {
   });
   console.log(call.callObj.offererIceCandidate.length, "offererIceCandidate");
   console.log(call.callObj.answererIceCandiate.length, "answererIceCandidate");
-
   return call;
 };
 
