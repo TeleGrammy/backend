@@ -397,14 +397,19 @@ const ackEvent = async (id, chatId, offset) => {
 };
 
 const updateDraftOfUserInChat = async (chatId, userId, draft) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found");
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
   }
-  user.userDrafts.set(`${chatId}`, draft);
-  await user.save();
-  return user;
+  const participantIndex = chat.participants.findIndex(
+    (part) => part.userId.toString() === userId
+  );
+  if (participantIndex === -1) {
+    throw new Error("User is not participant in Chat");
+  }
+  chat.participants[participantIndex].draft_message = draft;
+  await chat.save();
+  return chat;
 };
 
 const addContact = async (userId, chatId, contactId, isMe) => {
