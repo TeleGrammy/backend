@@ -12,8 +12,11 @@ module.exports.createCall = async ({chatId, callerId}) => {
         userId: callerId,
       },
     ],
+    callObj: {
+      senderId: callerId,
+    },
   });
-  // call the find method to populate the data using the middleware of the modael
+  // call the find method to populate the data using the middleware of the model
   call = await Call.findById(call._id);
   return call;
 };
@@ -53,16 +56,22 @@ module.exports.setAnswer = async (userId, callId, answer) => {
 };
 
 module.exports.addIceCandidate = async (callId, userId, candidate) => {
-  const call = await Call.findById(callId);
-  if (!call) throw new Error("Call not found");
-  if (!candidate) return call;
+  if (!candidate) return;
 
-  if (call.callObj.senderId.toString() === userId) {
-    call.callObj.offererIceCandidate.push(candidate);
-  } else {
-    call.callObj.answererIceCandiate.push(candidate);
-  }
-  await call.save();
+  let call = await Call.findById(callId);
+  if (!call) throw new Error("Call not found");
+  const update =
+    call.callObj.senderId.toString() === userId
+      ? {$push: {"callObj.offererIceCandidate": candidate}}
+      : {$push: {"callObj.answererIceCandiate": candidate}};
+
+  call = await Call.findByIdAndUpdate(callId, update, {
+    new: true,
+    upsert: true,
+  });
+  console.log(call.callObj.offererIceCandidate.length, "offererIceCandidate");
+  console.log(call.callObj.answererIceCandiate.length, "answererIceCandidate");
+
   return call;
 };
 
@@ -83,7 +92,7 @@ module.exports.endCall = async (userId, callId, status) => {
   if (call.participants.length === 0) {
     call.status = status;
     if (status === "ended") call.endedAt = new Date();
-    removeUnwantedData(call);
+    // removeUnwantedData(call);
   }
   await call.save();
   return call;
@@ -109,7 +118,6 @@ module.exports.rejectCall = async (callId, userId) => {
     call.chatId.participants.length - 1
   ) {
     call.status = "rejected";
-    removeUnwantedData(call);
   }
   await call.save();
   return call;

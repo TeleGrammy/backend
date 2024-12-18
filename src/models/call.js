@@ -72,12 +72,20 @@ const callSchema = new mongoose.Schema(
   }
 );
 
-callSchema.methods.clearIceCandidates = function (userId) {
-  if (this.callObj.senderId.toString() === userId) {
-    this.callObj.offererIceCandidate = [];
-  } else {
-    this.callObj.answererIceCandiate = [];
-  }
+callSchema.methods.clearIceCandidates = function () {
+  this.callObj.offererIceCandidate = [];
+
+  this.callObj.answererIceCandiate = [];
+
+  console.log(
+    this.callObj.offererIceCandidate.length,
+    "offererIceCandidate from clear"
+  );
+  console.log(
+    this.callObj.answererIceCandiate.length,
+    "answererIceCandidate from clear"
+  );
+
   this.save();
 };
 
