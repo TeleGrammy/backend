@@ -51,7 +51,7 @@ module.exports.sendMessage = function ({io, socket}) {
             if (model_payload.toBeClassified === payload.content) {
               payload.content = "******";
             } else {
-              //TODO: Make the +18 Media Key
+              payload.mediaKey = "template/explicit";
             }
           }
         }
