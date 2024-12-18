@@ -1760,6 +1760,102 @@
           }
         }
       }
+    },
+    "/{groupId}/group-permissions": {
+      "patch": {
+        "summary": "Update group permissions",
+        "description": "Allows an admin to update the group permissions.",
+        "tags": ["Groups"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the group in which the permissions will be updated."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/groupPermissions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group permissions updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "groupPermissions": {"$ref": "#/components/schemas/groupPermissions"}
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The group permissions have been updated successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized action.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden access. You do not have permission to change the group's permissions."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found: the group could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "fail"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Group not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1895,6 +1991,38 @@
           "sendTextMessages": {
             "type": "boolean"
           },
+          "sendMedia": {
+            "type": "object",
+            "properties": {
+              "photos": {
+                "type": "boolean"
+              },
+              "videos": {
+                "type": "boolean"
+              },
+              "files": {
+                "type": "boolean"
+              },
+              "music": {
+                "type": "boolean"
+              },
+              "voiceMessages": {
+                "type": "boolean"
+              },
+              "videoMessages": {
+                "type": "boolean"
+              },
+              "stickers": {
+                "type": "boolean"
+              },
+              "polls": {
+                "type": "boolean"
+              },
+              "embedLinks": {
+                "type": "boolean"
+              }
+            }
+          },
           "addUsers": {
             "type": "boolean"
           },
@@ -1902,6 +2030,12 @@
             "type": "boolean"
           },
           "changeChatInfo": {
+            "type": "boolean"
+          },
+          "downloadVideos": {
+            "type": "boolean"
+          },
+          "downloadVoiceMessages": {
             "type": "boolean"
           }
         }

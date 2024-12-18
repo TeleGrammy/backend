@@ -275,6 +275,14 @@ const groupSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
+    downloadVideos: {
+      type: Boolean,
+      default: true,
+    },
+    downloadVoiceMessages: {
+      type: Boolean,
+      default: true,
+    },
   },
   groupSizeLimit: {
     type: Number,
