@@ -618,7 +618,7 @@ const updateGroupPermission = catchAsync(async (req, res, next) => {
 
   if (userType === undefined && userIndex === undefined) {
     throw new AppError(
-      "Unauthorized Access.The user does not have the permission to update group permission.",
+      "Forbidden access. You do not have permission to change the group's permissions.",
       403
     );
   }
