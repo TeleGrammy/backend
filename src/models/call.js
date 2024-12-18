@@ -20,20 +20,38 @@ const callSchema = new mongoose.Schema(
       offer: {
         type: Object,
       },
+      senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      offererIceCandidate: {
+        type: Array,
+        default: [],
+      },
+      recieverId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
       answer: {
         type: Object,
         default: null,
       },
-      participantsICE: {
-        type: Map,
-        of: Array,
-        default: () => new Map(),
+      answererIceCandiate: {
+        type: Array,
+        default: [],
       },
     },
     chatId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
       required: true,
+    },
+    participantsWhoRejected: {
+      type: Map,
+      of: Boolean,
+      default: () => new Map(),
     },
     status: {
       type: String,
@@ -54,11 +72,55 @@ const callSchema = new mongoose.Schema(
   }
 );
 
+callSchema.methods.clearIceCandidates = function () {
+  this.callObj.offererIceCandidate = [];
+
+  this.callObj.answererIceCandiate = [];
+
+  console.log(
+    this.callObj.offererIceCandidate.length,
+    "offererIceCandidate from clear"
+  );
+  console.log(
+    this.callObj.answererIceCandiate.length,
+    "answererIceCandidate from clear"
+  );
+
+  this.save();
+};
+
 callSchema.virtual("duration").get(function () {
   if (this.endedAt && this.startedAt) {
     return this.endedAt.getTime() - this.startedAt.getTime();
   }
   return 0;
+});
+
+callSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "chatId",
+    select: "_id isGroup isChannel participants.userId groupId channelId",
+    populate: [
+      {
+        path: "participants.userId",
+        select: "_id username picture",
+      },
+      {
+        path: "groupId",
+        select: "_id image name",
+      },
+      {
+        path: "channelId",
+        select: "_id image name",
+      },
+    ],
+  });
+
+  next();
+});
+
+callSchema.pre("find", function () {
+  this.sort({startedAt: -1});
 });
 
 callSchema.set("toJSON", {virtuals: true});
