@@ -60,13 +60,6 @@ module.exports.answerCall = function ({socket, io}) {
         .to(`chat:${call.chatId._id}`)
         .emit("call:answeredCall", call);
 
-      if (call.callObj.offererIceCandidate.length > 0) {
-        io.to(`${socket.userId}`).emit(
-          "call:iceCandidate",
-          call.callObj.offererIceCandidate
-        );
-        call.clearIceCandidates(call.callObj.senderId);
-      }
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -79,12 +72,13 @@ module.exports.rejectCall = function ({socket, io}) {
     try {
       if (typeof callBack !== "function") return;
 
-      // const call = await callService.updateStatus(payload.callId, "rejected");
       const call = await callService.rejectCall(payload.callId, socket.userId);
 
       if (call.status === "rejected") {
-        io.to(`${call.participants[0].userId}`).emit("call:endedCall", call);
+        if (call.participants.length > 0)
+          io.to(`${call.participants[0].userId}`).emit("call:endedCall", call);
       }
+
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -113,25 +107,53 @@ module.exports.endCall = function ({socket, io}) {
   };
 };
 
+const callLocks = new Map();
 module.exports.addIce = function ({socket, io}) {
   return async (payload, callBack) => {
     try {
       if (typeof callBack !== "function") return;
-
-      const call = await callService.addIceCandidate(
-        payload.callId,
-        socket.userId,
-        payload.IceCandidate
-      );
-
-      if (call.callObj.answer !== null) {
-        socket.broadcast
-          .to(`chat:${call.chatId._id}`)
-          .emit("call:addedICE", call);
-        call.clearIceCandidates(socket.userId);
+      console.log("user sent ice: ", socket.userId);
+      if (!callLocks.has(payload.callId)) {
+        callLocks.set(payload.callId, Promise.resolve());
       }
-      callBack({status: "ok", call});
+
+      // chain the current operation onto the existing queue
+      const previousPromise = callLocks.get(payload.callId);
+      const currentPromise = previousPromise.then(async () => {
+        console.log("have the lock of", payload.callId);
+        const call = await callService.addIceCandidate(
+          payload.callId,
+          socket.userId,
+          payload.IceCandidate
+        );
+
+        if (call.callObj.answer !== null) {
+          const {senderId, recieverId} = call.callObj;
+
+          io.to(`${senderId}`).emit("call:addedICE", call);
+          io.to(`${recieverId}`).emit("call:addedICE", call);
+
+          await call.clearIceCandidates(socket.userId);
+        }
+
+        callBack({status: "ok", call});
+      });
+
+      // update the lock with the new promise
+      callLocks.set(payload.callId, currentPromise);
+
+      // ensure we clean up after the current task finishes
+      currentPromise.finally(() => {
+        if (callLocks.get(payload.callId) === currentPromise) {
+          callLocks.delete(payload.callId);
+        }
+        console.log("leave the lock of", payload.callId);
+      });
+
+      // wait for the current task to complete before resolving
+      await currentPromise;
     } catch (err) {
+      console.error(err);
       callBack({status: "error", message: err.message});
     }
   };
