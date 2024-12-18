@@ -5,7 +5,7 @@ const chatService = require("../../services/chatService");
 const AppError = require("../../errors/appError");
 
 exports.muteNotification = catchAsync(async (req, res, next) => {
-  const {userId} = req.user;
+  const userId = req.user.id;
   const {chatId} = req.body;
 
   const chat = await chatService.getBasicChatById(chatId);
@@ -17,7 +17,7 @@ exports.muteNotification = catchAsync(async (req, res, next) => {
   const userTokens = await userDeviceService.getDevicesByUser(userId);
   if (userTokens) {
     userTokens.forEach(async (token) => {
-      firebaseUtils.unsubscribeFromTopic(token, `chat-${chatId}`);
+      firebaseUtils.unsubscribeFromTopic(token.deviceToken, `chat-${chatId}`);
     });
   }
   res.status(200).send({
@@ -26,7 +26,7 @@ exports.muteNotification = catchAsync(async (req, res, next) => {
 });
 
 exports.unmuteNotification = catchAsync(async (req, res, next) => {
-  const {userId} = req.user;
+  const userId = req.user.id;
   const {chatId} = req.body;
 
   const chat = await chatService.getBasicChatById(chatId);
@@ -37,7 +37,7 @@ exports.unmuteNotification = catchAsync(async (req, res, next) => {
   const userTokens = await userDeviceService.getDevicesByUser(userId);
   if (userTokens) {
     userTokens.forEach(async (token) => {
-      firebaseUtils.subscribeToTopic(token, `chat-${chatId}`);
+      firebaseUtils.subscribeToTopic(token.deviceToken, `chat-${chatId}`);
     });
   }
   res.status(200).send({

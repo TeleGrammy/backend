@@ -65,6 +65,7 @@ async function subscribeToTopic(token, topic) {
  * @param {string} topic - Topic name (e.g., "chat_12345").
  */
 async function unsubscribeFromTopic(token, topic) {
+  console.log(token);
   try {
     await admin.messaging().unsubscribeFromTopic(token, topic);
     console.log(`Token ${token} unsubscribed from topic: ${topic}`);
