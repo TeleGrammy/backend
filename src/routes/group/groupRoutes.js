@@ -49,4 +49,8 @@ router
   .route("/:groupId/download-media/:messageId")
   .get(groupExists, isAdmin, isRegularMember, groupController.downloadMedia);
 
+router
+  .route("/:groupId/group-permissions")
+  .patch(groupExists, isAdmin, groupController.updateGroupPermission);
+
 module.exports = router;

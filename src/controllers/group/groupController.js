@@ -585,10 +585,19 @@ const downloadMedia = catchAsync(async (req, res, next) => {
     });
   else userData = group.members[userIndex];
 
-  if (
-    (messageType === "video" && !userData.permissions.downloadVideos) ||
-    (messageType === "audio" && !userData.permissions.downloadVoiceMessages)
-  )
+  const conditions = {
+    video:
+      !group.groupPermissions.downloadVideos ||
+      (group.groupPermissions.downloadVideos &&
+        !userData.permissions.downloadVideos),
+
+    audio:
+      !group.groupPermissions.downloadMedia ||
+      (group.groupPermissions.downloadMedia &&
+        !userData.permissions.downloadVoiceMessages),
+  };
+
+  if (conditions[messageType])
     throw new AppError(
       `You don't have permission to download ${messageType} media`,
       403
@@ -598,6 +607,33 @@ const downloadMedia = catchAsync(async (req, res, next) => {
     status: "success",
     mediaUrl: message.mediaUrl,
     message: `You can download ${messageType} media`,
+  });
+});
+
+const updateGroupPermission = catchAsync(async (req, res, next) => {
+  const {group} = req;
+  const {userIndex} = req;
+  const {userType} = req;
+  const {body} = req;
+
+  if (userType === undefined && userIndex === undefined) {
+    throw new AppError(
+      "Unauthorized Access.The user does not have the permission to update group permission.",
+      403
+    );
+  }
+
+  const currentPermissions = group.groupPermissions;
+
+  const newPermissions = mergePermission(currentPermissions, body);
+
+  group.groupPermissions = newPermissions;
+  await group.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {groupPermissions: group.groupPermissions},
+    message: "The group permissions have been updated successfully.",
   });
 });
 
@@ -616,4 +652,5 @@ module.exports = {
   pinMessage,
   unpinMessage,
   downloadMedia,
+  updateGroupPermission,
 };
