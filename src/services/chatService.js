@@ -63,8 +63,7 @@ const updateChatMute = async (chatId, userId, muteStatus) => {
   }
 
   // Step 2: Find the participant by userId and update `isMute`
-  console.log(userId);
-  console.log(chat.participants);
+
   const participant = chat.participants.find(
     (p) => p.userId.toString() === userId
   );
