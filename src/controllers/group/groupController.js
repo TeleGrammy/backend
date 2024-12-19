@@ -637,6 +637,82 @@ const updateGroupPermission = catchAsync(async (req, res, next) => {
   });
 });
 
+const getUserInfo = catchAsync(async (req, res, next) => {
+  const {group} = req;
+  const {userIndex} = req;
+  const {userType} = req;
+
+  if (userType === undefined && userIndex === undefined)
+    throw new AppError("You are not member of the group", 404);
+
+  const userData =
+    userType === "admin" ? group.admins[userIndex] : group.members[userIndex];
+
+  userData.joinedAt = undefined;
+  userData.leftAt = undefined;
+  userData.adminAt = undefined;
+  userData.superAdminId = undefined;
+
+  userData._doc.role = userType;
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      user: userData,
+    },
+  });
+});
+
+const getGroupPermissions = catchAsync(async (req, res, next) => {
+  const {group} = req;
+  const {userIndex} = req;
+  const {userType} = req;
+
+  if (userType === undefined && userIndex === undefined)
+    throw new AppError("You are not member of the group", 404);
+
+  const {groupPermissions} = group;
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      groupPermissions,
+    },
+    message: "The group permissions have been retrieved successfully.",
+  });
+});
+
+const getMemberPermission = catchAsync(async (req, res, next) => {
+  const {group} = req;
+  const {userIndex} = req;
+  const {userType} = req;
+
+  if (userType === undefined && userIndex === undefined)
+    throw new AppError("You are not admin of the group", 404);
+
+  const memberId = req.params.userId;
+
+  const memberData = group.members
+    .concat(group.admins)
+    .find(
+      (member) =>
+        member.memberId?.toString() === memberId ||
+        member.adminId?.toString() === memberId
+    );
+
+  if (!memberData) throw new AppError("User not found in the group", 404);
+
+  const {permissions} = memberData;
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      permissions,
+    },
+    message: "The member's permissions have been retrieved successfully.",
+  });
+});
+
 module.exports = {
   findGroup,
   addAdmin,
@@ -653,4 +729,7 @@ module.exports = {
   unpinMessage,
   downloadMedia,
   updateGroupPermission,
+  getUserInfo,
+  getGroupPermissions,
+  getMemberPermission,
 };
