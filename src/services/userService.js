@@ -464,6 +464,11 @@ const pushUserChannel = async (userId, channelId) => {
     {new: true} // Return the updated document
   );
 };
+
+const searchUsers = async (filter, select) => {
+  return User.find(filter).select(select);
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -489,4 +494,5 @@ module.exports = {
   getUserContact,
   updateMany,
   pushUserChannel,
+  searchUsers,
 };
