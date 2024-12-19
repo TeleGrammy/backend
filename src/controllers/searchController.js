@@ -4,6 +4,7 @@ const userService = require("../services/userService");
 const groupService = require("../services/groupService");
 const channelService = require("../services/channelService");
 const messageService = require("../services/messageService");
+const Message = require("../models/message");
 
 const searchForUser = async (req) => {
   const {uuid} = req.query;
@@ -157,6 +158,26 @@ const globalSearch = catchAsync(async (req, res, next) => {
   return res.status(200).json({status: "success", data: {[type]: result}});
 });
 
+const searchForMatchedContents = catchAsync(async (req, res, next) => {
+  const {searchText, mediaType, limit, skip} = req.body;
+  const {chatId} = req.params;
+
+  try {
+    const results = await Message.searchMessages({
+      messageType: mediaType,
+      chatId,
+      searchText,
+      limit,
+      skip,
+    });
+
+    res.status(200).json({status: "success", data: results});
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = {
   globalSearch,
+  searchForMatchedContents,
 };
