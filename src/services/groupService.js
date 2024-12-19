@@ -65,6 +65,17 @@ const findGroup = (filter, populateOptions) => {
   return query;
 };
 
+const searchGroup = (filter, select, populatedOptions) => {
+  const pipeline = [];
+  pipeline.push({$match: filter});
+
+  if (select) pipeline.push({$project: select});
+  if (populatedOptions) pipeline.push({$lookup: populatedOptions});
+
+  const query = Group.aggregate(pipeline);
+  return query;
+};
+
 module.exports = {
   createGroup,
   findGroupById,
@@ -72,4 +83,5 @@ module.exports = {
   findAndUpdateGroup,
   updateParticipant,
   findGroup,
+  searchGroup,
 };
