@@ -116,7 +116,7 @@ const searchForMessages = async (req) => {
     (doc) =>
       doc.chatId !== null &&
       (doc.chatId?.groupId?.groupType === "Public" ||
-        doc.chatId?.channelId?.privacy === false)
+        doc.chatId?.channelId?.privacy === true)
   );
 
   const result = filteredDocs.map((doc) => {
