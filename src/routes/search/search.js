@@ -1,5 +1,6 @@
 const express = require("express");
-const {body, validationResult} = require("express-validator");
+const {body, param, validationResult} = require("express-validator");
+const mongoose = require("mongoose");
 
 const searchController = require("../../controllers/search/search");
 
@@ -16,6 +17,50 @@ const validationErrorCatcher = (req, res, next) => {
 };
 
 const router = express.Router();
+
+router.get(
+  "/messages/:chatId",
+  [
+    param("chatId")
+      .exists()
+      .withMessage("ChatId field is required")
+      .isString()
+      .withMessage("ChatId field should be a string")
+      .notEmpty()
+      .withMessage("ChatId field should not be empty")
+      .custom((value) => {
+        if (!mongoose.Types.ObjectId.isValid(value)) {
+          throw new Error("ChatId is not a valid ObjectId");
+        }
+        return true;
+      }),
+
+    body("searchText")
+      .exists()
+      .withMessage("Search Text field is required")
+      .isString()
+      .withMessage("Search Text field should be a string")
+      .withMessage("Media Type must be one of text, image, video, or link"),
+
+    body("mediaType")
+      .optional()
+      .isString()
+      .withMessage("Media Type field should be a string")
+      .isIn(["text", "image", "video", "link"]),
+
+    body("limit")
+      .optional()
+      .isInt({min: 1})
+      .withMessage("Limit Field should be a postitive integer"),
+
+    body("skip")
+      .optional()
+      .isInt({min: 0})
+      .withMessage("Skip field should be a non-negative integer"),
+  ],
+  validationErrorCatcher,
+  searchController.searchForMatchedContents
+);
 
 router.get(
   "/messages",

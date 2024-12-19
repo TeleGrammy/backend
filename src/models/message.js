@@ -236,6 +236,7 @@ messageSchema.methods.unpin = async function () {
 // });
 
 messageSchema.statics.searchMessages = async function ({
+  chatId,
   searchText,
   messageType,
   limit = 20,
@@ -246,6 +247,13 @@ messageSchema.statics.searchMessages = async function ({
   }
 
   const query = {};
+
+  if (chatId) {
+    if (chatId && !mongoose.Types.ObjectId.isValid(chatId)) {
+      throw new AppError("ChatId is not a valid ObjectId", 400);
+    }
+    query.chatId = chatId;
+  }
 
   if (messageType) {
     query.messageType = messageType;

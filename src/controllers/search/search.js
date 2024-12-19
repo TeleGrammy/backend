@@ -4,10 +4,12 @@ const Message = require("../../models/message");
 
 const searchForMatchedContents = catchAsync(async (req, res, next) => {
   const {searchText, mediaType, limit, skip} = req.body;
+  const {chatId} = req.params;
 
   try {
     const results = await Message.searchMessages({
       messageType: mediaType,
+      chatId,
       searchText,
       limit,
       skip,
