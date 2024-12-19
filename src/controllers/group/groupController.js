@@ -682,6 +682,37 @@ const getGroupPermissions = catchAsync(async (req, res, next) => {
   });
 });
 
+const getMemberPermission = catchAsync(async (req, res, next) => {
+  const {group} = req;
+  const {userIndex} = req;
+  const {userType} = req;
+
+  if (userType === undefined && userIndex === undefined)
+    throw new AppError("You are not admin of the group", 404);
+
+  const memberId = req.params.userId;
+
+  const memberData = group.members
+    .concat(group.admins)
+    .find(
+      (member) =>
+        member.memberId?.toString() === memberId ||
+        member.adminId?.toString() === memberId
+    );
+
+  if (!memberData) throw new AppError("User not found in the group", 404);
+
+  const {permissions} = memberData;
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      permissions,
+    },
+    message: "The member's permissions have been retrieved successfully.",
+  });
+});
+
 module.exports = {
   findGroup,
   addAdmin,
@@ -700,4 +731,5 @@ module.exports = {
   updateGroupPermission,
   getUserInfo,
   getGroupPermissions,
+  getMemberPermission,
 };

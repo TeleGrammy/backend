@@ -63,4 +63,8 @@ router
   .route("/:groupId/user-info")
   .get(groupExists, isRegularMember, isAdmin, groupController.getUserInfo);
 
+router
+  .route("/:groupId/member-permissions/:memberId")
+  .get(groupExists, isAdmin, groupController.getMemberPermission);
+
 module.exports = router;

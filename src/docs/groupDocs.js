@@ -1405,6 +1405,72 @@
 
 /**
  * @swagger
+ *  /{groupId}/member-permissions/{memberId}:
+ *    get:
+ *      summary: Retrieve member permissions
+ *      description: Fetches the member permissions.
+ *      tags:
+ *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the group in which the member permissions will be retrieved.
+ *        - in: path
+ *          name: memberId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the member whose permissions will be retrieved.
+ *      responses:
+ *        '200':
+ *          description: Member permissions retrieved successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      permissions:
+ *                        oneOf:
+ *                          - $ref: '#/components/schemas/memberPermissions'
+ *                          - $ref: '#/components/schemas/adminPermissions'
+ *                  message:
+ *                    type: string
+ *                    example: The member permissions have been retrieved successfully.
+ *        '404':
+ *          description: 'Not Found: the group or member could not be found.'
+ *          content:
+ *            application/json:
+ *              schema:
+ *                oneOf:
+ *                  - type: object
+ *                    properties:
+ *                      status:
+ *                        type: string
+ *                        example: fail
+ *                      message:
+ *                        type: string
+ *                        example: Member not found in the group
+ *                  - type: object
+ *                    properties:
+ *                      status:
+ *                        type: string
+ *                        example: fail
+ *                      message:
+ *                        type: string
+ *                        example: Group not found
+ */
+
+/**
+ * @swagger
  *components:
  *  schemas:
  *    group:
