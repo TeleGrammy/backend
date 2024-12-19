@@ -1201,7 +1201,7 @@
 /**
  * @swagger
  *  /{groupId}/group-permissions:
- *    patch:
+ *     patch:
  *      summary: Update group permissions
  *      description: Allows an admin to update the group permissions.
  *      tags:
@@ -1264,6 +1264,143 @@
  *                  message:
  *                    type: string
  *                    example: Group not found
+ *     get:
+ *      summary: Retrieve group permissions
+ *      description: Fetches the group permissions.
+ *      tags:
+ *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the group whose permissions will be retrieved.
+ *      responses:
+ *        '200':
+ *          description: Group permissions retrieved successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      groupPermissions:
+ *                        $ref: '#/components/schemas/groupPermissions'
+ *                  message:
+ *                    type: string
+ *                    example: The group permissions have been retrieved successfully.
+ *        '404':
+ *          description: 'Not Found: the group could not be found.'
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: fail
+ *                  message:
+ *                    type: string
+ *                    example: Group not found
+ */
+
+/**
+ * @swagger
+ *  /{groupId}/user-info:
+ *    get:
+ *      summary: Retrieve user information
+ *      description: Fetches the user information based on their role in the group (member or admin).
+ *      tags:
+ *        - Groups
+ *      parameters:
+ *        - in: path
+ *          name: groupId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the group whose user information will be retrieved.
+ *      responses:
+ *        '200':
+ *          description: User information retrieved successfully.
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    oneOf:
+ *                      - type: object
+ *                        properties:
+ *                          user:
+ *                            type: object
+ *                            properties:
+ *                              memberId:
+ *                                type: string
+ *                                description: The member ID
+ *                              permissions:
+ *                                $ref: '#/components/schemas/memberPermissions'
+ *                              mute:
+ *                                type: boolean
+ *                                description: Flag indicating if notifications are muted
+ *                              muteUntil:
+ *                                type: string
+ *                                format: date-time
+ *                                description: The time at which notifications will be unmuted
+ *                              role:
+ *                                type: string
+ *                                enum:
+ *                                  - member
+ *                                description: The role of the user in the group
+ *                      - type: object
+ *                        properties:
+ *                          user:
+ *                            type: object
+ *                            properties:
+ *                              adminId:
+ *                                type: string
+ *                                description: The admin ID
+ *                              permissions:
+ *                                $ref: '#/components/schemas/adminPermissions'
+ *                              mute:
+ *                                type: boolean
+ *                                description: Flag indicating if notifications are muted
+ *                              muteUntil:
+ *                                type: string
+ *                                format: date-time
+ *                                description: The time at which notifications will be unmuted
+ *                              role:
+ *                                type: string
+ *                                enum:
+ *                                  - admin
+ *                                description: The role of the user in the group
+ *                              customTitle:
+ *                                type: string
+ *                                description: The custom title assigned to the admin in the group.
+ *                  message:
+ *                    type: string
+ *                    example: The user information has been retrieved successfully.
+ *        '404':
+ *          description: 'Not Found: The user could not be found.'
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: fail
+ *                  message:
+ *                    type: string
+ *                    example: User not found
  */
 
 /**
@@ -1461,5 +1598,9 @@
  *        pinMessages:
  *          type: boolean
  *        changeChatInfo:
+ *          type: boolean
+ *        downloadVideos:
+ *          type: boolean
+ *        downloadVoiceMessages:
  *          type: boolean
  */
