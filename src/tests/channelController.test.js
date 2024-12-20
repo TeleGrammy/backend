@@ -251,17 +251,21 @@ describe("Channel Controller", () => {
     });
 
     it("should return 404 if channel is not found", async () => {
-      chatService.getChatOfChannel.mockResolvedValue(null);
+      channelService.getChannelInformation.mockResolvedValue(null);
 
       await deleteChannel(req, res, next);
 
-      expect(chatService.getChatOfChannel).toHaveBeenCalledWith(
+      expect(channelService.getChannelInformation).toHaveBeenCalledWith(
         "testChannelId"
       );
       expect(next).toHaveBeenCalledWith(new AppError("Channel not found", 404));
     });
 
     it("should return 403 if user is not a participant", async () => {
+      channelService.getChannelInformation.mockResolvedValue({
+        _id: "channelId",
+        name: "Channel Name",
+      });
       chatService.getChatOfChannel.mockResolvedValue({participants: []});
 
       await deleteChannel(req, res, next);
@@ -273,7 +277,10 @@ describe("Channel Controller", () => {
 
     it("should delete the channel if user is the creator", async () => {
       chatService.getChatOfChannel.mockResolvedValue({
-        participants: [{userId: "testUserId", role: "Creator"}],
+        participants: [
+          {userId: {_id: "testUserId"}, role: "Creator"},
+          {userId: {_id: "testProId"}, role: "SubOrdinants"},
+        ],
         _id: "chatId",
       });
 
@@ -295,7 +302,7 @@ describe("Channel Controller", () => {
 
     it("should allow user to leave the channel if they are a subscriber or admin", async () => {
       chatService.getChatOfChannel.mockResolvedValue({
-        participants: [{userId: "testUserId", role: "Admin"}],
+        participants: [{userId: {_id: "testUserId"}, role: "Admin"}],
         _id: "chatId",
       });
 
@@ -307,7 +314,7 @@ describe("Channel Controller", () => {
         "chatId",
         "testUserId"
       );
-      expect(res.status).toHaveBeenCalledWith(204);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: "success",
         message: "You have successfully left the channel",
@@ -316,7 +323,7 @@ describe("Channel Controller", () => {
 
     it("should return 500 if an error occurs during channel deletion", async () => {
       chatService.getChatOfChannel.mockResolvedValue({
-        participants: [{userId: "testUserId", role: "Creator"}],
+        participants: [{userId: {_id: "testUserId"}, role: "Creator"}],
         _id: "chatId",
       });
 
@@ -332,7 +339,7 @@ describe("Channel Controller", () => {
 
     it("should return 500 if an error occurs while leaving the channel", async () => {
       chatService.getChatOfChannel.mockResolvedValue({
-        participants: [{userId: "testUserId", role: "Admin"}],
+        participants: [{userId: {_id: "testUserId"}, role: "Admin"}],
         _id: "chatId",
       });
 
@@ -347,7 +354,7 @@ describe("Channel Controller", () => {
 
     it("should return 403 if role is invalid", async () => {
       chatService.getChatOfChannel.mockResolvedValue({
-        participants: [{userId: "testUserId", role: "Unknown"}],
+        participants: [{userId: {_id: "testUserId"}, role: "Unknown"}],
       });
 
       await deleteChannel(req, res, next);
