@@ -11,7 +11,8 @@ const AppError = require("../errors/appError");
  * @returns {Promise<Message|null>} - A promise that resolves to the created message if successful, otherwise null.
  */
 module.exports.createMessage = async (messageData) => {
-  const message = await Message.create(messageData);
+  let message = await Message.create(messageData);
+  message = await Message.findById(message._id);
   return message;
 };
 
