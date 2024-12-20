@@ -162,7 +162,8 @@ module.exports.deleteMessage = async (messageId, senderId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-  if (message.senderId.toString() !== senderId) {
+
+  if (message.senderId._id.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }
   await Message.findByIdAndDelete(messageId);
@@ -171,7 +172,7 @@ module.exports.deleteMessage = async (messageId, senderId) => {
 
 module.exports.checkChatOfMessage = async (id, chatId) => {
   const message = await Message.findById(id);
-  if (message.chatId.toString() !== chatId) {
+  if (message.chatId._id.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
 };
