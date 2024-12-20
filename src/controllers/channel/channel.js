@@ -7,7 +7,6 @@ const AppError = require("../../errors/appError");
 const channelService = require("../../services/channelService");
 const chatService = require("../../services/chatService");
 const messageService = require("../../services/messageService");
-const userService = require("../../services/userService");
 
 const updateChannelHelper = async (
   req,
@@ -426,7 +425,7 @@ const joinChannel = catchAsync(async (req, res, next) => {
   }
 
   const chat = {
-    ...chatOfChannel.toObject(), // Convert Mongoose document to plain object
+    ...updatedChat.toObject(), // Convert Mongoose document to plain object
   };
   delete chat.participants; // Remove the `participants` property
 
@@ -538,7 +537,6 @@ const addSubscriber = catchAsync(async (req, res, next) => {
 });
 const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
-  console.log("Fetch PArt", req.user.id);
 
   const chat = await chatService.getChatOfChannel(channelId);
   await chatService.checkUserAdmin(chat.id, req.user.id);
