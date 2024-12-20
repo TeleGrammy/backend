@@ -55,8 +55,8 @@ module.exports.sendMessage = function ({io, socket}) {
 
       // i think this is useless since at the event of new message
       // the user will have the mentions and can know if he is mentioned or not
-      message.mentions.forEach((userId) => {
-        io.to(`${userId}`).emit("message:mention", message);
+      message.mentions.forEach((mention) => {
+        io.to(`${mention._id}`).emit("message:mention", message);
       });
 
       // call the cb to acknowledge the message is sent to other users
