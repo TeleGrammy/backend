@@ -180,3 +180,304 @@
  *                  message:
  *                    type: string
  */
+
+/**
+ * @swagger
+ *
+ * /search/messages:
+ *   get:
+ *     summary: Search for messages or media across all chats
+ *     description: Allows users to search for messages or media in all chats, with results filtered by the provided search text, which can match the message content or media URL.
+ *     tags:
+ *       - Search and Discover
+ *     parameters:
+ *       - in: query
+ *         name: mediaType
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - text
+ *             - image
+ *             - video
+ *             - link
+ *         description: Specifies the type of media to search for.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Defines the maximum number of messages to retrieve in the query result.
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: integer
+ *         description: Specifies the number of documents to skip for pagination purposes.
+ *       - in: query
+ *         name: searchText
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The text to search for within the message content or media URL.
+ *     responses:
+ *       '200':
+ *         description: A list of messages matching the search criteria.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     messages:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             description: Unique identifier for the message.
+ *                           sender:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 description: Unique identifier for the sender.
+ *                               username:
+ *                                 type: string
+ *                                 description: Username of the sender.
+ *                               screenName:
+ *                                 type: string
+ *                                 description: Screen name of the sender.
+ *                               email:
+ *                                 type: string
+ *                                 description: Email address of the sender.
+ *                               phone:
+ *                                 type: string
+ *                                 description: Phone number of the sender.
+ *                           chat:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 description: Unique identifier for the chat.
+ *                               name:
+ *                                 type: string
+ *                                 description: Name of the chat.
+ *                           parentPost:
+ *                             type: string
+ *                             description: ID of the parent message, if applicable.
+ *                           isPost:
+ *                             type: boolean
+ *                             description: Indicates if the message is a post.
+ *                           commentsCount:
+ *                             type: integer
+ *                             description: The number of comments associated with the message.
+ *                           messageType:
+ *                             type: string
+ *                             enum:
+ *                               - text
+ *                               - image
+ *                               - audio
+ *                               - voice_note
+ *                               - document
+ *                               - sticker
+ *                               - GIF
+ *                               - video
+ *                               - file
+ *                               - link
+ *                             description: The type of media associated with the message.
+ *                           content:
+ *                             type: string
+ *                             description: The content of the message.
+ *                           mediaUrl:
+ *                             type: string
+ *                             description: URL of the media associated with the message.
+ *                           timestamp:
+ *                             type: string
+ *                             description: Timestamp when the message was sent.
+ *                           isPinned:
+ *                             type: boolean
+ *                             description: Indicates if the message is pinned.
+ *                           selfDestructTime:
+ *                             type: integer
+ *                             description: The time-to-live (TTL) in seconds for self-destructing messages.
+ *                           expiresAt:
+ *                             type: string
+ *                             description: The exact expiration time for TTL.
+ *       '500':
+ *         description: Internal server error while searching messages.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "Error searching messages"
+ */
+
+/**
+ * @swagger
+ *
+ * /search/messages/{chatId}:
+ *   get:
+ *     summary: Search for messages or media within a specific chat
+ *     description: Allows users to search for messages or media within a specific chat, based on the provided search text, which can match the message content or media URL.
+ *     tags:
+ *       - Search and Discover
+ *     parameters:
+ *       - in: query
+ *         name: mediaType
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - text
+ *             - image
+ *             - video
+ *             - link
+ *         description: Specifies the type of media to search for.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Defines the maximum number of messages to retrieve in the query result.
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: integer
+ *         description: Specifies the number of documents to skip for pagination purposes.
+ *       - in: query
+ *         name: searchText
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The text to search for within the message content or media URL.
+ *       - in: path
+ *         name: chatId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The unique identifier of the chat to search within.
+ *     responses:
+ *       '200':
+ *         description: A list of messages that match the search criteria within the specified chat.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     messages:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             description: Unique identifier for the message.
+ *                           sender:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 description: Unique identifier for the sender.
+ *                               username:
+ *                                 type: string
+ *                                 description: Username of the sender.
+ *                               screenName:
+ *                                 type: string
+ *                                 description: Screen name of the sender.
+ *                               email:
+ *                                 type: string
+ *                                 description: Email address of the sender.
+ *                               phone:
+ *                                 type: string
+ *                                 description: Phone number of the sender.
+ *                           chat:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 description: Unique identifier for the chat.
+ *                               name:
+ *                                 type: string
+ *                                 description: Name of the chat.
+ *                           parentPost:
+ *                             type: string
+ *                             description: ID of the parent message, if applicable.
+ *                           isPost:
+ *                             type: boolean
+ *                             description: Indicates if the message is a post.
+ *                           commentsCount:
+ *                             type: integer
+ *                             description: The number of comments associated with the message.
+ *                           messageType:
+ *                             type: string
+ *                             enum:
+ *                               - text
+ *                               - image
+ *                               - audio
+ *                               - voice_note
+ *                               - document
+ *                               - sticker
+ *                               - GIF
+ *                               - video
+ *                               - file
+ *                               - link
+ *                             description: The type of media associated with the message.
+ *                           content:
+ *                             type: string
+ *                             description: The content of the message.
+ *                           mediaUrl:
+ *                             type: string
+ *                             description: URL of the media associated with the message.
+ *                           timestamp:
+ *                             type: string
+ *                             description: Timestamp when the message was sent.
+ *                           isPinned:
+ *                             type: boolean
+ *                             description: Indicates if the message is pinned.
+ *                           selfDestructTime:
+ *                             type: integer
+ *                             description: The time-to-live (TTL) in seconds for self-destructing messages.
+ *                           expiresAt:
+ *                             type: string
+ *                             description: The exact expiration time for TTL.
+ *       '400':
+ *         description: Invalid ChatId provided.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "ChatId is not a valid ObjectId"
+ *       '500':
+ *         description: Internal server error while searching messages.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "Error searching messages"
+ */

@@ -171,7 +171,7 @@ const searchForMatchedContents = catchAsync(async (req, res, next) => {
       skip,
     });
 
-    res.status(200).json({status: "success", data: results});
+    res.status(200).json({status: "success", data: {message: results}});
   } catch (err) {
     next(err);
   }

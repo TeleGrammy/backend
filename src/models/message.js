@@ -268,9 +268,29 @@ messageSchema.statics.searchMessages = async function ({
     const maxLimit = 100;
     limit = Math.min(limit, maxLimit);
 
-    return await this.find(query).sort({timestamp: -1}).skip(skip).limit(limit);
+    const messages = await this.find(query)
+      .sort({timestamp: -1})
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: "senderId",
+        select: "username screenName email phone",
+      })
+      .populate({
+        path: "chatId",
+        select: "name",
+      });
+
+    return messages.map((message) => {
+      const {senderId, chatId, ...rest} = message.toObject();
+      return {
+        ...rest,
+        sender: senderId,
+        chat: chatId,
+      };
+    });
   } catch (error) {
-    throw new AppError(`Error searching messages: ${error.message}`, 500);
+    throw new AppError("Error searching messages", 500);
   }
 };
 
