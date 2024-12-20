@@ -22,6 +22,18 @@ const getRegisteredUsers = catchAsync(async (req, res, next) => {
   }
 });
 
+const getCurrentGroups = catchAsync(async (req, res, next) => {
+  try {
+    const currentGroups = await adminService.getGroups();
+    return res.status(200).json({
+      status: "success",
+      data: currentGroups,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 const changeUserStatus = catchAsync(async (req, res, next) => {
   try {
     const {userId} = req.params;
@@ -82,6 +94,7 @@ const applyFilterContents = catchAsync(async (req, res, next) => {
 
 module.exports = {
   getRegisteredUsers,
+  getCurrentGroups,
   changeUserStatus,
   applyFilterContents,
 };

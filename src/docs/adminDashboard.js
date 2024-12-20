@@ -1,5 +1,115 @@
 /**
  * @swagger
+ * /groups:
+ *   get:
+ *     summary: Get all groups with populated owner details
+ *     description: Retrieve a list of groups with owner information populated.
+ *     tags:
+ *       - Admin Dashboard
+ *     responses:
+ *       200:
+ *         description: A list of groups with owner information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: The name of the group
+ *                   description:
+ *                     type: string
+ *                     description: The description of the group
+ *                   image:
+ *                     type: string
+ *                     description: The URL of the group's image
+ *                   groupType:
+ *                     type: string
+ *                     description: The type of the group
+ *                   groupPermissions:
+ *                     type: object
+ *                     properties:
+ *                       sendTextMessages:
+ *                         type: boolean
+ *                         description: Whether text messages can be sent
+ *                         default: true
+ *                       sendMedia:
+ *                         type: object
+ *                         properties:
+ *                           photos:
+ *                             type: boolean
+ *                             description: Whether photos can be sent
+ *                             default: true
+ *                           videos:
+ *                             type: boolean
+ *                             description: Whether videos can be sent
+ *                             default: true
+ *                           files:
+ *                             type: boolean
+ *                             description: Whether files can be sent
+ *                             default: true
+ *                           music:
+ *                             type: boolean
+ *                             description: Whether music can be sent
+ *                             default: true
+ *                           voiceMessages:
+ *                             type: boolean
+ *                             description: Whether voice messages can be sent
+ *                             default: true
+ *                           videoMessages:
+ *                             type: boolean
+ *                             description: Whether video messages can be sent
+ *                             default: true
+ *                           stickers:
+ *                             type: boolean
+ *                             description: Whether stickers can be sent
+ *                             default: true
+ *                           polls:
+ *                             type: boolean
+ *                             description: Whether polls can be sent
+ *                             default: true
+ *                           embedLinks:
+ *                             type: boolean
+ *                             description: Whether links can be embedded
+ *                             default: true
+ *                   addUsers:
+ *                     type: boolean
+ *                     description: Whether users can be added to the group
+ *                   pinMessages:
+ *                     type: boolean
+ *                     description: Whether messages can be pinned in the group
+ *                   changeChatInfo:
+ *                     type: boolean
+ *                     description: Whether chat info can be changed in the group
+ *                   applyFilter:
+ *                     type: boolean
+ *                     description: Whether filters can be applied in the group
+ *                   owner:
+ *                     type: object
+ *                     properties:
+ *                       username:
+ *                         type: string
+ *                         description: The username of the owner
+ *                       screenName:
+ *                         type: string
+ *                         description: The screen name of the owner
+ *                       phone:
+ *                         type: string
+ *                         description: The phone number of the owner
+ *                       email:
+ *                         type: string
+ *                         description: The email of the owner
+ *                       _id:
+ *                         type: string
+ *                         description: The ID of the owner
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
  * /admins/users:
  *   get:
  *     summary: Retrieve All Registered Users

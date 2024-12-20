@@ -242,6 +242,10 @@ const userSchema = new mongoose.Schema({
     ref: "Channel",
     default: [],
   },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.post(/^find/, async function (doc, next) {

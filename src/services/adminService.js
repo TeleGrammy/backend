@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const AppError = require("../errors/appError");
 
 const User = require("../models/user");
+const Group = require("../models/groupModel");
 
 const getUsers = async (adminId) => {
   if (!mongoose.Types.ObjectId.isValid(adminId)) {
@@ -12,6 +13,24 @@ const getUsers = async (adminId) => {
   return User.find({_id: {$ne: adminId}}).select(
     "username screenName phone email bio status pictureKey picture"
   );
+};
+
+const getGroups = async () => {
+  const groups = await Group.find()
+    .select(
+      "name description image groupType groupPermissions addUsers pinMessages changeChatInfo applyFilter"
+    )
+    .populate({
+      path: "ownerId",
+      select: "username screenName phone email _id",
+    });
+
+  return groups.map((group) => {
+    group = group.toObject();
+    group.owner = group.ownerId;
+    delete group.ownerId;
+    return group;
+  });
 };
 
 const restrictUser = async (userId, newData, options) => {
@@ -26,5 +45,6 @@ const restrictUser = async (userId, newData, options) => {
 
 module.exports = {
   getUsers,
+  getGroups,
   restrictUser,
 };
