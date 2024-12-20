@@ -160,6 +160,17 @@ const checkCommentEnable = async (channelId) => {
   return channel.comments;
 };
 
+const searchChannel = async (filter, select, populatedOptions) => {
+  const pipeline = [];
+  pipeline.push({$match: filter});
+
+  if (select) pipeline.push({$project: select});
+  if (populatedOptions) pipeline.push({$lookup: populatedOptions});
+
+  const query = Channel.aggregate(pipeline);
+  return query;
+};
+
 module.exports = {
   createChannel,
   deleteChannel,
@@ -169,4 +180,5 @@ module.exports = {
   checkUserParticipant,
   checkCommentEnable,
   updateChannelPrivacy,
+  searchChannel,
 };

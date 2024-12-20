@@ -259,3 +259,11 @@ module.exports.findMessage = async (filter, populateOptions) => {
 module.exports.deleteGroupMessage = async (filter) => {
   return Message.deleteOne(filter);
 };
+
+module.exports.searchMessages = async (filter, select, populatedOptions) => {
+  let query = Message.find(filter);
+  if (select) query = query.select(select);
+  if (populatedOptions) query = query.populate(populatedOptions);
+
+  return query;
+};

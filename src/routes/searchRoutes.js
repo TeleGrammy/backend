@@ -1,8 +1,7 @@
 const express = require("express");
 const {body, param, validationResult} = require("express-validator");
 const mongoose = require("mongoose");
-
-const searchController = require("../../controllers/search/search");
+const searchController = require("../controllers/searchController");
 
 const validationErrorCatcher = (req, res, next) => {
   const errors = validationResult(req);
@@ -13,7 +12,7 @@ const validationErrorCatcher = (req, res, next) => {
     }));
     return res.status(400).json({status: "fail", errors: transformedErrors});
   }
-  next();
+  return next();
 };
 
 const router = express.Router();
@@ -91,5 +90,7 @@ router.get(
   validationErrorCatcher,
   searchController.searchForMatchedContents
 );
+
+router.route("/global-search").get(searchController.globalSearch);
 
 module.exports = router;

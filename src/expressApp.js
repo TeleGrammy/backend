@@ -22,7 +22,7 @@ const mediaRouter = require("./routes/messaging/media");
 const chatRouter = require("./routes/chat/chat");
 const channelRouter = require("./routes/channel/channel");
 const groupRouter = require("./routes/group/groupRoutes");
-const searchRouter = require("./routes/search/search");
+const searchRouter = require("./routes/searchRoutes");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 const isAuthenticated = require("./middlewares/isAuthenticated");

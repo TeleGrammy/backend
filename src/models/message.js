@@ -249,7 +249,7 @@ messageSchema.statics.searchMessages = async function ({
   const query = {};
 
   if (chatId) {
-    if (chatId && !mongoose.Types.ObjectId.isValid(chatId)) {
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
       throw new AppError("ChatId is not a valid ObjectId", 400);
     }
     query.chatId = chatId;
