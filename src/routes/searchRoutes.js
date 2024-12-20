@@ -17,7 +17,7 @@ const validationErrorCatcher = (req, res, next) => {
 
 const router = express.Router();
 
-router.get(
+router.post(
   "/messages/:chatId",
   [
     param("chatId")
@@ -61,7 +61,7 @@ router.get(
   searchController.searchForMatchedContents
 );
 
-router.get(
+router.post(
   "/messages",
   [
     body("searchText")
