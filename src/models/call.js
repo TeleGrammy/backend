@@ -16,19 +16,32 @@ const callSchema = new mongoose.Schema(
         },
       },
     ],
-    senderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    recieverId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    callObjects: {
-      type: Object,
-      default: {},
+    callObj: {
+      offer: {
+        type: Object,
+      },
+      senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      offererIceCandidate: {
+        type: Array,
+        default: [],
+      },
+      recieverId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      answer: {
+        type: Object,
+        default: null,
+      },
+      answererIceCandiate: {
+        type: Array,
+        default: [],
+      },
     },
     chatId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -59,19 +72,20 @@ const callSchema = new mongoose.Schema(
   }
 );
 
-callSchema.methods.clearIceCandidates = function (senderId, recieverId) {
-  if (this.callObjects[senderId] && this.callObjects[senderId][recieverId]) {
-    this.callObjects[senderId][recieverId].offererIceCandidates = [];
-    this.callObjects[senderId][recieverId].answererIceCandidates = [];
-  } else if (
-    this.callObjects[recieverId] &&
-    this.callObjects[recieverId][senderId]
-  ) {
-    this.callObjects[recieverId][senderId].offererIceCandidates = [];
-    this.callObjects[recieverId][senderId].answererIceCandidates = [];
-  }
+callSchema.methods.clearIceCandidates = function () {
+  this.callObj.offererIceCandidate = [];
 
-  this.markModified("callObjects");
+  this.callObj.answererIceCandiate = [];
+
+  console.log(
+    this.callObj.offererIceCandidate.length,
+    "offererIceCandidate from clear"
+  );
+  console.log(
+    this.callObj.answererIceCandiate.length,
+    "answererIceCandidate from clear"
+  );
+
   this.save();
 };
 
