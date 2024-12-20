@@ -68,13 +68,14 @@ const getUserChats = async (userId, skip, limit) => {
       .limit(limit)
       .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId isPinned"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp isPinned"
       )
       .populate(
         "participants.userId",
         "username email phone picture screenName lastSeen status"
       )
       .populate("groupId", "name image description")
+      .populate("channelId", "name image description")
       .populate({
         path: "lastMessage",
         select:
@@ -118,6 +119,7 @@ const updateLastMessage = async (chatId, messageId) => {
       {lastMessageTimestamp: Date.now()},
       {new: true}
     );
+    console.log("updating Last Message: ", chat);
     if (!chat) throw new Error("Chat not found");
     return chat;
   } catch (error) {
@@ -135,6 +137,7 @@ const updateLastMessage = async (chatId, messageId) => {
  * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
  */
 const addParticipant = async (chatId, participantData) => {
+  console.log("Adding Participant");
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
@@ -266,7 +269,9 @@ const getChatOfChannel = async (channelId) => {
     channelId,
     isChannel: true,
     deleted: {$ne: true},
-  }).populate("lastMessage");
+  })
+    .populate("lastMessage")
+    .populate("participants.userId");
 
   if (!chat) {
     throw new AppError("Chat not found", 404);
@@ -277,7 +282,7 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
-  console.log(chat, userId);
+
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
@@ -288,14 +293,28 @@ const checkUserParticipant = async (chatId, userId) => {
   return currentUser;
 };
 
-const checkUserAdmin = async (chatId, userId) => {
-  console.log(chatId);
+const changeParticipantPermission = async (
+  chatId,
+  userId,
+  canDownload = true
+) => {
   const chat = await Chat.findById(chatId);
-  console.log(chat);
+  const currentUserIndex = chat.participants.findIndex(
+    (participant) => participant.userId.toString() === userId
+  );
+  if (currentUserIndex === -1) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  chat.participants[currentUserIndex].canDownload = canDownload;
+  return chat.save();
+};
+const checkUserAdmin = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
 
+  console.log(currentUser);
   if (!currentUser) {
     throw new AppError("User not found in the chat participants", 401);
   }
@@ -316,16 +335,28 @@ const checkChatChannel = async (chatId) => {
   return false;
 };
 const changeUserRole = async (chatId, userId, newRole) => {
-  const currentChat = await getChatById(chatId);
+  const validRoles = ["Admin", "Subscriber"];
+  if (!validRoles.includes(newRole)) {
+    throw new AppError("Invalid role", 400);
+  }
 
+  // Fetch the chat
+  const currentChat = await Chat.findById(chatId);
   if (!currentChat) {
     throw new AppError("Chat not found", 404);
   }
 
-  const currentUser = checkUserParticipant(currentChat, userId);
+  // Find the participant and update their role
+  const participantIndex = currentChat.participants.findIndex(
+    (p) => p.userId.toString() === userId
+  );
+  if (participantIndex === -1) {
+    throw new AppError("User not found in chat participants", 404);
+  }
 
-  currentUser.role = newRole;
+  currentChat.participants[participantIndex].role = newRole;
 
+  // Save the updated participants to the database
   const updatedChat = await Chat.findByIdAndUpdate(
     chatId,
     {participants: currentChat.participants},
@@ -368,4 +399,5 @@ module.exports = {
   checkUserAdmin,
   checkChatChannel,
   removeChat,
+  changeParticipantPermission,
 };

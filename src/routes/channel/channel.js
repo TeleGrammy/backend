@@ -17,14 +17,6 @@ router.post(
       .withMessage("Name field must be a string")
       .notEmpty()
       .withMessage("Name field can not be empty"),
-
-    body("description")
-      .exists()
-      .withMessage("Description field is required")
-      .isString()
-      .withMessage("Description field must be a string")
-      .notEmpty()
-      .withMessage("Description field can not be empty"),
   ],
   isAuth,
   channelController.createChannel
@@ -40,14 +32,6 @@ router
       .withMessage("Name field must be a string")
       .notEmpty()
       .withMessage("Name field can not be empty"),
-
-    body("description")
-      .exists()
-      .withMessage("Description field is required")
-      .isString()
-      .withMessage("Description field must be a string")
-      .notEmpty()
-      .withMessage("Description field can not be empty"),
     isAuth,
     channelController.updateChannel
   )
@@ -64,12 +48,25 @@ router.post(
   isAuth,
   channelController.addSubscriber
 );
-router.patch("/:channelId/privacy", isAuth, channelController.updatePrivacy);
+router.post("/:channelId/join", isAuth, channelController.joinChannel);
+
 router.get("/:channelId/chat", isAuth, channelController.fetchChannelChat);
 router.get(
   "/thread/:postId/messages",
   isAuth,
   channelController.fetchThreadsMesssage
+);
+router.patch("/:channelId/privacy", isAuth, channelController.updatePrivacy);
+router.patch(
+  "/:channelId/subscriber",
+  isAuth,
+  channelController.updateSubscriberSettings
+);
+
+router.get(
+  "/:channelId/participants",
+  isAuth,
+  channelController.fetchChannelParticipants
 );
 
 module.exports = router;

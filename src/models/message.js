@@ -173,32 +173,32 @@ messageSchema.methods.generateSignedUrl = async function () {
 };
 
 messageSchema.pre("save", function (next) {
-  if (this.messageType === "text" && !this.content) {
-    return next(new Error("Text message must have text content."));
-  }
+  // if (this.messageType === "text" && !this.content) {
+  //   return next(new Error("Text message must have text content."));
+  // }
 
-  if (
-    [
-      "image",
-      "audio",
-      "voice_note",
-      "video",
-      "sticker",
-      "GIF",
-      "document",
-      "file",
-    ].includes(this.messageType) &&
-    !this.mediaUrl
-  ) {
-    return next(
-      new Error(`${this.messageType} message must have a media URL.`)
-    );
-  }
+  // if (
+  //   [
+  //     "image",
+  //     "audio",
+  //     "voice_note",
+  //     "video",
+  //     "sticker",
+  //     "GIF",
+  //     "document",
+  //     "file",
+  //   ].includes(this.messageType) &&
+  //   !this.mediaKey
+  // ) {
+  //   return next(
+  //     new Error(`${this.messageType} message must have a media URL.`)
+  //   );
+  // }
 
   return next();
 });
 
-// this middleware is responsible for creating signed URLs to the retreived stories from the database
+// this middleware is responsible for creating signed URLs to the retreived messages from the database
 messageSchema.post(/^find/, async function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
     return next();

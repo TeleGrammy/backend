@@ -1,6 +1,11 @@
+const validator = require("validator");
+
+const AppError = require("../../errors/appError");
+
 const PendingUser = require("../../models/pending-user");
 
 const userService = require("../../services/userService");
+const pendingUserService = require("../../services/pendingUserService");
 
 const catchAsync = require("../../utils/catchAsync");
 
@@ -62,7 +67,7 @@ exports.postVerify = catchAsync(async (req, res) => {
     return res.status(400).json({message: "Verification code is required"});
   }
 
-  const pendingUser = await PendingUser.findOne({email});
+  const pendingUser = await pendingUserService.findUserByEmail(email);
 
   if (!pendingUser) {
     return res
@@ -114,7 +119,7 @@ exports.resendVerification = catchAsync(async (req, res) => {
     return res.status(400).json({message: "Email is required"});
   }
 
-  const pendingUser = await PendingUser.findOne({email});
+  const pendingUser = await pendingUserService.findUserByEmail(email);
 
   if (!pendingUser) {
     return res

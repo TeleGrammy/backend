@@ -18,7 +18,7 @@ const getChannelInformation = async (channelId) => {
   if (!mongoose.Types.ObjectId.isValid(channelId)) {
     throw new AppError("Invalid channelId provided", 400);
   }
-  return Channel.findOne({_id: channelId});
+  return Channel.findOne({_id: channelId}).populate("ownerId");
 };
 
 const deleteChannel = async (channelId) => {
@@ -141,8 +141,9 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
 
 const checkUserParticipant = async (channelId, userId) => {
   const chat = await ChatService.getChatOfChannel(channelId);
+  console.log(userId, chat);
   const currentUser = chat.participants.find(
-    (participant) => participant.userId.toString() === userId
+    (participant) => participant.userId._id.toString() === userId.toString()
   );
 
   if (!currentUser) {

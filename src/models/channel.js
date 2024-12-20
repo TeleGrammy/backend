@@ -3,12 +3,21 @@ const mongoose = require("mongoose");
 const {Schema} = mongoose;
 
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
+const {generateSignedUrl} = require("../middlewares/AWS");
 
 // const AppError = require("../errors/appError");
 
 const channelSchema = new Schema({
   name: {type: String, required: true},
   description: {type: String},
+  image: {
+    type: String,
+    default: null,
+  },
+  imageUrl: {
+    type: String,
+    default: null,
+  },
   privacy: {type: Boolean, default: false},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now},
@@ -16,6 +25,11 @@ const channelSchema = new Schema({
     type: String,
     enum: ["Admins", "EveryOne"],
     default: "Admins",
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: [true, "The owner id is required."],
   },
   comments: {
     type: Boolean,
@@ -41,6 +55,33 @@ const channelSchema = new Schema({
 //   }
 //   return next();
 // });
+
+channelSchema.methods.generateSignedUrl = async function () {
+  try {
+    if (this.image) {
+      this.imageUrl = await generateSignedUrl(this.image, 24 * 60 * 60);
+    }
+  } catch (err) {
+    console.error(`Error generating url for story ${this._id}:`, err);
+    this.imageUrl = null;
+  }
+};
+
+channelSchema.post(/^find/, async function (docs, next) {
+  if (!docs || (Array.isArray(docs) && docs.length === 0)) {
+    return next();
+  }
+
+  const documents = Array.isArray(docs) ? docs : [docs];
+  await Promise.all(
+    documents.map(async (doc) => {
+      await doc.generateSignedUrl();
+    })
+  );
+
+  return next();
+});
+
 applySoftDeleteMiddleWare(channelSchema);
 
 const Channel = mongoose.model("Channel", channelSchema);
