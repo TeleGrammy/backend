@@ -48,10 +48,17 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
       const {updatedUser, accessToken} =
         await manageSessionForUserModule.default(req, res, existingUser);
 
+      const adminStatus = null;
+      if (updatedUser.isAdmin) {
+        adminStatus = isAdmin;
+      } else {
+        adminStatus = false;
+      }
+
       return res
         .status(300)
         .redirect(
-          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}`
+          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}?isAdmin=${adminStatus}`
         );
     }
   )(req, res);
