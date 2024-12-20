@@ -68,14 +68,6 @@ module.exports.createCall = function ({socket, io}) {
     }
   };
 };
-
-const callObj = {
-  offer: {},
-  offererIceCandidate: [],
-  answer: {},
-  answererIceCandidate: [],
-};
-
 module.exports.sendOffer = function ({socket, io}) {
   return async (payload, callBack) => {
     try {
@@ -103,7 +95,6 @@ module.exports.sendOffer = function ({socket, io}) {
         if (call.participantsWhoRejected.has(recieverId) === false) {
           io.to(`${recieverId}`).emit("call:incomingOffer", call);
         }
-
         callBack({
           status: "ok",
           call,
