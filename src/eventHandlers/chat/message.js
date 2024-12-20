@@ -127,9 +127,7 @@ module.exports.deleteMessage = function ({io, socket}) {
   return async (payload) => {
     try {
       // we will make it delete from all the users
-      const msg = await messageService.findMessage({_id: payload.messageId}, [
-        {path: "chatId"},
-      ]);
+      const msg = await messageService.getMessageById(payload.messageId);
 
       if (msg.chatId.isGroup) {
         const group = await groupService.findGroupById(msg.chatId.groupId);

@@ -214,6 +214,20 @@ messageSchema.post(/^find/, async function (docs, next) {
   return next();
 });
 
+messageSchema.pre(/^find/, function (next) {
+  this.select(
+    "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned"
+  ) // Only fetch relevant fields
+    .populate("senderId mentions", "_id username email screenName")
+    .populate("replyOn")
+    .populate(
+      "chatId",
+      "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
+    );
+
+  next();
+});
+
 messageSchema.methods.pin = async function () {
   this.isPinned = true;
   await this.save();

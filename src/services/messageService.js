@@ -24,9 +24,7 @@ module.exports.createMessage = async (messageData) => {
  * @returns {Promise<Message|null>} - A promise that resolves to the message document if found, otherwise null.
  */
 module.exports.getMessageById = async (messageId) => {
-  const message = await Message.findById(messageId).populate(
-    "senderId chatId mentions"
-  );
+  const message = await Message.findById(messageId);
 
   return message;
 };
@@ -40,7 +38,7 @@ module.exports.getMessageById = async (messageId) => {
  * @returns {Promise<Array<Message>|null>} - A promise that resolves to an array of messages if found, otherwise null.
  */
 module.exports.getMessagesByChatId = async (chatId) => {
-  const messages = await Message.find({chatId}).populate("senderId mentions");
+  const messages = await Message.find({chatId});
   return messages;
 };
 
@@ -49,12 +47,7 @@ module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
   return Message.find(filter)
     .sort({timestamp: -1}) // Sort messages by latest first
     .skip(skip)
-    .limit(limit)
-    .select(
-      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned"
-    ) // Only fetch relevant fields
-    .populate("senderId mentions", "username") // Populate sender details (only username)
-    .populate("replyOn");
+    .limit(limit);
 };
 
 module.exports.countChatMessages = (chatId) => {
