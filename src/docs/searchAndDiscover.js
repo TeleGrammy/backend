@@ -33,6 +33,16 @@
  *          schema:
  *            type: string
  *          description: The message you are searching for
+ *        - in: query
+ *          name: page
+ *          schema:
+ *            type: number
+ *          description: The page number
+ *        - in: query
+ *          name: limit
+ *          schema:
+ *            type: number
+ *          description: The limit of the number of objects per page
  *      responses:
  *        '200':
  *          description: A list of objects match the given data
@@ -43,6 +53,12 @@
  *                properties:
  *                  status:
  *                    type: string
+ *                  page:
+ *                    type: number
+ *                  limit:
+ *                    type: number
+ *                  totalDocs:
+ *                    type: number
  *                  data:
  *                    oneOf:
  *                      - type: object

@@ -465,8 +465,12 @@ const pushUserChannel = async (userId, channelId) => {
   );
 };
 
-const searchUsers = async (filter, select) => {
-  return User.find(filter).select(select);
+const searchUsers = async (filter, select, skip, limit) => {
+  let query = User.find(filter);
+  if (select) query = query.select(select);
+  if (skip) query = query.skip(skip);
+  if (limit) query = query.limit(limit);
+  return query.exec();
 };
 
 module.exports = {
