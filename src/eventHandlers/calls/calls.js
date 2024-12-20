@@ -103,7 +103,9 @@ module.exports.sendOffer = function ({socket, io}) {
         });
       });
     } catch (err) {
+
       callBack({status: err.status || "error", message: err.message});
+
       handleSocketError(socket, err);
     }
   };
@@ -239,6 +241,7 @@ module.exports.addIce = function ({socket, io}) {
       console.error(err);
       callBack({status: err.status || "error", message: err.message});
       handleSocketError(socket, err);
+
     }
   };
 };
