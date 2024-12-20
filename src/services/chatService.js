@@ -68,7 +68,7 @@ const getUserChats = async (userId, skip, limit) => {
       .limit(limit)
       .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp isPinned"
       )
       .populate(
         "participants.userId",
@@ -282,6 +282,7 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
+
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );
