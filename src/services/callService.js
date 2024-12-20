@@ -32,9 +32,10 @@ module.exports.addOffer = async ({senderId, recieverId, callId, offer}) => {
     hasProperty(call.callObjects, recieverId) &&
     hasProperty(call.callObjects[recieverId], senderId)
   ) {
-    throw new Error(
+    const err = new Error(
       "You can't send an offer to this user. You need to send an answer object."
     );
+    err.status = "offerExists";
   }
   if (call.callObjects[senderId] === undefined) call.callObjects[senderId] = {};
   if (call.callObjects[senderId][recieverId] === undefined) {
