@@ -65,12 +65,14 @@ const findGroup = (filter, populateOptions) => {
   return query;
 };
 
-const searchGroup = (filter, select, populatedOptions) => {
+const searchGroup = (filter, select, skip, limit, populatedOptions) => {
   const pipeline = [];
   pipeline.push({$match: filter});
 
   if (select) pipeline.push({$project: select});
   if (populatedOptions) pipeline.push({$lookup: populatedOptions});
+  if (skip) pipeline.push({$skip: skip});
+  if (limit) pipeline.push({$limit: limit});
 
   const query = Group.aggregate(pipeline);
   return query;

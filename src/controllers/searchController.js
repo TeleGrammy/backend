@@ -6,7 +6,7 @@ const channelService = require("../services/channelService");
 const messageService = require("../services/messageService");
 const Message = require("../models/message");
 
-const searchForUser = async (req) => {
+const searchForUser = async (req, skip, limit) => {
   const {uuid} = req.query;
   if (uuid === undefined || uuid === "")
     throw new AppError("UUID is required", 400);
@@ -22,12 +22,12 @@ const searchForUser = async (req) => {
   };
 
   const select = "_id username screenName email phone picture lastSeen";
-  const user = await userService.searchUsers(filter, select);
+  const user = await userService.searchUsers(filter, select, skip, limit);
   if (!user) throw new AppError("User not found", 404);
   return user;
 };
 
-const searchForGroup = async (req) => {
+const searchForGroup = async (req, skip, limit) => {
   const {name} = req.query;
   if (name === undefined || name === "")
     throw new AppError("UUID is required", 400);
@@ -45,12 +45,12 @@ const searchForGroup = async (req) => {
     totalMembers: {$add: [{$size: "$members"}, {$size: "$admins"}]},
   };
 
-  const group = await groupService.searchGroup(filter, select);
+  const group = await groupService.searchGroup(filter, select, skip, limit);
   if (!group) throw new AppError("Group not found", 404);
   return group;
 };
 
-const searchForChannel = async (req) => {
+const searchForChannel = async (req, skip, limit) => {
   const {name} = req.query;
   if (name === undefined || name === "")
     throw new AppError("UUID is required", 400);
@@ -68,12 +68,17 @@ const searchForChannel = async (req) => {
     membersCount: 1,
   };
 
-  const channel = await channelService.searchChannel(filter, select);
+  const channel = await channelService.searchChannel(
+    filter,
+    select,
+    skip,
+    limit
+  );
   if (!channel) throw new AppError("Channel not found", 404);
   return channel;
 };
 
-const searchForMessages = async (req) => {
+const searchForMessages = async (req, skip, limit) => {
   const {message} = req.query;
   if (message === undefined || message === "")
     throw new AppError("Message is required", 400);
@@ -110,6 +115,8 @@ const searchForMessages = async (req) => {
   const docs = await messageService.searchMessages(
     filter,
     select,
+    skip,
+    limit,
     populatedOptions
   );
 
@@ -142,20 +149,30 @@ const searchForMessages = async (req) => {
 
 const globalSearch = catchAsync(async (req, res, next) => {
   const {type} = req.query;
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const skip = (page - 1) * limit;
+
   if (type === undefined) return next(new AppError("Type is required", 400));
 
   let result;
   if (type === "user") {
-    result = await searchForUser(req);
+    result = await searchForUser(req, skip, limit);
   } else if (type === "group") {
-    result = await searchForGroup(req);
+    result = await searchForGroup(req, skip, limit);
   } else if (type === "channel") {
-    result = await searchForChannel(req);
+    result = await searchForChannel(req, skip, limit);
   } else if (type === "message") {
-    result = await searchForMessages(req);
+    result = await searchForMessages(req, skip, limit);
   } else return next(new AppError("Invalid type", 400));
 
-  return res.status(200).json({status: "success", data: {[type]: result}});
+  return res.status(200).json({
+    status: "success",
+    page,
+    limit,
+    totalDocs: result.length,
+    data: {[type]: result},
+  });
 });
 
 const searchForMatchedContents = catchAsync(async (req, res, next) => {
