@@ -10,7 +10,7 @@ const getUsers = async (adminId) => {
     throw new AppError("Invalid adminId provided", 400);
   }
 
-  return User.find({_id: {$ne: adminId}}).select(
+  return User.find({_id: {$ne: adminId}}, {status: {$ne: "banned"}}).select(
     "username screenName phone email bio status pictureKey picture"
   );
 };
