@@ -154,6 +154,7 @@ const checkUserParticipant = async (channelId, userId) => {
 
 const checkCommentEnable = async (channelId) => {
   const channel = await getChannelInformation(channelId);
+  console.log(channel);
   if (!channel) {
     throw new AppError("Channl not Found", 404);
   }
