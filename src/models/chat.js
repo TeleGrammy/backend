@@ -107,6 +107,11 @@ chatSchema.pre("findOneAndUpdate", async function (next) {
   }
   next();
 });
+chatSchema.pre(/^find/, function (next) {
+  // Only include documents where deleted is false
+  this.where({deleted: false});
+  next();
+});
 
 const Chat = mongoose.model("Chat", chatSchema);
 
