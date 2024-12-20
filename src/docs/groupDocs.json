@@ -1802,7 +1802,9 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "groupPermissions": {"$ref": "#/components/schemas/groupPermissions"}
+                        "groupPermissions": {
+                          "$ref": "#/components/schemas/groupPermissions"
+                        }
                       }
                     },
                     "message": {
