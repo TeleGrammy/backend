@@ -51,7 +51,11 @@ module.exports.createCall = function ({socket, io}) {
       call.senderId = socket.userId;
       socket.broadcast
         .to(`chat:${call.chatId._id}`)
-        .emit("call:incomingCall", call);
+        .emit("call:incomingCall", call, (data) => {
+          if (data.status === "ready") {
+            console.log("User Is Ready to receive following events");
+          }
+        });
 
       callBack({
         status: "ok",
@@ -99,6 +103,7 @@ module.exports.sendOffer = function ({socket, io}) {
         if (call.participantsWhoRejected.has(recieverId) === false) {
           io.to(`${recieverId}`).emit("call:incomingOffer", call);
         }
+
         callBack({
           status: "ok",
           call,
