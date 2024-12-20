@@ -113,9 +113,10 @@ module.exports.addIceCandidate = async (
     );
     answerIshere = call.callObjects[recieverId][senderId].answer;
   } else {
-    throw new Error(
+    const err = new Error(
       "You can't send ice to this call. make sure you have send or recieved the offer"
     );
+    err.status = "offerExists";
   }
 
   call.markModified("callObjects");

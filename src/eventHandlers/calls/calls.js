@@ -5,6 +5,8 @@ const {
   appendIceCandidates,
 } = require("../utils/utilsFunc");
 
+const handleSocketError = require("../../errors/handleSocketError");
+
 const callLocks = new Map();
 
 async function withLock(callId, task) {
@@ -14,7 +16,11 @@ async function withLock(callId, task) {
 
   const previousPromise = callLocks.get(callId);
   const currentPromise = previousPromise.then(async () => {
-    await task();
+    try {
+      await task();
+    } catch (err) {
+      console.error(`Error in withLock for callId ${callId}:`, err);
+    }
   });
 
   // Update the lock with the new promise
@@ -46,7 +52,11 @@ module.exports.createCall = function ({socket, io}) {
       call.senderId = socket.userId;
       socket.broadcast
         .to(`chat:${call.chatId._id}`)
-        .emit("call:incomingCall", call);
+        .emit("call:incomingCall", call, (data) => {
+          if (data.status === "ready") {
+            console.log("User Is Ready to receive following events");
+          }
+        });
 
       callBack({
         status: "ok",
@@ -55,17 +65,10 @@ module.exports.createCall = function ({socket, io}) {
     } catch (err) {
       console.error(err);
       callBack({status: "error", message: err.message});
+      handleSocketError(socket, err);
     }
   };
 };
-
-const callObj = {
-  offer: {},
-  offererIceCandidate: [],
-  answer: {},
-  answererIceCandidate: [],
-};
-
 module.exports.sendOffer = function ({socket, io}) {
   return async (payload, callBack) => {
     try {
@@ -100,6 +103,7 @@ module.exports.sendOffer = function ({socket, io}) {
       });
     } catch (err) {
       callBack({status: "error", message: err.message});
+      handleSocketError(socket, err);
     }
   };
 };
@@ -133,6 +137,7 @@ module.exports.answerCall = function ({socket, io}) {
       });
     } catch (err) {
       callBack({status: "error", message: err.message});
+      handleSocketError(socket, err);
     }
   };
 };
@@ -160,6 +165,7 @@ module.exports.rejectCall = function ({socket, io}) {
       });
     } catch (err) {
       callBack({status: "error", message: err.message});
+      handleSocketError(socket, err);
     }
   };
 };
@@ -185,6 +191,7 @@ module.exports.endCall = function ({socket, io}) {
       });
     } catch (err) {
       callBack({status: "error", message: err.message});
+      handleSocketError(socket, err);
     }
   };
 };
@@ -229,7 +236,9 @@ module.exports.addIce = function ({socket, io}) {
       });
     } catch (err) {
       console.error(err);
-      callBack({status: "error", message: err.message});
+      callBack({status: err.status || "error", message: err.message});
+      handleSocketError(socket, err);
+      s;
     }
   };
 };
