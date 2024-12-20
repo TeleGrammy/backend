@@ -15,6 +15,7 @@ async function withLock(callId, task) {
   }
 
   const previousPromise = callLocks.get(callId);
+
   const currentPromise = previousPromise.then(async () => {
     try {
       await task();
