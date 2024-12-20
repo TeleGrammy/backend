@@ -86,6 +86,7 @@ const createChannel = catchAsync(async (req, res, next) => {
       chatId: createdChat._id,
       messageType: "text",
       content: "Channel created",
+      isPost: true,
     };
     const createdMessage = await messageService.createMessage(creationMessage);
     if (!createdMessage) {
@@ -153,13 +154,14 @@ const deleteChannel = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
   const userId = req.user.id;
 
-  const chatOfChannel = await chatService.getChatOfChannel(channelId);
-  if (!chatOfChannel) {
+  const channel = await channelService.getChannelInformation(channelId);
+  if (!channel) {
     return next(new AppError("Channel not found", 404));
   }
+  const chatOfChannel = await chatService.getChatOfChannel(channelId);
 
   const participant = chatOfChannel.participants.find(
-    (part) => String(part.userId) === userId
+    (part) => String(part.userId._id) === userId
   );
 
   if (!participant) {
@@ -193,7 +195,7 @@ const deleteChannel = catchAsync(async (req, res, next) => {
       );
     }
 
-    return res.status(204).json({
+    return res.status(200).json({
       status: "success",
       message: "You have successfully left the channel",
     });
