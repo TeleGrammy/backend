@@ -63,3 +63,55 @@ module.exports.logThenEmit = async (userId, event, payload, sockets) => {
   // update the last event acknoleged by the user in that chat
   await userService.ackEvent(userId, payload.chatId, newEvent.index);
 };
+
+module.exports.selectRequiredCallObject = async (call) => {
+  if (
+    call.callObjects[call.senderId.toString()] &&
+    call.callObjects[call.senderId.toString()][call.recieverId.toString()]
+  ) {
+    call._doc.callObj =
+      call.callObjects[call.senderId.toString()][call.recieverId.toString()];
+  } else if (
+    call.recieverId &&
+    call.callObjects[call.recieverId.toString()] &&
+    call.callObjects[call.recieverId.toString()][call.senderId.toString()]
+  ) {
+    call._doc.callObj =
+      call.callObjects[call.recieverId.toString()][call.senderId.toString()];
+  }
+};
+
+module.exports.appendIceCandidates = async (call, userId) => {
+  if (
+    call.callObjects[call.senderId.toString()] &&
+    call.callObjects[call.senderId.toString()][call.recieverId.toString()]
+  ) {
+    if (userId === call.senderId.toString()) {
+      call._doc.iceCandidates =
+        call.callObjects[call.senderId.toString()][
+          call.recieverId.toString()
+        ].answererIceCandidates;
+    } else {
+      call._doc.iceCandidates =
+        call.callObjects[call.senderId.toString()][
+          call.recieverId.toString()
+        ].offererIceCandidates;
+    }
+  } else if (
+    call.recieverId &&
+    call.callObjects[call.recieverId.toString()] &&
+    call.callObjects[call.recieverId.toString()][call.senderId.toString()]
+  ) {
+    if (userId === call.recieverId.toString()) {
+      call._doc.iceCandidates =
+        call.callObjects[call.recieverId.toString()][
+          call.senderId.toString()
+        ].answererIceCandidates;
+    } else {
+      call._doc.iceCandidates =
+        call.callObjects[call.recieverId.toString()][
+          call.senderId.toString()
+        ].offererIceCandidates;
+    }
+  }
+};
