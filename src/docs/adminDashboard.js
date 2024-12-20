@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /groups:
+ * /admins/groups:
  *   get:
  *     summary: Get all groups with populated owner details
  *     description: Retrieve a list of groups with owner information populated.
