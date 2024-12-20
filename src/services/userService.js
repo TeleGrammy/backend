@@ -383,11 +383,11 @@ const ackEvent = async (id, chatId, offset) => {
   }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
-    ? user.userChats.get(`${chatId}`)
+    ? user.userChats.get(`${chatId._id}`)
     : undefined;
 
   if (currentOffset === undefined || offset > currentOffset) {
-    user.userChats.set(`${chatId}`, offset);
+    user.userChats.set(`${chatId._id}`, offset);
   }
   await user.save();
 
