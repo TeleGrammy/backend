@@ -1,6 +1,9 @@
 const callService = require("../../services/callService");
 const {validateRequiredFields} = require("../utils/validatePayload");
-const {selectRequiredCallObject} = require("../utils/utilsFunc");
+const {
+  selectRequiredCallObject,
+  appendIceCandidates,
+} = require("../utils/utilsFunc");
 
 const callLocks = new Map();
 
@@ -215,7 +218,9 @@ module.exports.addIce = function ({socket, io}) {
           call.answerIshere &&
           call.participantsWhoRejected.has(recieverId) === false
         ) {
+          await appendIceCandidates(call, senderId);
           io.to(`${senderId}`).emit("call:addedICE", call);
+          await appendIceCandidates(call, recieverId);
           io.to(`${recieverId}`).emit("call:addedICE", call);
           await call.clearIceCandidates(senderId, recieverId);
         }
