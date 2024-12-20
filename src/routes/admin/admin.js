@@ -19,6 +19,7 @@ const validationErrorCatcher = (req, res, next) => {
 const router = express.Router();
 
 router.get("/users", adminController.getRegisteredUsers);
+router.get("/groups", adminController.getCurrentGroups);
 
 router.patch(
   "/users/:userId",

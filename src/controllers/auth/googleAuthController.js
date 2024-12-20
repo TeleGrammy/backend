@@ -39,7 +39,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           picture: user.profilePicture || "",
-          isAdmin: user.isAdmin || false,
+          isAdmin: user.email === process.env.ADMIN_EMAIL ? true : false,
           accessTokenExpiresAt: new Date(Date.now() + 3600 * 100),
           refreshTokenExpiresAt: refreshTokenExpiration,
           isGoogleUser: true,
