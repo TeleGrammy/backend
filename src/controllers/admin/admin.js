@@ -75,7 +75,11 @@ const applyFilterContents = catchAsync(async (req, res, next) => {
 
     const updatedGroup = await groupService.findAndUpdateGroup(
       groupId,
-      {applyFilter},
+      {
+        $set: {
+          "groupPermissions.applyFilter": applyFilter,
+        },
+      },
       {new: true}
     );
 

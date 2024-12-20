@@ -39,8 +39,7 @@ const findAndUpdateGroup = (groupId, newData, options) => {
     throw new AppError("Invalid groupdId provided", 400);
   }
 
-  const group = Group.findByIdAndUpdate(groupId, newData, options);
-  return group;
+  return Group.findByIdAndUpdate(groupId, newData, options);
 };
 
 const updateParticipant = (
