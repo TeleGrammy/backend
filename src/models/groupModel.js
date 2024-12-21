@@ -303,13 +303,6 @@ const groupSchema = new mongoose.Schema({
   pinnedMessages: [{type: mongoose.Types.ObjectId, ref: "Message"}],
 });
 
-groupSchema.pre(/^find/, function (next) {
-  // Only include documents where deleted is false
-  this.where({deleted: false});
-  next();
-});
-applySoftDeleteMiddleWare(groupSchema);
-
 const Group = mongoose.model("Group", groupSchema);
 
 module.exports = Group;
