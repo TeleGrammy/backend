@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {generateSignedUrl} = require("../middlewares/AWS");
+const AppError = require("../errors/appError");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -39,6 +40,7 @@ const messageSchema = new mongoose.Schema({
         "GIF",
         "video",
         "file",
+        "link",
       ],
       message: "Message type is not valid",
     },
@@ -211,17 +213,67 @@ messageSchema.methods.unpin = async function () {
   this.isPinned = false;
   await this.save();
 };
-// messageSchema.post("remove", function (doc) {
-//   // TODO: put proper socket path and test this socket
-//   // const io = require("SOCKET PATH");
-//   // io.of("/messages").to(doc.chatId.toString()).emit("messageDeleted", {
-//   //   messageId: doc._id,
-//   //   chatId: doc.chatId,
-//   // });
-//   // console.log(`Notification sent for deleted message: ${doc._id}`);
-// });
 
-messageSchema.index({chatId: 1, timestamp: -1});
+messageSchema.statics.searchMessages = async function ({
+  chatId,
+  searchText,
+  messageType,
+  limit = 20,
+  skip = 0,
+}) {
+  if (!searchText) {
+    throw new AppError("Inapplicable to search", 400);
+  }
+
+  const query = {};
+
+  if (chatId) {
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      throw new AppError("ChatId is not a valid ObjectId", 400);
+    }
+    query.chatId = chatId;
+  }
+
+  if (messageType) {
+    query.messageType = messageType;
+  }
+
+  query.$or = [
+    {content: {$regex: searchText, $options: "i"}},
+    {mediaUrl: {$regex: searchText, $options: "i"}},
+  ];
+
+  try {
+    const maxLimit = 100;
+    limit = Math.min(limit, maxLimit);
+
+    const messages = await this.find(query)
+      .sort({timestamp: -1})
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: "senderId",
+        select: "username screenName email phone",
+      })
+      .populate({
+        path: "chatId",
+        select: "name",
+      });
+
+    return messages.map((message) => {
+      const {senderId, chatId, ...rest} = message.toObject();
+      return {
+        ...rest,
+        sender: senderId,
+        chat: chatId,
+      };
+    });
+  } catch (error) {
+    throw new AppError("Error searching messages", 500);
+  }
+};
+
+messageSchema.index({content: "text", mediaUrl: "text"});
 
 messageSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
 
