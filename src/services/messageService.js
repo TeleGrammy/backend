@@ -201,7 +201,7 @@ module.exports.checkChannelPost = async (postId, chatId) => {
   if (!post) {
     throw new Error("Post not found");
   }
-  if (post.chatId.toString() !== chatId) {
+  if (post.chatId._id.toString() !== chatId) {
     throw new Error("This Post does not belong to Channel");
   }
   return true;
