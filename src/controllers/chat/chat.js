@@ -37,8 +37,8 @@ exports.getChatById = catchAsync(async (req, res, next) => {
   }
 
   // Check if the user is a participant in the chat
-  const userExists = chat.participants.some((participant) =>
-    participant.userId._id.equals(req.user.id)
+  const userExists = chat.participants.some(
+    (participant) => participant.userId._id.toString() === req.user.id
   );
 
   if (!userExists) {
@@ -50,18 +50,21 @@ exports.getChatById = catchAsync(async (req, res, next) => {
   const filter = {chatId: id};
   if (chat.isGroup) {
     const group = await groupServices.findGroupById(chat.groupId);
-    const user = group.members
-      .concat(group.admins)
-      .find(
-        (member) =>
-          member.memberId?.equals(req.user.id) ||
-          member.adminId?.equals(req.user.id)
-      );
 
-    if (!user)
+    const user = group.members.concat(group.admins).find((member) => {
+      if (member.memberId) {
+        return member.memberId.toString() === req.user.id;
+      }
+      if (member.adminId) {
+        return member.adminId.toString() === req.user.id;
+      }
+      return false;
+    });
+    if (!user) {
       return next(
         new AppError("You are not authorized to access this chat", 401)
       );
+    }
 
     if (user.leftAt) filter.timestamp = {$gte: user.leftAt};
   }
@@ -154,23 +157,25 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page, 10) || 1; // Default to page 1
   const limit = parseInt(req.query.limit, 10) || 50; // Default to 50 items per page
   const skip = (page - 1) * limit;
-
   let chats = await chatService.getUserChats(userId, skip, limit);
 
   chats = chats.map((chat) => {
-    if (!chat.isGroup && !chat.isChannel) {
-      return handlePrivateChat(chat, userId);
-    }
     if (chat.isGroup) {
       return handleGroupChat(chat, userId);
     }
     if (chat.isChannel) {
       return handleChannelChat(chat, userId);
     }
-    return chat;
+    if (chat.participants.length === 2) {
+      return handlePrivateChat(chat, userId);
+    }
+    return null;
   });
+
+  chats = chats.filter((value) => value !== null);
   // const chats = await userService.getUserContactsChats(userId);
   // Count total documents for pagination info
+
   const totalChats = await chatService.countUserChats(userId);
 
   return res.status(200).json({

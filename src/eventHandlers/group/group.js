@@ -26,6 +26,7 @@ const createGroup = (io, socket, connectedUsers) => {
           isGroup: true,
           groupId: groupData._id,
         });
+        console.log(groupChat);
         groupData.chatId = groupChat._id;
         await groupData.save();
       } catch (err) {

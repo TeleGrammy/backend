@@ -55,8 +55,8 @@ module.exports.sendMessage = function ({io, socket}) {
 
       // i think this is useless since at the event of new message
       // the user will have the mentions and can know if he is mentioned or not
-      message.mentions.forEach((userId) => {
-        io.to(`${userId}`).emit("message:mention", message);
+      message.mentions.forEach((mention) => {
+        io.to(`${mention._id}`).emit("message:mention", message);
       });
 
       // call the cb to acknowledge the message is sent to other users
@@ -74,9 +74,9 @@ module.exports.sendMessage = function ({io, socket}) {
         "message:isSent",
         {
           message,
-          chatId: message.senderId,
+          chatId: message.senderId._id,
         },
-        io.to(`${message.senderId}`)
+        io.to(`${message.senderId._id}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -115,7 +115,7 @@ module.exports.updateMessage = function ({io, socket}) {
         socket.userId,
         "message:updated",
         message._doc,
-        io.to(`chat:${message.chatId}`)
+        io.to(`chat:${message.chatId._id}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -127,15 +127,13 @@ module.exports.deleteMessage = function ({io, socket}) {
   return async (payload) => {
     try {
       // we will make it delete from all the users
-      const msg = await messageService.findMessage({_id: payload.messageId}, [
-        {path: "chatId"},
-      ]);
+      const msg = await messageService.getMessageById(payload.messageId);
 
       if (msg.chatId.isGroup) {
         const group = await groupService.findGroupById(msg.chatId.groupId);
         const canDeleteMessage = await groupMessageHandlers.canDeleteMessage(
           socket,
-          msg.senderId,
+          msg.senderId._id,
           group
         );
 
@@ -159,7 +157,7 @@ module.exports.deleteMessage = function ({io, socket}) {
           socket.userId,
           "message:deleted",
           message._doc,
-          io.to(`chat:${message.chatId}`)
+          io.to(`chat:${message.chatId._id}`)
         );
       }
     } catch (err) {
@@ -210,7 +208,7 @@ module.exports.pinMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:pin",
-        {message, chatId: message.chatId, userId: socket.userId},
+        {message, chatId: message.chatId._id, userId: socket.userId},
         io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
@@ -239,7 +237,7 @@ module.exports.unpinMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:unpin",
-        {message, chatId: message.chatId, userId: socket.userId},
+        {message, chatId: message.chatId._id, userId: socket.userId},
         io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {

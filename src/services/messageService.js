@@ -11,7 +11,8 @@ const AppError = require("../errors/appError");
  * @returns {Promise<Message|null>} - A promise that resolves to the created message if successful, otherwise null.
  */
 module.exports.createMessage = async (messageData) => {
-  const message = await Message.create(messageData);
+  let message = await Message.create(messageData);
+  message = await Message.findById(message._id);
   return message;
 };
 
@@ -29,19 +30,6 @@ module.exports.getMessageById = async (messageId) => {
   );
 
   return message;
-};
-
-/**
- * Retrieves all messages for a specific chat.
- * @memberof Service.Message
- * @method getMessagesByChatId
- * @async
- * @param {String} chatId - The ID of the chat whose messages to retrieve.
- * @returns {Promise<Array<Message>|null>} - A promise that resolves to an array of messages if found, otherwise null.
- */
-module.exports.getMessagesByChatId = async (chatId) => {
-  const messages = await Message.find({chatId}).populate("senderId mentions");
-  return messages;
 };
 
 module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
@@ -145,7 +133,7 @@ module.exports.updateMessageRecivers = async (
 module.exports.updateMessage = async (payload) => {
   let message = await Message.findById(payload.messageId);
 
-  if (message.senderId.toString() !== payload.senderId) {
+  if (message.senderId._id.toString() !== payload.senderId) {
     throw new AppError("You are not authorized to update this message", 403);
   }
   message = await Message.findByIdAndUpdate(
@@ -168,7 +156,7 @@ module.exports.deleteMessage = async (messageId, senderId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-  if (message.senderId.toString() !== senderId) {
+  if (message.senderId._id.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }
   await Message.findByIdAndDelete(messageId);

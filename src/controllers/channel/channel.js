@@ -1,4 +1,5 @@
 const {validationResult} = require("express-validator");
+const crypto = require("crypto");
 
 const catchAsync = require("../../utils/catchAsync");
 
@@ -7,7 +8,6 @@ const AppError = require("../../errors/appError");
 const channelService = require("../../services/channelService");
 const chatService = require("../../services/chatService");
 const messageService = require("../../services/messageService");
-const userService = require("../../services/userService");
 
 const updateChannelHelper = async (
   req,
@@ -58,7 +58,7 @@ const createChannel = catchAsync(async (req, res, next) => {
       membersCount: 0,
     });
     if (!createdChannel) {
-      throw new AppError("Error creating the channel", 500);
+      next(new AppError("Error creating the channel", 500));
     }
 
     const createdChat = await chatService.createChat({
@@ -67,7 +67,7 @@ const createChannel = catchAsync(async (req, res, next) => {
       channelId: createdChannel._id,
     });
     if (!createdChat) {
-      throw new AppError("Error creating the channel's chat", 500);
+      next(new AppError("Error creating the channel's chat", 500));
     }
 
     const currentUserData = {userId, role: "Creator"};
@@ -76,9 +76,8 @@ const createChannel = catchAsync(async (req, res, next) => {
       currentUserData
     );
     if (!updatedChat) {
-      throw new AppError(
-        "Error adding user as creator in the channel chat",
-        500
+      next(
+        new AppError("Error adding user as creator in the channel chat", 500)
       );
     }
 
@@ -87,10 +86,11 @@ const createChannel = catchAsync(async (req, res, next) => {
       chatId: createdChat._id,
       messageType: "text",
       content: "Channel created",
+      isPost: true,
     };
     const createdMessage = await messageService.createMessage(creationMessage);
     if (!createdMessage) {
-      throw new AppError("Error creating the channel's creation message", 500);
+      next(new AppError("Error creating the channel's creation message", 500));
     }
 
     return res.status(200).json({
@@ -154,13 +154,14 @@ const deleteChannel = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
   const userId = req.user.id;
 
-  const chatOfChannel = await chatService.getChatOfChannel(channelId);
-  if (!chatOfChannel) {
+  const channel = await channelService.getChannelInformation(channelId);
+  if (!channel) {
     return next(new AppError("Channel not found", 404));
   }
+  const chatOfChannel = await chatService.getChatOfChannel(channelId);
 
   const participant = chatOfChannel.participants.find(
-    (part) => String(part.userId) === userId
+    (part) => String(part.userId._id) === userId
   );
 
   if (!participant) {
@@ -194,7 +195,7 @@ const deleteChannel = catchAsync(async (req, res, next) => {
       );
     }
 
-    return res.status(204).json({
+    return res.status(200).json({
       status: "success",
       message: "You have successfully left the channel",
     });
@@ -426,7 +427,7 @@ const joinChannel = catchAsync(async (req, res, next) => {
   }
 
   const chat = {
-    ...chatOfChannel.toObject(), // Convert Mongoose document to plain object
+    ...updatedChat.toObject(), // Convert Mongoose document to plain object
   };
   delete chat.participants; // Remove the `participants` property
 
@@ -472,8 +473,8 @@ const addSubscriber = catchAsync(async (req, res, next) => {
     return next(new AppError("You do not have the required permissions.", 403));
   }
 
-  const isSubscriberExists = chatOfChannel.participants.some((participant) => {
-    return String(participant.userId._id) === subscriberId;
+  const isSubscriberExists = chatOfChannel.participants.some((part) => {
+    return String(part.userId._id) === subscriberId;
   });
 
   if (isSubscriberExists) {
@@ -538,7 +539,6 @@ const addSubscriber = catchAsync(async (req, res, next) => {
 });
 const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
-  console.log("Fetch PArt", req.user.id);
 
   const chat = await chatService.getChatOfChannel(channelId);
   await chatService.checkUserAdmin(chat.id, req.user.id);
@@ -622,7 +622,7 @@ const updatePrivacy = catchAsync(async (req, res) => {
     .json({message: "Channel updated successfully", data: updatedChannel});
 });
 
-const updateSubscriberSettings = catchAsync(async (req, res) => {
+const updateSubscriberSettings = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
   const {subscriberId, download} = req.body;
 
@@ -657,6 +657,133 @@ const updateSubscriberSettings = catchAsync(async (req, res) => {
     data: updatedChat,
   });
 });
+
+const getInviteLink = catchAsync(async (req, res, next) => {
+  const {channelId} = req.params;
+
+  const channel = await channelService.getChannelInformation(channelId);
+
+  if (!channel) {
+    next(new AppError("Channel not found", 404));
+  }
+  const userId = req.user.id;
+  const chatOfChannel = await chatService.getChatOfChannel(channelId);
+  if (!chatOfChannel) {
+    next(new AppError("Chat of Channel is not found", 500));
+  }
+
+  await chatService.checkUserAdmin(chatOfChannel._id, userId);
+
+  if (!channel.inviteToken) {
+    const inviteToken = crypto.randomBytes(16).toString("hex");
+    channel.inviteToken = inviteToken;
+    await channel.save();
+  }
+  const inviteLink = `${req.protocol}://${req.get("host")}/api/v1/channels/${channelId}/invite/${channel.inviteToken}`;
+
+  return res.status(200).json({
+    message: "Channel Links generated successfully",
+    data: inviteLink,
+  });
+});
+
+const getChannelByInvite = catchAsync(async (req, res, next) => {
+  const {channelId, inviteToken} = req.params;
+
+  const channel = await channelService.getChannelInformation(channelId);
+
+  if (!channel) {
+    next(new AppError("Channel not found", 404));
+  }
+
+  if (!channel.inviteToken || channel.inviteToken !== inviteToken) {
+    return res.status(401).json({message: "This Channel Links is not valid"});
+  }
+
+  return res
+    .status(300)
+    .redirect(
+      `${process.env.FRONTEND_LOGIN_CALLBACK}?channelId=${channelId}&inviteToken=${inviteToken}`
+    );
+});
+
+const showChannelByInvite = catchAsync(async (req, res, next) => {
+  const {channelId, inviteToken} = req.params;
+
+  const channel = await channelService.getChannelInformation(channelId);
+
+  if (!channel) {
+    next(new AppError("Channel not found", 404));
+  }
+
+  if (!channel.inviteToken || channel.inviteToken !== inviteToken) {
+    return res.status(401).json({message: "This Channel Links is not valid"});
+  }
+
+  return res.status(200).json(channel);
+});
+
+const joinChannelByInvite = catchAsync(async (req, res, next) => {
+  const {channelId, inviteToken} = req.params;
+
+  const channel = await channelService.getChannelInformation(channelId);
+
+  if (!channel) {
+    next(new AppError("Channel not found", 404));
+  }
+
+  if (!channel.inviteToken || channel.inviteToken !== inviteToken) {
+    return res.status(401).json({message: "This Channel Links is not valid"});
+  }
+  const userId = req.user.id;
+
+  const chatOfChannel = await chatService.getChatOfChannel(channelId);
+
+  if (!channel) {
+    return next(new AppError("Channel not found.", 500));
+  }
+  if (!chatOfChannel) {
+    return next(
+      new AppError("Failed to retrieve chat data. Please try again later.", 500)
+    );
+  }
+
+  const isSubscriberExists = chatOfChannel.participants.some((participant) => {
+    return String(participant.userId._id) === userId;
+  });
+
+  if (isSubscriberExists) {
+    return next(new AppError("User already exists in Channel", 400));
+  }
+
+  const subscriberData = {
+    userId,
+    role: "Subscriber",
+  };
+
+  const updatedChat = await chatService.addParticipant(
+    chatOfChannel._id,
+    subscriberData
+  );
+
+  if (!updatedChat) {
+    return next(new AppError("Failed to update the channel's chat.", 500));
+  }
+
+  const chat = {
+    ...updatedChat.toObject(), // Convert Mongoose document to plain object
+  };
+  delete chat.participants; // Remove the `participants` property
+
+  return res.status(200).json({
+    status: "success",
+    data: {
+      channel,
+      chat,
+    },
+  });
+});
+
 module.exports = {
   createChannel,
   updateChannel,
@@ -671,4 +798,8 @@ module.exports = {
   updatePrivacy,
   fetchChannelParticipants,
   updateSubscriberSettings,
+  getInviteLink,
+  getChannelByInvite,
+  showChannelByInvite,
+  joinChannelByInvite,
 };
