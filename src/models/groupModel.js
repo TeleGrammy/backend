@@ -302,6 +302,7 @@ const groupSchema = new mongoose.Schema({
   pinnedMessages: [{type: mongoose.Types.ObjectId, ref: "Message"}],
 });
 
+
 const Group = mongoose.model("Group", groupSchema);
 
 module.exports = Group;

@@ -139,7 +139,7 @@ module.exports.updateMessageRecivers = async (
 module.exports.updateMessage = async (payload) => {
   let message = await Message.findById(payload.messageId);
 
-  if (message.senderId.toString() !== payload.senderId) {
+  if (message.senderId._id.toString() !== payload.senderId) {
     throw new AppError("You are not authorized to update this message", 403);
   }
   message = await Message.findByIdAndUpdate(
@@ -162,7 +162,6 @@ module.exports.deleteMessage = async (messageId, senderId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-
   if (message.senderId._id.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }
@@ -208,7 +207,7 @@ module.exports.checkChannelPost = async (postId, chatId) => {
   if (!post) {
     throw new Error("Post not found");
   }
-  if (post.chatId.toString() !== chatId) {
+  if (post.chatId._id.toString() !== chatId) {
     throw new Error("This Post does not belong to Channel");
   }
   return true;
