@@ -16,7 +16,7 @@ const Message = require("../models/message");
 
 const AppError = require("../errors/appError");
 
-jest.mock("../models/Message");
+jest.mock("../models/message");
 jest.mock("../services/userService");
 jest.mock("../services/groupService");
 jest.mock("../services/channelService");
