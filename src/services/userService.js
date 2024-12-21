@@ -171,6 +171,7 @@ const createUser = (userData) => {
     isGoogleUser,
     isGitHubUser,
     publicKey,
+    isAdmin,
   } = userData;
   console.log(publicKey);
   return User.create({
@@ -183,6 +184,7 @@ const createUser = (userData) => {
     accessToken,
     refreshToken,
     publicKey,
+    isAdmin,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
   });
