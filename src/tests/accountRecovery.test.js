@@ -17,6 +17,7 @@ jest.mock("../utils/mailTemplate");
 jest.mock("../utils/sendEmail");
 jest.mock("../utils/sessionManagement");
 jest.mock("../middlewares/isAuthenticated");
+jest.mock("../services/userDeviceService");
 
 describe("POST /api/v1/auth/forget-password", () => {
   beforeEach(() => {
