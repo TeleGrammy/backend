@@ -30,6 +30,7 @@ describe("Channel Service", () => {
     Channel.findOne = jest.fn().mockReturnValue({
       populate: mockPopulate,
     });
+
     const mockSkip = jest.fn().mockReturnValue({
       limit: jest.fn().mockResolvedValue([
         {_id: "message1", content: "Message 1"},
@@ -239,7 +240,7 @@ describe("Channel Service", () => {
       ];
       const mockPost = {
         _id: mockPostId,
-        chatId: mockChatId,
+        chatId: {_id: mockChatId},
       };
 
       // Mock implementations
@@ -265,7 +266,11 @@ describe("Channel Service", () => {
         mockChatId,
         mockUserId
       );
-      expect(Message.find).toHaveBeenCalledWith({parentPost: mockPostId});
+      expect(Message.find).toHaveBeenCalledWith({
+        chatId: mockChatId,
+        parentPost: mockPostId,
+        isPost: false,
+      });
       expect(Message.countDocuments).toHaveBeenCalledWith({
         parentPost: mockPostId,
       });
@@ -295,7 +300,7 @@ describe("Channel Service", () => {
     it("should throw an error if the user is not a participant in the chat", async () => {
       const mockPost = {
         _id: "mockPostId",
-        chatId: "mockChatId",
+        chatId: {_id: "mockChatId"},
       };
 
       Message.findById.mockResolvedValue(mockPost);

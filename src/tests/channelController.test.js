@@ -1020,7 +1020,7 @@ describe("Channel Controller", () => {
 
     describe("fetchThreadsMesssage", () => {
       it("should return paginated thread messages", async () => {
-        req.params.postId = "mockPostId";
+        req.params.postId = {_id: "mockPostId"};
         req.query = {page: 2, limit: 10};
 
         const mockMessages = {messages: ["threadMessage1", "threadMessage2"]};
@@ -1031,7 +1031,7 @@ describe("Channel Controller", () => {
         await fetchThreadsMesssage(req, res, next);
 
         expect(channelService.getThreadMessages).toHaveBeenCalledWith(
-          "mockPostId",
+          {_id: "mockPostId"},
           "user123",
           2,
           10
