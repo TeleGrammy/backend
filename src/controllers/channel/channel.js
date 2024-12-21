@@ -507,9 +507,16 @@ const addSubscriber = catchAsync(async (req, res, next) => {
 });
 const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
-  console.log("Fetch PArt", req.user.id);
 
   const chat = await chatService.getChatOfChannel(channelId);
+  if (!chat) {
+    return next(
+      new AppError(
+        "Failed to retrieve channel chat data. Please try again later.",
+        500
+      )
+    );
+  }
   await chatService.checkUserAdmin(chat.id, req.user.id);
 
   const transformedParticipants = chat.participants
