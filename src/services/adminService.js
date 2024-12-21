@@ -11,9 +11,9 @@ const getUsers = async (adminId) => {
   }
   console.log("here")
 
-  return User.find({_id: {$ne: adminId}}, {status: {$ne: "banned"}}).select(
-    "username screenName phone email bio status pictureKey picture"
-  );
+  return await User.find({_id: {$ne: adminId}, status: {$ne: "banned"}})
+    .select("username screenName phone email bio status pictureKey picture")
+    .exec();
 };
 
 const getGroups = async () => {
