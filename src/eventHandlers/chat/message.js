@@ -71,7 +71,7 @@ module.exports.sendMessage = function ({io, socket}) {
         body = messageData.messageType;
       }
 
-      await firebaseUtils.sendNotificationToTopic(
+      firebaseUtils.sendNotificationToTopic(
         `chat-${messageData.chatId}`,
         title,
         body
@@ -90,11 +90,7 @@ module.exports.sendMessage = function ({io, socket}) {
         if (chatName !== "") {
           newTitle = `${name} mentioned You in ${chatName}`;
         }
-        await firebaseUtils.sendNotificationToTopic(
-          `user-${userId}`,
-          newTitle,
-          body
-        );
+        firebaseUtils.sendNotificationToTopic(`user-${userId}`, newTitle, body);
         io.to(`${userId}`).emit("message:mention", message);
       });
 

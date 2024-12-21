@@ -1,4 +1,5 @@
 const callService = require("../../services/callService");
+const firebaseUtils = require("../../utils/firebaseMessaging");
 
 module.exports.createCall = function ({socket, io}) {
   return async (payload, callBack) => {
@@ -35,6 +36,11 @@ module.exports.sendCall = function ({socket, io}) {
         .to(`chat:${call.chatId._id}`)
         .emit("call:incomingCall", call);
 
+      firebaseUtils.sendNotificationToTopic(
+        `chat-${call.chatId._id}`,
+        "A new Call is Incomming",
+        ""
+      );
       callBack({
         status: "ok",
         call,
