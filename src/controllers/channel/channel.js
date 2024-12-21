@@ -707,6 +707,22 @@ const getChannelByInvite = catchAsync(async (req, res, next) => {
     );
 });
 
+const showChannelByInvite = catchAsync(async (req, res, next) => {
+  const {channelId, inviteToken} = req.params;
+
+  const channel = await channelService.getChannelInformation(channelId);
+
+  if (!channel) {
+    next(new AppError("Channel not found", 404));
+  }
+
+  if (!channel.inviteToken || channel.inviteToken !== inviteToken) {
+    return res.status(401).json({message: "This Channel Links is not valid"});
+  }
+
+  return res.status(200).json(channel);
+});
+
 const joinChannelByInvite = catchAsync(async (req, res, next) => {
   const {channelId, inviteToken} = req.params;
 
@@ -740,9 +756,6 @@ const joinChannelByInvite = catchAsync(async (req, res, next) => {
     return next(new AppError("User already exists in Channel", 400));
   }
 
-  if (!channel.privacy) {
-    return next(new AppError("You can't join Private Channel", 401));
-  }
   const subscriberData = {
     userId,
     role: "Subscriber",
@@ -787,5 +800,6 @@ module.exports = {
   updateSubscriberSettings,
   getInviteLink,
   getChannelByInvite,
+  showChannelByInvite,
   joinChannelByInvite,
 };

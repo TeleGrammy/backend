@@ -105,9 +105,7 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
  */
 const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
   // Validate the thread exists
-  console.log("Service:", postId);
   const post = await Message.findById(postId);
-  console.log(post);
   if (!post) {
     throw new Error("Thread not found");
   }
@@ -124,10 +122,9 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
     parentPost: postId,
     isPost: false,
   })
+    .sort({timestamp: -1})
     .skip(skip)
     .limit(limit);
-
-  console.log(messages);
 
   // Get total message count for the thread's chat
   const totalMessages = await Message.countDocuments({parentPost: postId});
