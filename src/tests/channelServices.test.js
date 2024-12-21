@@ -82,7 +82,10 @@ describe("Channel Service", () => {
       const channelInfo = await getChannelInformation(channelId);
 
       expect(Channel.findOne).toHaveBeenCalledWith({_id: channelId});
-      expect(mockPopulate).toHaveBeenCalledWith("ownerId");
+      expect(mockPopulate).toHaveBeenCalledWith(
+        "ownerId",
+        "username email phone screenName picture lastSeenVisibility status lastSeen"
+      );
       expect(channelInfo).toEqual({
         _id: channelId,
         name: "Test Channel",

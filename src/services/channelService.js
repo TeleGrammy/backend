@@ -18,7 +18,10 @@ const getChannelInformation = async (channelId) => {
   if (!mongoose.Types.ObjectId.isValid(channelId)) {
     throw new AppError("Invalid channelId provided", 400);
   }
-  return Channel.findOne({_id: channelId}).populate("ownerId");
+  return Channel.findOne({_id: channelId}).populate(
+    "ownerId",
+    "username email phone screenName picture lastSeenVisibility status lastSeen"
+  );
 };
 
 const deleteChannel = async (channelId) => {
