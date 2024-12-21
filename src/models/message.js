@@ -172,8 +172,6 @@ messageSchema.methods.generateSignedUrl = async function () {
   }
 };
 
-
-
 // this middleware is responsible for creating signed URLs to the retreived messages from the database
 messageSchema.post(/^find/, async function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {

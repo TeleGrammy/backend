@@ -32,7 +32,6 @@ module.exports.getMessageById = async (messageId) => {
   return message;
 };
 
-
 module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
   // Fetch messages related to this chat with pagination
   return Message.find(filter)
