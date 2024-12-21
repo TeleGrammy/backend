@@ -25,30 +25,25 @@ module.exports.createMessage = async (messageData) => {
  * @returns {Promise<Message|null>} - A promise that resolves to the message document if found, otherwise null.
  */
 module.exports.getMessageById = async (messageId) => {
-  const message = await Message.findById(messageId);
+  const message = await Message.findById(messageId).populate(
+    "senderId chatId mentions"
+  );
 
   return message;
 };
 
-/**
- * Retrieves all messages for a specific chat.
- * @memberof Service.Message
- * @method getMessagesByChatId
- * @async
- * @param {String} chatId - The ID of the chat whose messages to retrieve.
- * @returns {Promise<Array<Message>|null>} - A promise that resolves to an array of messages if found, otherwise null.
- */
-module.exports.getMessagesByChatId = async (chatId) => {
-  const messages = await Message.find({chatId});
-  return messages;
-};
 
 module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
   // Fetch messages related to this chat with pagination
   return Message.find(filter)
     .sort({timestamp: -1}) // Sort messages by latest first
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .select(
+      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned"
+    ) // Only fetch relevant fields
+    .populate("senderId mentions", "username") // Populate sender details (only username)
+    .populate("replyOn");
 };
 
 module.exports.countChatMessages = (chatId) => {
@@ -139,7 +134,7 @@ module.exports.updateMessageRecivers = async (
 module.exports.updateMessage = async (payload) => {
   let message = await Message.findById(payload.messageId);
 
-  if (message.senderId.toString() !== payload.senderId) {
+  if (message.senderId._id.toString() !== payload.senderId) {
     throw new AppError("You are not authorized to update this message", 403);
   }
   message = await Message.findByIdAndUpdate(
@@ -162,7 +157,6 @@ module.exports.deleteMessage = async (messageId, senderId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-
   if (message.senderId._id.toString() !== senderId) {
     throw new AppError("You are not authorized to delete this message", 403);
   }
@@ -172,7 +166,7 @@ module.exports.deleteMessage = async (messageId, senderId) => {
 
 module.exports.checkChatOfMessage = async (id, chatId) => {
   const message = await Message.findById(id);
-  if (message.chatId._id.toString() !== chatId) {
+  if (message.chatId.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
 };

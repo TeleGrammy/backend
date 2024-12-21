@@ -282,7 +282,6 @@ const getChatOfChannel = async (channelId) => {
 
 const checkUserParticipant = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
-
   const currentUser = chat.participants.find(
     (participant) => participant.userId.toString() === userId
   );

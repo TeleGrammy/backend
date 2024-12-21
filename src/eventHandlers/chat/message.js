@@ -133,7 +133,7 @@ module.exports.deleteMessage = function ({io, socket}) {
         const group = await groupService.findGroupById(msg.chatId.groupId);
         const canDeleteMessage = await groupMessageHandlers.canDeleteMessage(
           socket,
-          msg.senderId,
+          msg.senderId._id,
           group
         );
 

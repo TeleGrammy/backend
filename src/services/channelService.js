@@ -72,7 +72,6 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
       .skip(skip) // Skip the documents for previous pages
       .limit(limit); // Limit the results to pageSize
 
-    console.log(messages);
     // Total message count for pagination
     const totalMessages = await Message.countDocuments({
       chatId: chat._id,
@@ -162,7 +161,6 @@ const checkUserParticipant = async (channelId, userId) => {
 
 const checkCommentEnable = async (channelId) => {
   const channel = await getChannelInformation(channelId);
-  console.log(channel);
   if (!channel) {
     throw new AppError("Channl not Found", 404);
   }
