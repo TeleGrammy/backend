@@ -20,3 +20,7 @@ exports.extractProfileInfo = (user) => {
     "status"
   );
 };
+
+exports.hasProperty = (obj, prop) => {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+};
