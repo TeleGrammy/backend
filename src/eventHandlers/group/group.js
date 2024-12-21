@@ -208,6 +208,9 @@ const addMemberV2 = (io, socket, connectedUsers) => {
 
       if (
         (!addUsersGroupPermission && participantType === "member") ||
+        (addUsersGroupPermission &&
+          participantType === "member" &&
+          !participantData.permissions.addUsers) ||
         (!addUsersGroupPermission &&
           participantType === "admin" &&
           !participantData.permissions.addUsers)
@@ -254,6 +257,13 @@ const addMemberV2 = (io, socket, connectedUsers) => {
             return;
           }
 
+          if (user.whoCanAddMe === "Admins" && participantType === "member") {
+            messages.push(
+              `User with id or phone ${uuid} allows admins only to add him to groups `
+            );
+            return;
+          }
+
           const userId = user._id;
 
           let index = group.members.findIndex((member) =>
@@ -277,7 +287,24 @@ const addMemberV2 = (io, socket, connectedUsers) => {
             return;
           }
 
-          const newMember = {memberId: userId};
+          let newMember;
+
+          if (userId.toString() === group.ownerId.toString()) {
+            newMember = {
+              adminId: userId,
+              joinedAt: Date.now(),
+              customTitle: "Owner",
+              superAdminId: userId,
+              permissions: {
+                postStories: false,
+                editStories: false,
+                deleteStories: false,
+                remainAnonymous: false,
+              },
+            };
+          } else {
+            newMember = {memberId: userId};
+          }
 
           index = group.leftMembers.findIndex((member) =>
             member.memberId.equals(userId)
@@ -288,8 +315,14 @@ const addMemberV2 = (io, socket, connectedUsers) => {
           }
 
           groupChat.participants.push({userId});
-          group.members.push(newMember);
-          addedMembers.push(userId);
+
+          if (newMember.memberId) {
+            group.members.push(newMember);
+          } else {
+            group.admins.push(newMember);
+          }
+
+          addedMembers.push(userId.toString());
         })
       );
 
@@ -338,8 +371,8 @@ const addMemberV2 = (io, socket, connectedUsers) => {
       );
 
       callback({
-        status: "success",
-        messages,
+        status: addedMembers.length > 0 ? "success" : "error",
+        errorMessages: messages,
       });
     } catch (err) {
       handleSocketError(socket, err);

@@ -52,12 +52,11 @@
  *        '400':
  *          description: Bad request
  */
-
 /**
  * @swagger
  *  /channels/{channelId}:
  *    patch:
- *      summary: update the channel
+ *      summary: Update the channel
  *      tags:
  *        - Channels
  *      parameters:
@@ -66,7 +65,7 @@
  *          schema:
  *            type: string
  *          required: true
- *          description: the channel id you want to update its info
+ *          description: The channel ID you want to update
  *      requestBody:
  *        required: true
  *        content:
@@ -82,11 +81,11 @@
  *                  description: The description of the channel
  *                image:
  *                  type: string
- *                  description: The image of the channel
+ *                  description: The image URL of the channel
  *            example:
- *              name: name of channel
- *              description: description of the channel
- *              image: "media/media/test.jpg"
+ *              name: Example Channel
+ *              description: Example channel description
+ *              image: "media/media/example.jpg"
  *      responses:
  *        '200':
  *          description: The channel is updated successfully
@@ -100,11 +99,11 @@
  *                    example: success
  *                  message:
  *                    type: string
- *                    example: The channel is updated Successfully
+ *                    example: The channel is updated successfully
  *        '400':
  *          description: Bad request
  *    delete:
- *      summary: delete the channel
+ *      summary: Delete the channel or leave the channel
  *      tags:
  *        - Channels
  *      parameters:
@@ -113,14 +112,62 @@
  *          schema:
  *            type: string
  *          required: true
- *          description: the channel id you want to delete it
+ *          description: The channel ID to delete or leave
  *      responses:
  *        '204':
- *          description: The channel is deleted successfully
- *        '400':
- *          description: Bad request
+ *          description: The channel is deleted or user has successfully left the channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  message:
+ *                    type: string
+ *                    example: Channel deleted successfully or You have successfully left the channel
+ *        '403':
+ *          description: Unauthorized operation
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: You are not a member of this channel or Invalid role. Operation not allowed
+ *        '404':
+ *          description: Channel not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: Channel not found
+ *        '500':
+ *          description: Internal server error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: An error occurred while processing the request
  *    get:
- *      summary: get the channel info
+ *      summary: Get channel information
  *      tags:
  *        - Channels
  *      parameters:
@@ -129,10 +176,10 @@
  *          schema:
  *            type: string
  *          required: true
- *          description: the channel id you want to get its info
+ *          description: The channel ID to retrieve information for
  *      responses:
  *        '200':
- *          description: Retrieve the channel's info successfully
+ *          description: Successfully retrieved the channel's information
  *          content:
  *            application/json:
  *              schema:
@@ -162,6 +209,88 @@
  *                    type: string
  *        '400':
  *          description: Bad request
+ */
+
+/**
+ * @swagger
+ *  /channels/{channelId}/join:
+ *    post:
+ *      summary: Join a channel as a subscriber
+ *      tags:
+ *        - Channels
+ *      parameters:
+ *        - in: path
+ *          name: channelId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The ID of the channel to join
+ *      responses:
+ *        '200':
+ *          description: Successfully joined the channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      channel:
+ *                        type: object
+ *                        description: Details of the channel
+ *                        example:
+ *                          id: "64b7a1e93f3cde0018e22c0e"
+ *                          name: "Tech Community"
+ *                          privacy: true
+ *                      chat:
+ *                        type: object
+ *                        description: Chat details without participants
+ *                        example:
+ *                          id: "64b7a1e93f3cde0018e22c0e"
+ *                          lastMessage: "Welcome to the channel!"
+ *        '400':
+ *          description: User already exists in the channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: User already exists in Channel
+ *        '401':
+ *          description: Cannot join a private channel
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: You can't join Private Channel
+ *        '500':
+ *          description: Server error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: error
+ *                  message:
+ *                    type: string
+ *                    example: An error occurred while processing your request
  */
 
 /**
@@ -304,78 +433,151 @@
 
 /**
  * @swagger
- *  /channels/{channelId}/invite:
- *    post:
- *      summary: invite users to the specified channel via invite links
- *      tags:
- *        - Channels
- *      parameters:
- *        - in: path
- *          name: channelId
- *          schema:
- *            type: string
- *          required: true
- *          description: the channel id you want to invite the users to
- *      requestBody:
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                id:
- *                  type: array
- *                  items:
- *                    type: string
- *                  description: list of the ids you want to send the invitation link to
- *              required:
- *                - id
- *            example:
- *              - id1
- *              - id2
- *              - id3
- *      responses:
- *        '200':
- *          description: Users were invited successfully via the invite link
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: success
- *                message: Users have been invited successfully via the invite link
- *        '400':
- *          description: Bad request due to invalid input
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: fail
- *                message: Invalid request. Please check your input
- *        '403':
- *          description: The user does not have permission to invite users to the channel
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  status:
- *                    type: string
- *                  message:
- *                    type: string
- *              example:
- *                status: fail
- *                message: You do not have permission to invite users to this channel
+ * /channels/{channelId}/invite:
+ *   get:
+ *     summary: Generate invite link for a channel
+ *     tags:
+ *       - Channels
+ *     parameters:
+ *       - in: path
+ *         name: channelId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the channel
+ *     responses:
+ *       '200':
+ *         description: Invite link generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: string
+ *             example:
+ *               message: Channel Links generated successfully
+ *               data: "http://localhost:3000/api/v1/channels/123/invite/abcdef12345"
+ *       '404':
+ *         description: Channel not found
+ *       '500':
+ *         description: Server error
+ */
+/**
+ * @swagger
+ * /channels/{channelId}/invite/{inviteToken}:
+ *   get:
+ *     summary: Redirect to frontend with channel details based on invite link
+ *     tags:
+ *       - Channels
+ *     parameters:
+ *       - in: path
+ *         name: channelId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the channel
+ *       - in: path
+ *         name: inviteToken
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The invite token of the channel
+ *     responses:
+ *       '300':
+ *         description: Redirected successfully
+ *       '401':
+ *         description: Invalid invite token
+ *       '404':
+ *         description: Channel not found
+ */
+/**
+ * @swagger
+ * /channels/{channelId}/show/{inviteToken}:
+ *   get:
+ *     summary: Show channel details based on invite token
+ *     tags:
+ *       - Channels
+ *     parameters:
+ *       - in: path
+ *         name: channelId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the channel
+ *       - in: path
+ *         name: inviteToken
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The invite token of the channel
+ *     responses:
+ *       '200':
+ *         description: Channel details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *             example:
+ *               id: "123"
+ *               name: "Channel Name"
+ *               description: "Description of the channel"
+ *               inviteToken: "abcdef12345"
+ *       '401':
+ *         description: Invalid invite token
+ *       '404':
+ *         description: Channel not found
+ */
+/**
+ * @swagger
+ * /channels/{channelId}/invite/{inviteToken}:
+ *   post:
+ *     summary: Join a channel using an invite link
+ *     tags:
+ *       - Channels
+ *     parameters:
+ *       - in: path
+ *         name: channelId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the channel
+ *       - in: path
+ *         name: inviteToken
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The invite token of the channel
+ *     responses:
+ *       '200':
+ *         description: Successfully joined the channel
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *             example:
+ *               status: success
+ *               data:
+ *                 channel:
+ *                   id: "123"
+ *                   name: "Channel Name"
+ *                 chat:
+ *                   id: "456"
+ *       '401':
+ *         description: Invalid invite token
+ *       '404':
+ *         description: Channel not found
+ *       '400':
+ *         description: User already exists in the channel
+ *       '500':
+ *         description: Server error
  */
 
 /**

@@ -47,6 +47,9 @@ const channelSchema = new Schema({
     type: Number,
     default: 0,
   },
+  inviteToken: {
+    type: String,
+  },
 });
 
 // channelSchema.post(/^find/, function (docs, next) {
@@ -80,6 +83,11 @@ channelSchema.post(/^find/, async function (docs, next) {
   );
 
   return next();
+});
+channelSchema.pre(/^find/, function (next) {
+  // Only include documents where deleted is false
+  this.where({deleted: false});
+  next();
 });
 
 applySoftDeleteMiddleWare(channelSchema);

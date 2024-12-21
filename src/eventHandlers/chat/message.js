@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 const messageService = require("../../services/messageService");
+const groupService = require("../../services/groupService");
 const userService = require("../../services/userService");
 const chatService = require("../../services/chatService");
 const channelService = require("../../services/channelService");
-const groupService = require("../../services/groupService");
 const firebaseUtils = require("../../utils/firebaseMessaging");
+const groupMessageHandlers = require("../utils/groupMessageHandlers");
 
 const {
   logThenEmit,
@@ -19,6 +20,14 @@ module.exports.sendMessage = function ({io, socket}) {
     }
 
     try {
+      const canSendMessage = await groupMessageHandlers.canSendMessage(
+        socket,
+        payload,
+        callback
+      );
+
+      if (!canSendMessage) return;
+
       const messageData = await createMessageData(payload, socket.userId);
       if (messageData.replyOn) {
         await messageService.checkChatOfMessage(
@@ -104,9 +113,9 @@ module.exports.sendMessage = function ({io, socket}) {
         "message:isSent",
         {
           message,
-          chatId: message.senderId,
+          chatId: message.senderId._id,
         },
-        io.to(`${message.senderId}`)
+        io.to(`${message.senderId._id}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -145,7 +154,7 @@ module.exports.updateMessage = function ({io, socket}) {
         socket.userId,
         "message:updated",
         message._doc,
-        io.to(`chat:${message.chatId}`)
+        io.to(`chat:${message.chatId._id}`)
       );
     } catch (err) {
       socket.emit("error", {message: err.message});
@@ -157,16 +166,39 @@ module.exports.deleteMessage = function ({io, socket}) {
   return async (payload) => {
     try {
       // we will make it delete from all the users
-      const message = await messageService.deleteMessage(
-        payload.messageId,
-        socket.userId
-      );
-      logThenEmit(
-        socket.userId,
-        "message:deleted",
-        message._doc,
-        io.to(`chat:${message.chatId}`)
-      );
+      const msg = await messageService.getMessageById(payload.messageId);
+
+      if (msg.chatId.isGroup) {
+        const group = await groupService.findGroupById(msg.chatId.groupId);
+        const canDeleteMessage = await groupMessageHandlers.canDeleteMessage(
+          socket,
+          msg.senderId._id,
+          group
+        );
+
+        if (!canDeleteMessage) return;
+        await messageService.deleteGroupMessage({_id: msg._id});
+
+        const updatedPayload = {...payload, chatId: msg.chatId._id};
+
+        logThenEmit(
+          socket.userId,
+          "message:deleted",
+          updatedPayload,
+          io.to(`chat:${updatedPayload.chatId}`)
+        );
+      } else {
+        const message = await messageService.deleteMessage(
+          payload.messageId,
+          socket.userId
+        );
+        logThenEmit(
+          socket.userId,
+          "message:deleted",
+          message._doc,
+          io.to(`chat:${message.chatId._id}`)
+        );
+      }
     } catch (err) {
       socket.emit("error", {message: err.message});
     }
@@ -198,6 +230,16 @@ module.exports.updateDraftOfUserInChat = function ({io, socket}) {
 module.exports.pinMessage = function ({io, socket}) {
   return async (payload) => {
     try {
+      const group = await groupService.findGroup({chatId: payload.chatId});
+
+      if (group) {
+        const canPinMessage = await groupMessageHandlers.canPinMessage(
+          socket,
+          group
+        );
+        if (!canPinMessage) return;
+      }
+
       const message = await messageService.markMessageAsPinned(
         payload.chatId,
         payload.messageId
@@ -205,7 +247,7 @@ module.exports.pinMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:pin",
-        {message, chatId: message.chatId, userId: socket.userId},
+        {message, chatId: message.chatId._id, userId: socket.userId},
         io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {
@@ -217,6 +259,16 @@ module.exports.pinMessage = function ({io, socket}) {
 module.exports.unpinMessage = function ({io, socket}) {
   return async (payload) => {
     try {
+      const group = await groupService.findGroup({chatId: payload.chatId});
+
+      if (group) {
+        const canPinMessage = await groupMessageHandlers.canPinMessage(
+          socket,
+          group
+        );
+        if (!canPinMessage) return;
+      }
+
       const message = await messageService.markMessageAsUnpinned(
         payload.chatId,
         payload.messageId
@@ -224,7 +276,7 @@ module.exports.unpinMessage = function ({io, socket}) {
       logThenEmit(
         socket.userId,
         "message:unpin",
-        {message, chatId: message.chatId, userId: socket.userId},
+        {message, chatId: message.chatId._id, userId: socket.userId},
         io.to(`chat:${payload.chatId}`)
       );
     } catch (err) {

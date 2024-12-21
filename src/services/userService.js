@@ -385,11 +385,11 @@ const ackEvent = async (id, chatId, offset) => {
   }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
-    ? user.userChats.get(`${chatId}`)
+    ? user.userChats.get(`${chatId._id}`)
     : undefined;
 
   if (currentOffset === undefined || offset > currentOffset) {
-    user.userChats.set(`${chatId}`, offset);
+    user.userChats.set(`${chatId._id}`, offset);
   }
   await user.save();
 
@@ -458,14 +458,6 @@ const updateMany = async (filter, updateData, options) => {
   return User.updateMany(filter, updateData, options);
 };
 
-const pushChannelToUser = async (userId, channelId) => {
-  return User.findByIdAndUpdate(
-    userId,
-    {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
-    {new: true} // Return the updated document
-  );
-};
-
 const joinFirebaseTopic = async (userId, token) => {
   const allChats = await Chat.find(
     {"participants.userId": userId}, // Match chats where participants array contains the userId
@@ -525,7 +517,6 @@ module.exports = {
   addContact,
   getUserContact,
   updateMany,
-  pushChannelToUser,
   joinFirebaseTopic,
   unjoinFirebaseTopic,
 };

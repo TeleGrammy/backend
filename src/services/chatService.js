@@ -1,9 +1,7 @@
 // chatService.js
 const mongoose = require("mongoose");
 const Chat = require("../models/chat");
-const Message = require("../models/message");
 const AppError = require("../errors/appError");
-const UserService = require("./userService");
 const {addContact} = require("./userService");
 /**
  * Creates a new chat.
@@ -105,7 +103,7 @@ const getUserChats = async (userId, skip, limit) => {
       .limit(limit)
       .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp isPinned"
       )
       .populate(
         "participants.userId",
@@ -186,6 +184,7 @@ const updateLastMessage = async (chatId, messageId) => {
  * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
  */
 const addParticipant = async (chatId, participantData) => {
+  console.log("Adding Participant");
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
@@ -343,6 +342,21 @@ const checkUserParticipant = async (chatId, userId) => {
   return currentUser;
 };
 
+const changeParticipantPermission = async (
+  chatId,
+  userId,
+  canDownload = true
+) => {
+  const chat = await Chat.findById(chatId);
+  const currentUserIndex = chat.participants.findIndex(
+    (participant) => participant.userId.toString() === userId
+  );
+  if (currentUserIndex === -1) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  chat.participants[currentUserIndex].canDownload = canDownload;
+  return chat.save();
+};
 const checkUserAdmin = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
   const currentUser = chat.participants.find(
@@ -456,4 +470,5 @@ module.exports = {
   updateChatMute,
   updateLastMessageCount,
   updateUserSeen,
+  changeParticipantPermission,
 };
