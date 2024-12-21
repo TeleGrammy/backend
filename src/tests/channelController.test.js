@@ -393,6 +393,9 @@ describe("Channel Controller", () => {
         channelName: "Test Channel",
         channelDescription: "Test Description",
         subscribersCount: 10,
+        channelPrivacy: "Private",
+        commentEnable: undefined,
+        metaDataPolicy: undefined,
         channelOwner: {
           id: "owner123",
           name: "Owner Name",

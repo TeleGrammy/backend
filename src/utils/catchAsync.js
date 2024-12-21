@@ -22,7 +22,7 @@ const catchAsync = (asyncFunction) => {
    * @param {function}  next - Express next function.
    */
   return async (req, res, next) => {
-    await asyncFunction(req, res, next).catch(next);
+    return asyncFunction(req, res, next).catch(next);
   };
 };
 
