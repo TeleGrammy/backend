@@ -21,8 +21,8 @@ const catchAsync = (asyncFunction) => {
    * @param {Object}    res - Express response object.
    * @param {function}  next - Express next function.
    */
-  return (req, res, next) => {
-    asyncFunction(req, res, next).catch(next);
+  return async (req, res, next) => {
+    return asyncFunction(req, res, next).catch(next);
   };
 };
 

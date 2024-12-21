@@ -99,6 +99,7 @@ const handlePrivateChat = (chatObj, userId) => {
   const myUser = chatObj.participants.find(
     (participant) => participant.userId._id.toString() === userId
   );
+
   const chat = {
     id: chatObj._id,
     name: otherUser.userId.username,
@@ -110,6 +111,8 @@ const handlePrivateChat = (chatObj, userId) => {
     role: otherUser.role,
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
+    unreadCount: myUser?.unreadCount,
+    isMute: myUser?.isMute ? myUser.isMute : false,
   };
 
   return chat;
@@ -128,6 +131,8 @@ const handleGroupChat = (chatObj, userId) => {
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
     isGroup: true,
+    unreadCount: myUser?.unreadCount,
+    isMute: myUser?.isMute ? myUser.isMute : false,
   };
 
   return chat;
@@ -145,7 +150,9 @@ const handleChannelChat = (chatObj, userId) => {
     channelId: chatObj.channelId._id,
     lastMessage: chatObj.lastMessage,
     draftMessage: myUser?.draft_message,
+    unreadCount: myUser?.unreadCount,
     isChannel: true,
+    isMute: myUser?.isMute ? myUser.isMute : false,
     canDownlaod: myUser?.canDownload,
   };
 

@@ -217,6 +217,9 @@ const getChannel = catchAsync(async (req, res, next) => {
     channelName: channelData.name,
     channelDescription: channelData.description,
     subscribersCount: channelData.membersCount,
+    channelPrivacy: channelData.privacy ? "Public" : "Private",
+    metaDataPolicy: channelData.metaDataPolicy,
+    commentEnable: channelData.comments,
     channelOwner: {
       id: channelData.ownerId._id,
       name: channelData.ownerId.screenName || channelData.ownerId.username,
@@ -541,6 +544,9 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
 
   const chat = await chatService.getChatOfChannel(channelId);
+  if (!chat) {
+    throw new AppError("Channel Chat not found, Try again later", 500);
+  }
   await chatService.checkUserAdmin(chat.id, req.user.id);
 
   const transformedParticipants = chat.participants

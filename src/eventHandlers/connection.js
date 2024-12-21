@@ -14,6 +14,7 @@ const {
 const {ackEvent, sendMissedEvents} = require("./event");
 const {updateTypingStatus} = require("./chat/typing");
 const {
+  createCall,
   sendCall,
   answerCall,
   endCall,
@@ -89,10 +90,13 @@ exports.onConnection = async (socket, io, connectedUsers) => {
     connectedUsers.get(socket.userId).set("chat", socket);
   else connectedUsers.set(socket.userId, new Map([["chat", socket]]));
 
-  await joinChatsOfUsers(io, socket);
-  await joinGroupChats(io, socket);
-  await joinChannelChats(io, socket);
-
+  try {
+    await joinChatsOfUsers(io, socket);
+    await joinGroupChats(io, socket);
+    await joinChannelChats(io, socket);
+  } catch (error) {
+    console.log(error);
+  }
   socket.on("message:test", (payload, callback) => {
     console.log("Received 'message:test' event from client:", payload);
     if (callback) {
@@ -111,6 +115,7 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   socket.on("event:ack", ackEvent({io, socket}));
   socket.on("typing", updateTypingStatus({io, socket}));
 
+  socket.on("call:createCall", createCall({socket, io}));
   socket.on("call:newCall", sendCall({socket, io}));
   socket.on("call:answer", answerCall({socket, io}));
   socket.on("call:end", endCall({socket, io}));

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 
 const memberSchema = new mongoose.Schema({
   memberId: {
