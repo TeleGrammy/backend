@@ -69,6 +69,7 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
       .skip(skip) // Skip the documents for previous pages
       .limit(limit); // Limit the results to pageSize
 
+    console.log(messages);
     // Total message count for pagination
     const totalMessages = await Message.countDocuments({
       chatId: chat._id,
@@ -104,22 +105,29 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
  */
 const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
   // Validate the thread exists
+  console.log("Service:", postId);
   const post = await Message.findById(postId);
+  console.log(post);
   if (!post) {
     throw new Error("Thread not found");
   }
 
-  const chatId = post.chatId.toString();
+  const chatId = post.chatId._id.toString();
 
   await ChatService.checkUserParticipant(chatId, userId);
   // Calculate pagination options
   const skip = (page - 1) * limit;
 
   // Query messages for the thread's associated chat
-  const messages = await Message.find({parentPost: postId})
-    .sort({createdAt: -1}) // Sort by newest first
+  const messages = await Message.find({
+    chatId,
+    parentPost: postId,
+    isPost: false,
+  })
     .skip(skip)
     .limit(limit);
+
+  console.log(messages);
 
   // Get total message count for the thread's chat
   const totalMessages = await Message.countDocuments({parentPost: postId});

@@ -68,5 +68,12 @@ router.get(
   isAuth,
   channelController.fetchChannelParticipants
 );
+router.get(
+  "/:channelId/invite/:inviteToken",
+  isAuth,
+  channelController.getChannelByInvite
+);
+
+router.get("/:channelId/invite", isAuth, channelController.getInviteLink);
 
 module.exports = router;

@@ -47,6 +47,9 @@ const channelSchema = new Schema({
     type: Number,
     default: 0,
   },
+  inviteToken: {
+    type: String,
+  },
 });
 
 // channelSchema.post(/^find/, function (docs, next) {
