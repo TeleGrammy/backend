@@ -31,7 +31,7 @@ const deleteChannel = (io, socket, connectedUsers) => {
       );
 
       if (!participant) {
-        throw AppError("You are not a member of this channel", 403);
+        throw new AppError("You are not a member of this channel", 403);
       }
 
       if (["Admin", "Creator"].includes(participant.role)) {
@@ -167,11 +167,11 @@ const removeParticipant = (io, socket, connectedUsers) => {
         }
         if (userSocket.get("chat"))
           userSocket.get("chat").leave(`chat:${chatOfChannel.id}`);
-        callback({
-          status: "ok",
-          message: "Member has been removed",
-        });
       }
+      callback({
+        status: "ok",
+        message: "Member has been removed",
+      });
     } catch (err) {
       console.log(err);
       handleSocketError(socket, err);
@@ -251,11 +251,13 @@ const addMember = (io, socket, connectedUsers) => {
               userSocket.get("channel").join(`channel:${channelId}`);
             if (userSocket.get("chat"))
               userSocket.get("chat").join(`chat:${chatOfChannel.id}`);
-            userSocket.get("channel").emit("user:addedToChannel", {
-              channelId,
-              inviterId: userId,
-              inviterName,
-            });
+            if (userSocket.get("channel")) {
+              userSocket.get("channel").emit("user:addedToChannel", {
+                channelId,
+                inviterId: userId,
+                inviterName,
+              });
+            }
           }
         })
       );
@@ -344,11 +346,13 @@ const promoteSubscriber = (io, socket, connectedUsers) => {
           userSocket.get("channel").join(`channel:${channelId}`);
         if (userSocket.get("chat"))
           userSocket.get("chat").join(`chat:${chatOfChannel.id}`);
-        userSocket.get("channel").emit("user:promotedToAdmin", {
-          channelId,
-          promotedById: userId,
-          promotedBy: promoterName,
-        });
+        if (userSocket.get("channel")) {
+          userSocket.get("channel").emit("user:promotedToAdmin", {
+            channelId,
+            promotedById: userId,
+            promotedBy: promoterName,
+          });
+        }
       }
 
       callback({
@@ -433,11 +437,13 @@ const demoteAdmin = (io, socket, connectedUsers) => {
           userSocket.get("channel").join(`channel:${channelId}`);
         if (userSocket.get("chat"))
           userSocket.get("chat").join(`chat:${chatOfChannel.id}`);
-        userSocket.get("channel").emit("user:demoteOfAdmin", {
-          channelId,
-          demotedById: userId,
-          demotedBy,
-        });
+        if (userSocket.get("channel")) {
+          userSocket.get("channel").emit("user:demoteOfAdmin", {
+            channelId,
+            demotedById: userId,
+            demotedBy,
+          });
+        }
       }
 
       callback({

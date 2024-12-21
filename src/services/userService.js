@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const AppError = require("../errors/appError");
 
 const User = require("../models/user");
+const Chat = require("../models/chat");
 
 /**
  * Service layer for user-related operations in the Express application.
@@ -382,11 +383,11 @@ const ackEvent = async (id, chatId, offset) => {
   }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
-    ? user.userChats.get(`${chatId}`)
+    ? user.userChats.get(`${chatId._id}`)
     : undefined;
 
   if (currentOffset === undefined || offset > currentOffset) {
-    user.userChats.set(`${chatId}`, offset);
+    user.userChats.set(`${chatId._id}`, offset);
   }
   await user.save();
 
@@ -394,14 +395,19 @@ const ackEvent = async (id, chatId, offset) => {
 };
 
 const updateDraftOfUserInChat = async (chatId, userId, draft) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found");
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new Error("Chat not found");
   }
-  user.userDrafts.set(`${chatId}`, draft);
-  await user.save();
-  return user;
+  const participantIndex = chat.participants.findIndex(
+    (part) => part.userId.toString() === userId
+  );
+  if (participantIndex === -1) {
+    throw new Error("User is not participant in Chat");
+  }
+  chat.participants[participantIndex].draft_message = draft;
+  await chat.save();
+  return chat;
 };
 
 const addContact = async (userId, chatId, contactId, isMe) => {
@@ -450,7 +456,8 @@ const updateMany = async (filter, updateData, options) => {
   return User.updateMany(filter, updateData, options);
 };
 
-const pushChannelToUser = async (userId, channelId) => {
+const pushUserChannel = async (userId, channelId) => {
+  console.log("PUSH channel");
   return User.findByIdAndUpdate(
     userId,
     {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
@@ -481,5 +488,5 @@ module.exports = {
   addContact,
   getUserContact,
   updateMany,
-  pushChannelToUser,
+  pushUserChannel,
 };
