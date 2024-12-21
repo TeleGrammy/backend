@@ -90,10 +90,13 @@ exports.onConnection = async (socket, io, connectedUsers) => {
   if (connectedUsers.get(socket.userId))
     connectedUsers.get(socket.userId).set("chat", socket);
   else connectedUsers.set(socket.userId, new Map([["chat", socket]]));
-
-  await joinChatsOfUsers(io, socket);
-  await joinGroupChats(io, socket);
-  await joinChannelChats(io, socket);
+  try {
+    await joinChatsOfUsers(io, socket);
+    await joinGroupChats(io, socket);
+    await joinChannelChats(io, socket);
+  } catch (err) {
+    console.log(err);
+  }
 
   socket.on("message:test", (payload, callback) => {
     console.log("Received 'message:test' event from client:", payload);
