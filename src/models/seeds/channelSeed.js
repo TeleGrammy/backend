@@ -6,13 +6,10 @@ const Message = require("../message");
 const seedDatabase = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(
-      "mongodb+srv://telegrammysw:UnLP2DUUz5GHdbp8@cluster0.g0jfd.mongodb.net/development",
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      }
-    );
+    await mongoose.connect(process.env.DB_HOST, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("Connected to MongoDB");
 
     // Create a Channel
