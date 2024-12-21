@@ -36,8 +36,8 @@ module.exports.sendMessage = function ({io, socket}) {
         );
       }
       const {name} = socket.user;
-      console.log(socket.user);
       await chatService.checkUserParticipant(messageData.chatId, socket.userId);
+
       const channelId = await chatService.checkChatChannel(messageData.chatId);
       if (channelId) {
         await checkChannelRules(socket.userId, channelId, messageData);
@@ -83,15 +83,17 @@ module.exports.sendMessage = function ({io, socket}) {
         io.to(`chat:${payload.chatId}`)
       );
 
-      // i think this is useless since at the event of new message
-      // the user will have the mentions and can know if he is mentioned or not'
-      message.mentions.forEach(async (userId) => {
+      message.mentions.forEach(async (mention) => {
         let newTitle = `${name} mentioned You`;
         if (chatName !== "") {
           newTitle = `${name} mentioned You in ${chatName}`;
         }
-        firebaseUtils.sendNotificationToTopic(`user-${userId}`, newTitle, body);
-        io.to(`${userId}`).emit("message:mention", message);
+        firebaseUtils.sendNotificationToTopic(
+          `user-${mention._id}`,
+          newTitle,
+          body
+        );
+        io.to(`${mention._id}`).emit("message:mention", message);
       });
 
       // call the cb to acknowledge the message is sent to other users
