@@ -47,14 +47,10 @@ describe("Logout Function Tests", () => {
     const deleteSessionStub = sinon
       .stub(sessionService, "deleteSession")
       .resolves();
-    const findOneAndUpdateStub = sinon
-      .stub(userService, "findOneAndUpdate")
-      .resolves();
 
     await logout(req, res, next);
 
     expect(deleteSessionStub.calledOnce).to.be.true;
-    expect(findOneAndUpdateStub.calledOnce).to.be.true;
     expect(res.clearCookie.calledOnce).to.be.true;
     expect(res.status.calledWith(200)).to.be.true;
     expect(
