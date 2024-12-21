@@ -210,7 +210,7 @@ describe("Channel Service", () => {
       ChatService.getChatOfChannel.mockResolvedValue(null);
 
       await expect(getChannelChatWithThreads("mockChannelId")).rejects.toThrow(
-        "Error fetching channel chat: Chat not found for this channel"
+        "Error fetching channel chat: Channel Chat not found, Try again later"
       );
 
       expect(ChatService.getChatOfChannel).toHaveBeenCalledWith(

@@ -34,7 +34,9 @@ const deleteChannel = async (channelId) => {
 
 const updateChannelPrivacy = async (id, userId, updateData) => {
   const chat = await ChatService.getChatOfChannel(id);
-
+  if (!chat) {
+    throw new AppError("Channel Chat not found, Try again later", 500);
+  }
   await ChatService.checkUserAdmin(chat.id, userId);
   const updatedChannel = await Channel.findByIdAndUpdate(
     id,
@@ -61,9 +63,8 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
     // Get the associated chat for the channel
     const chat = await ChatService.getChatOfChannel(channelId);
     if (!chat) {
-      throw new Error("Chat not found for this channel");
+      throw new AppError("Channel Chat not found, Try again later", 500);
     }
-
     // Calculate pagination
     const skip = (page - 1) * limit;
 
@@ -148,6 +149,9 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
 
 const checkUserParticipant = async (channelId, userId) => {
   const chat = await ChatService.getChatOfChannel(channelId);
+  if (!chat) {
+    throw new AppError("Channel Chat not found, Try again later", 500);
+  }
   console.log(userId, chat);
   const currentUser = chat.participants.find(
     (participant) => participant.userId._id.toString() === userId.toString()
