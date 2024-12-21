@@ -60,6 +60,7 @@ module.exports.createCall = function ({socket, io}) {
       });
     } catch (err) {
       console.error(err);
+
       callBack({status: "error", message: err.message});
       handleSocketError(socket, err);
     }
