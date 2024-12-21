@@ -28,14 +28,13 @@ const callObj = {
 module.exports.addOffer = async ({senderId, recieverId, callId, offer}) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
+  console.log(call.callObjects, "from send Offer");
   if (
     hasProperty(call.callObjects, recieverId) &&
     hasProperty(call.callObjects[recieverId], senderId)
   ) {
-    const err = new Error(
-      "You can't send an offer to this user. You need to send an answer object."
-    );
-    err.status = "offerExists";
+    call.callBackStatus = "offerExists";
+    return call;
   }
   if (call.callObjects[senderId] === undefined) call.callObjects[senderId] = {};
   if (call.callObjects[senderId][recieverId] === undefined) {

@@ -17,11 +17,7 @@ async function withLock(callId, task) {
   const previousPromise = callLocks.get(callId);
 
   const currentPromise = previousPromise.then(async () => {
-    try {
-      await task();
-    } catch (err) {
-      console.error(`Error in withLock for callId ${callId}:`, err);
-    }
+    await task();
   });
 
   // Update the lock with the new promise
@@ -97,13 +93,13 @@ module.exports.sendOffer = function ({socket, io}) {
           io.to(`${recieverId}`).emit("call:incomingOffer", call);
         }
         callBack({
-          status: "ok",
+          status: call.callBackStatus || "ok",
           call,
         });
       });
     } catch (err) {
+      console.log(err.status, " should be sent");
       callBack({status: err.status || "error", message: err.message});
-
       handleSocketError(socket, err);
     }
   };
