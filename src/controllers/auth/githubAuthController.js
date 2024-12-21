@@ -35,7 +35,7 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           picture: user.profilePicture || "",
-          isAdmin: user.email === process.env.ADMIN_EMAIL ? true : false,
+          isAdmin: user.email === process.env.APP_EMAIL,
           accessTokenExpiresAt: new Date(Date.now() + 3600 * 100),
           isGitHubUser: true,
         });

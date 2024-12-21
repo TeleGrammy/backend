@@ -12,6 +12,19 @@ const participantSchema = new mongoose.Schema({
     enum: ["Creator", "Admin", "Member", "Subscriber", "Peer"],
     default: "Member",
   },
+  isMute: {
+    type: Boolean,
+    default: false,
+  },
+  // lastMessageSeen: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Message",
+  //   default: null,
+  // },
+  unreadCount: {
+    type: Number,
+    default: 0,
+  },
   canDownload: {
     type: Boolean,
     default: true,
@@ -105,6 +118,11 @@ chatSchema.pre("findOneAndUpdate", async function (next) {
       );
     }
   }
+  next();
+});
+chatSchema.pre(/^find/, function (next) {
+  // Only include documents where deleted is false
+  this.where({deleted: false});
   next();
 });
 

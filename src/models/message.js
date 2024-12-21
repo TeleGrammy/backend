@@ -174,32 +174,6 @@ messageSchema.methods.generateSignedUrl = async function () {
   }
 };
 
-messageSchema.pre("save", function (next) {
-  // if (this.messageType === "text" && !this.content) {
-  //   return next(new Error("Text message must have text content."));
-  // }
-
-  // if (
-  //   [
-  //     "image",
-  //     "audio",
-  //     "voice_note",
-  //     "video",
-  //     "sticker",
-  //     "GIF",
-  //     "document",
-  //     "file",
-  //   ].includes(this.messageType) &&
-  //   !this.mediaKey
-  // ) {
-  //   return next(
-  //     new Error(`${this.messageType} message must have a media URL.`)
-  //   );
-  // }
-
-  return next();
-});
-
 // this middleware is responsible for creating signed URLs to the retreived messages from the database
 messageSchema.post(/^find/, async function (docs, next) {
   if (!docs || (Array.isArray(docs) && docs.length === 0)) {
@@ -216,6 +190,20 @@ messageSchema.post(/^find/, async function (docs, next) {
   return next();
 });
 
+messageSchema.pre(/^find/, function (next) {
+  this.select(
+    "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned isPost commentsCount parentPost"
+  ) // Only fetch relevant fields
+    .populate("senderId mentions", "_id username email screenName")
+    .populate("replyOn")
+    .populate(
+      "chatId",
+      "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
+    );
+
+  next();
+});
+
 messageSchema.methods.pin = async function () {
   this.isPinned = true;
   await this.save();
@@ -225,15 +213,6 @@ messageSchema.methods.unpin = async function () {
   this.isPinned = false;
   await this.save();
 };
-// messageSchema.post("remove", function (doc) {
-//   // TODO: put proper socket path and test this socket
-//   // const io = require("SOCKET PATH");
-//   // io.of("/messages").to(doc.chatId.toString()).emit("messageDeleted", {
-//   //   messageId: doc._id,
-//   //   chatId: doc.chatId,
-//   // });
-//   // console.log(`Notification sent for deleted message: ${doc._id}`);
-// });
 
 messageSchema.statics.searchMessages = async function ({
   chatId,

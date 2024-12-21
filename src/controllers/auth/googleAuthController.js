@@ -51,7 +51,6 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         existingUser.refreshTokenExpiresAt = refreshTokenExpiration;
         await existingUser.save({validateBeforeSave: false});
       }
-      console.log(user.email === process.env.APP_EMAIL);
       const {accessToken} = await manageSessionForUserModule.default(
         req,
         res,

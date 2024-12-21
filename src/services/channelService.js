@@ -18,7 +18,10 @@ const getChannelInformation = async (channelId) => {
   if (!mongoose.Types.ObjectId.isValid(channelId)) {
     throw new AppError("Invalid channelId provided", 400);
   }
-  return Channel.findOne({_id: channelId}).populate("ownerId");
+  return Channel.findOne({_id: channelId}).populate(
+    "ownerId",
+    "username email phone screenName picture lastSeenVisibility status lastSeen"
+  );
 };
 
 const deleteChannel = async (channelId) => {
@@ -31,7 +34,9 @@ const deleteChannel = async (channelId) => {
 
 const updateChannelPrivacy = async (id, userId, updateData) => {
   const chat = await ChatService.getChatOfChannel(id);
-
+  if (!chat) {
+    throw new AppError("Channel Chat not found, Try again later", 500);
+  }
   await ChatService.checkUserAdmin(chat.id, userId);
   const updatedChannel = await Channel.findByIdAndUpdate(
     id,
@@ -58,9 +63,8 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
     // Get the associated chat for the channel
     const chat = await ChatService.getChatOfChannel(channelId);
     if (!chat) {
-      throw new Error("Chat not found for this channel");
+      throw new AppError("Channel Chat not found, Try again later", 404);
     }
-
     // Calculate pagination
     const skip = (page - 1) * limit;
 
@@ -109,15 +113,19 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
     throw new Error("Thread not found");
   }
 
-  const chatId = post.chatId.toString();
+  const chatId = post.chatId._id.toString();
 
   await ChatService.checkUserParticipant(chatId, userId);
   // Calculate pagination options
   const skip = (page - 1) * limit;
 
   // Query messages for the thread's associated chat
-  const messages = await Message.find({parentPost: postId})
-    .sort({createdAt: -1}) // Sort by newest first
+  const messages = await Message.find({
+    chatId,
+    parentPost: postId,
+    isPost: false,
+  })
+    .sort({timestamp: -1})
     .skip(skip)
     .limit(limit);
 
@@ -141,7 +149,9 @@ const getThreadMessages = async (postId, userId, page = 1, limit = 20) => {
 
 const checkUserParticipant = async (channelId, userId) => {
   const chat = await ChatService.getChatOfChannel(channelId);
-  console.log(userId, chat);
+  if (!chat) {
+    throw new AppError("Channel Chat not found, Try again later", 500);
+  }
   const currentUser = chat.participants.find(
     (participant) => participant.userId._id.toString() === userId.toString()
   );

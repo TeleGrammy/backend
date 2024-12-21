@@ -42,7 +42,7 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     if (
       !file.originalname.match(
-        /\.(jpg|jpeg|png|gif|bmp|webp|mp4|avi|mov|wav|mp3|ogg|pdf|doc|docx|odt|rtf|txt|pdf|xls|xlsx|ods|ppt|pptx|odp|html|htm|csv|zip)$/i
+        /\.(jpg|jpeg|png|gif|bmp|webp|webm|mp4|avi|mov|wav|mp3|ogg|pdf|doc|docx|odt|rtf|txt|pdf|xls|xlsx|ods|ppt|pptx|odp|html|htm|csv|zip)$/i
       )
     ) {
       cb(new Error("Invalid file format"), false);

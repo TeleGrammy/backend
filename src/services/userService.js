@@ -5,6 +5,8 @@ const AppError = require("../errors/appError");
 const User = require("../models/user");
 const Chat = require("../models/chat");
 
+const firebaseUtils = require("../utils/firebaseMessaging");
+
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -385,11 +387,11 @@ const ackEvent = async (id, chatId, offset) => {
   }
   // Check if the user already has a chat entry and if the new offset is greater than the current one
   const currentOffset = user.userChats
-    ? user.userChats.get(`${chatId}`)
+    ? user.userChats.get(`${chatId._id}`)
     : undefined;
 
   if (currentOffset === undefined || offset > currentOffset) {
-    user.userChats.set(`${chatId}`, offset);
+    user.userChats.set(`${chatId._id}`, offset);
   }
   await user.save();
 
@@ -474,6 +476,40 @@ const searchUsers = async (filter, select, skip, limit) => {
   if (limit) query = query.limit(limit);
   return query.exec();
 };
+const joinFirebaseTopic = async (userId, token) => {
+  const allChats = await Chat.find(
+    {"participants.userId": userId}, // Match chats where participants array contains the userId
+    {participants: {$elemMatch: {userId}}} // Project only the matched element
+  );
+  firebaseUtils.subscribeToTopic(token, `user-${userId}`);
+  firebaseUtils.subscribeToTopic(token, `call-${userId}`);
+  firebaseUtils.subscribeToTopic(token, `missed-${userId}`);
+  allChats.forEach((chat) => {
+    if (
+      chat._id &&
+      chat.participants &&
+      chat.participants.length > 0 &&
+      !chat.participants[0].isMute
+    ) {
+      firebaseUtils.subscribeToTopic(token, `chat-${chat._id.toString()}`);
+    }
+  });
+};
+
+const unjoinFirebaseTopic = async (userId, token) => {
+  const allChats = await Chat.find(
+    {"participants.userId": userId}, // Match chats where participants array contains the userId
+    {participants: {$elemMatch: {userId}}} // Project only the matched element
+  );
+  firebaseUtils.unsubscribeFromTopic(token, `user-${userId}`);
+  firebaseUtils.unsubscribeFromTopic(token, `call-${userId}`);
+  firebaseUtils.unsubscribeFromTopic(token, `missed-${userId}`);
+  allChats.forEach((chat) => {
+    if (chat._id) {
+      firebaseUtils.unsubscribeFromTopic(token, `chat-${chat._id}`);
+    }
+  });
+};
 
 module.exports = {
   getUserByUUID,
@@ -501,4 +537,6 @@ module.exports = {
   updateMany,
   pushUserChannel,
   searchUsers,
+  joinFirebaseTopic,
+  unjoinFirebaseTopic,
 };
