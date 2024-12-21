@@ -35,6 +35,7 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           picture: user.profilePicture || "",
+          isAdmin: user.email === process.env.ADMIN_EMAIL ? true : false,
           accessTokenExpiresAt: new Date(Date.now() + 3600 * 100),
           isGitHubUser: true,
         });
@@ -45,13 +46,21 @@ const gitHubCallBack = catchAsync(async (req, res, next) => {
         await existingUser.save({validateBeforeSave: false});
       }
 
-      const {updatedUser, accessToken} =
-        await manageSessionForUserModule.default(req, res, existingUser);
+      const {accessToken} = await manageSessionForUserModule.default(
+        req,
+        res,
+        existingUser
+      );
+
+      let adminStatus = false;
+      if (existingUser.isAdmin) {
+        adminStatus = existingUser.isAdmin;
+      }
 
       return res
         .status(300)
         .redirect(
-          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}`
+          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}&isAdmin=${adminStatus}`
         );
     }
   )(req, res);

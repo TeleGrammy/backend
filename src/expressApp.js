@@ -23,6 +23,7 @@ const chatRouter = require("./routes/chat/chat");
 const channelRouter = require("./routes/channel/channel");
 const groupRouter = require("./routes/group/groupRoutes");
 const searchRouter = require("./routes/searchRoutes");
+const adminRouter = require("./routes/admin/admin");
 
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
 const isAuthenticated = require("./middlewares/isAuthenticated");
@@ -84,6 +85,7 @@ app.use("/api/v1/chats", chatRouter);
 app.use("/api/v1/channels", channelRouter);
 app.use("/api/v1/groups", isAuthenticated, groupRouter);
 app.use("/api/v1/search", isAuthenticated, searchRouter);
+app.use("/api/v1/admins", isAuthenticated, adminRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 

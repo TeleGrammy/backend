@@ -378,6 +378,17 @@ const removeChat = (filter) => {
   return Chat.deleteOne(filter);
 };
 
+const retrieveGroupChatData = async (chatId) => {
+  if (!mongoose.Types.ObjectId.isValid(chatId)) {
+    throw new AppError("Invalid chatId provided", 400);
+  }
+
+  return Chat.findById(chatId).populate({
+    path: "groupId",
+    select: "applyFilter",
+  });
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -399,4 +410,5 @@ module.exports = {
   checkChatChannel,
   removeChat,
   changeParticipantPermission,
+  retrieveGroupChatData,
 };

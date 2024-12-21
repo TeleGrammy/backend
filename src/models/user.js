@@ -134,7 +134,7 @@ const userSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["active", "inactive", "banned"],
-    default: "inactive",
+    default: "active",
   },
   lastSeen: {
     type: Date,
@@ -241,6 +241,10 @@ const userSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Channel",
     default: [],
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
 });
 

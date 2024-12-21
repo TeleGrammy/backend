@@ -39,6 +39,7 @@ const googleCallBack = catchAsync(async (req, res, next) => {
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           picture: user.profilePicture || "",
+          isAdmin: user.email === process.env.APP_EMAIL,
           accessTokenExpiresAt: new Date(Date.now() + 3600 * 100),
           refreshTokenExpiresAt: refreshTokenExpiration,
           isGoogleUser: true,
@@ -50,17 +51,22 @@ const googleCallBack = catchAsync(async (req, res, next) => {
         existingUser.refreshTokenExpiresAt = refreshTokenExpiration;
         await existingUser.save({validateBeforeSave: false});
       }
-
+      console.log(user.email === process.env.APP_EMAIL);
       const {accessToken} = await manageSessionForUserModule.default(
         req,
         res,
         existingUser
       );
 
+      let adminStatus = false;
+      if (existingUser.isAdmin) {
+        adminStatus = existingUser.isAdmin;
+      }
+
       return res
         .status(300)
         .redirect(
-          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}`
+          `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=${accessToken}&isAdmin=${adminStatus}`
         );
     }
   )(req, res);
