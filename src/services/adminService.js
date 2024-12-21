@@ -9,6 +9,7 @@ const getUsers = async (adminId) => {
   if (!mongoose.Types.ObjectId.isValid(adminId)) {
     throw new AppError("Invalid adminId provided", 400);
   }
+  console.log("here")
 
   return await User.find({_id: {$ne: adminId}, status: {$ne: "banned"}})
     .select("username screenName phone email bio status pictureKey picture")
