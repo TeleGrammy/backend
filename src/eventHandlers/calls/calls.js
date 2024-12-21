@@ -4,7 +4,7 @@ const {
   selectRequiredCallObject,
   appendIceCandidates,
 } = require("../utils/utilsFunc");
-
+const firebaseUtils = require("../../utils/firebaseMessaging");
 const handleSocketError = require("../../errors/handleSocketError");
 
 const callLocks = new Map();
@@ -54,6 +54,11 @@ module.exports.createCall = function ({socket, io}) {
           }
         });
 
+      firebaseUtils.sendNotificationToTopic(
+        `chat-${call.chatId._id}`,
+        "A new Call is Incomming",
+        ""
+      );
       callBack({
         status: "ok",
         call,

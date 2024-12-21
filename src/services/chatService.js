@@ -1,9 +1,8 @@
 // chatService.js
 const mongoose = require("mongoose");
 const Chat = require("../models/chat");
-const Message = require("../models/message");
 const AppError = require("../errors/appError");
-const UserService = require("./userService");
+const {addContact} = require("./userService");
 /**
  * Creates a new chat.
  * @memberof Service.Chat
@@ -44,6 +43,42 @@ const getChatById = async (chatId) => {
   }
 };
 
+const getBasicChatById = async (chatId) => {
+  try {
+    const chat = await Chat.findById(chatId).select("-participants");
+
+    return chat;
+  } catch (error) {
+    throw new Error(`Error retrieving chat: ${error.message}`);
+  }
+};
+const updateChatMute = async (chatId, userId, muteStatus) => {
+  // Step 1: Find the chat document
+  const chat = await Chat.findOne({_id: chatId});
+
+  if (!chat) {
+    throw new AppError(`Chat not found`, 404);
+  }
+
+  // Step 2: Find the participant by userId and update `isMute`
+
+  const participant = chat.participants.find(
+    (p) => p.userId.toString() === userId
+  );
+
+  if (!participant) {
+    throw new AppError(`Participant not found`, 404);
+  }
+
+  // Update the `isMute` field
+  participant.isMute = muteStatus;
+
+  // Save the updated chat document
+  await chat.save();
+
+  return chat;
+};
+
 const getChatsByIds = async (chatIds) => {
   try {
     const chats = await Chat.find({_id: {$in: chatIds}});
@@ -68,7 +103,7 @@ const getUserChats = async (userId, skip, limit) => {
       .limit(limit)
       .sort({lastMessageTimestamp: -1})
       .select(
-        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp"
+        "name isGroup isChannel createdAt participants lastMessage groupId channelId lastMessageTimestamp isPinned"
       )
       .populate(
         "participants.userId",
@@ -85,6 +120,18 @@ const getUserChats = async (userId, skip, limit) => {
           select: "username",
         },
       });
+    return chats;
+  } catch (error) {
+    throw new Error(`Error retrieving user chats: ${error.message}`);
+  }
+};
+
+const getFullUserChats = async (userId) => {
+  try {
+    const chats = await Chat.find(
+      {"participants.userId": userId}, // Match chats where participants array contains the userId
+      {participants: {$elemMatch: {userId}}} // Project only the matched element
+    );
     return chats;
   } catch (error) {
     throw new Error(`Error retrieving user chats: ${error.message}`);
@@ -137,6 +184,7 @@ const updateLastMessage = async (chatId, messageId) => {
  * @returns {Promise<Chat|null>} - A promise that resolves to the updated chat if successful, otherwise null.
  */
 const addParticipant = async (chatId, participantData) => {
+  console.log("Adding Participant");
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
@@ -234,8 +282,8 @@ const createOneToOneChat = async (userId1, userId2) => {
     }).populate("participants.userId", "username email phone status");
 
     if (chat) {
-      await UserService.addContact(userId1, chat.id, userId2, true);
-      await UserService.addContact(userId2, chat.id, userId1, false);
+      await addContact(userId1, chat.id, userId2, true);
+      await addContact(userId2, chat.id, userId1, false);
       return chat;
     }
 
@@ -250,8 +298,8 @@ const createOneToOneChat = async (userId1, userId2) => {
     });
 
     await chat.save();
-    await UserService.addContact(userId1, chat.id, userId2, true);
-    await UserService.addContact(userId2, chat.id, userId1, false);
+    await addContact(userId1, chat.id, userId2, true);
+    await addContact(userId2, chat.id, userId1, false);
     await chat.populate("participants.userId", "username email phone status");
     return chat;
   } catch (error) {
@@ -272,10 +320,6 @@ const getChatOfChannel = async (channelId) => {
     .populate("lastMessage")
     .populate("participants.userId");
 
-  if (!chat) {
-    throw new AppError("Chat not found", 404);
-  }
-
   return chat;
 };
 
@@ -294,6 +338,21 @@ const checkUserParticipant = async (chatId, userId) => {
   return currentUser;
 };
 
+const changeParticipantPermission = async (
+  chatId,
+  userId,
+  canDownload = true
+) => {
+  const chat = await Chat.findById(chatId);
+  const currentUserIndex = chat.participants.findIndex(
+    (participant) => participant.userId.toString() === userId
+  );
+  if (currentUserIndex === -1) {
+    throw new AppError("User not found in the chat participants", 401);
+  }
+  chat.participants[currentUserIndex].canDownload = canDownload;
+  return chat.save();
+};
 const checkUserAdmin = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
   const currentUser = chat.participants.find(
@@ -364,6 +423,26 @@ const removeChat = (filter) => {
   return Chat.deleteOne(filter);
 };
 
+const updateUserSeen = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  chat.participants.forEach((part) => {
+    if (part.userId.toString() === userId) {
+      part.unreadCount = 0;
+    }
+  });
+  await chat.save();
+};
+
+const updateLastMessageCount = async (chatId, userId) => {
+  const chat = await Chat.findById(chatId);
+  chat.participants.forEach((part) => {
+    if (part.userId.toString() !== userId) {
+      part.unreadCount += 1;
+    }
+  });
+  await chat.save();
+};
+
 module.exports = {
   createChat,
   getChatById,
@@ -382,4 +461,10 @@ module.exports = {
   checkUserAdmin,
   checkChatChannel,
   removeChat,
+  getBasicChatById,
+  getFullUserChats,
+  updateChatMute,
+  updateLastMessageCount,
+  updateUserSeen,
+  changeParticipantPermission,
 };

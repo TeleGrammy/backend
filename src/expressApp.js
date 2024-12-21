@@ -22,6 +22,8 @@ const mediaRouter = require("./routes/messaging/media");
 const chatRouter = require("./routes/chat/chat");
 const channelRouter = require("./routes/channel/channel");
 const groupRouter = require("./routes/group/groupRoutes");
+const notificationRouter = require("./routes/notificaiton/notificaiton");
+
 const callRouter = require("./routes/call/call");
 const serversConfig = require("./config/serversConfig");
 const globalErrorHandler = require("./middlewares/globalErrorHandling");
@@ -87,7 +89,7 @@ app.use("/ice-servers", serversConfig.getIceServers);
 
 app.use("/api/v1/channels", channelRouter);
 app.use("/api/v1/groups", isAuthenticated, groupRouter);
-
+app.use("/api/v1/notification", notificationRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(globalErrorHandler);
