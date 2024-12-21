@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const Call = require("../models/call");
 const User = require("../models/user");
 const chatService = require("./chatService");
-const {hasProperty} = require("../utils/utilitiesFunc");
 // Create a new call
 module.exports.createCall = async ({chatId, callerId}) => {
   let call = await Call.create({
@@ -14,116 +13,60 @@ module.exports.createCall = async ({chatId, callerId}) => {
       },
     ],
   });
-  // call the find method to populate the data using the middleware of the model
+  // call the find method to populate the data using the middleware of the modael
   call = await Call.findById(call._id);
   return call;
 };
-
-const callObj = {
-  offer: {},
-  offererIceCandidates: [],
-  answer: {},
-  answererIceCandidates: [],
+module.exports.addOffer = async ({callId, callerId, offer}) => {
+  const call = await Call.findByIdAndUpdate(
+    callId,
+    {
+      callObj: {
+        offer,
+        senderId: callerId,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+  return call;
 };
-module.exports.addOffer = async ({senderId, recieverId, callId, offer}) => {
+
+module.exports.addParticipant = async (callId, participantId) => {
   const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
-  console.log(call.callObjects, "from send Offer");
-  if (
-    hasProperty(call.callObjects, recieverId) &&
-    hasProperty(call.callObjects[recieverId], senderId)
-  ) {
-    call.callBackStatus = "offerExists";
-    return call;
-  }
-  if (call.callObjects[senderId] === undefined) call.callObjects[senderId] = {};
-  if (call.callObjects[senderId][recieverId] === undefined) {
-    call.callObjects[senderId][recieverId] = {...callObj};
-  }
 
-  call.callObjects[senderId][recieverId].offer = offer;
-  await this.addParticipant({callId, participantId: senderId});
-
-  call.markModified("callObjects");
+  call.participants.push({userId: participantId});
   await call.save();
   return call;
 };
 
-module.exports.addParticipant = async ({callId, participantId}) => {
-  let call = await Call.findOne({
-    _id: callId,
-    "participants.userId": participantId,
-  });
-  if (!call) {
-    call = await Call.findByIdAndUpdate(
-      callId,
-      {$push: {participants: {userId: participantId}}},
-      {new: true}
-    );
-    if (!call) throw new Error("User not found in the call");
-  }
-
-  return call;
-};
-
-module.exports.setAnswer = async (senderId, recieverId, callId, answer) => {
+module.exports.setAnswer = async (userId, callId, answer) => {
   const call = await Call.findById(callId);
-
   if (!call) throw new Error("Call not found");
-
-  if (
-    !hasProperty(call.callObjects, recieverId) ||
-    !hasProperty(call.callObjects[recieverId], senderId)
-  ) {
-    throw new Error(
-      "You can't send an answer to this user. You need to send an offer object."
-    );
-  }
-
-  call.callObjects[recieverId][senderId].answer = answer;
-
-  await this.addParticipant({callId, participantId: senderId});
-  call.markModified("callObjects");
+  call.callObj.senderId = userId;
+  call.callObj.answer = answer;
+  call.callObj.participantICE = null;
+  call.participants.push({userId});
   await call.save();
   return call;
 };
 
-module.exports.addIceCandidate = async (
-  senderId,
-  recieverId,
-  callId,
-  candidate
-) => {
-  let call = await Call.findById(callId);
+module.exports.addIceCandidate = async (callId, userId, candidate) => {
+  const call = await Call.findById(callId);
   if (!call) throw new Error("Call not found");
 
-  // these var for console log so  make sure to delete them
-
-  let answerIshere = false;
-  console.log(senderId, recieverId);
-  if (call.callObjects[senderId] && call.callObjects[senderId][recieverId]) {
-    call.callObjects[senderId][recieverId].offererIceCandidates.push(candidate);
-    answerIshere = call.callObjects[senderId][recieverId].answer;
-  } else if (
-    call.callObjects[recieverId] &&
-    call.callObjects[recieverId][senderId]
-  ) {
-    call.callObjects[recieverId][senderId].answererIceCandidates.push(
-      candidate
-    );
-    answerIshere = call.callObjects[recieverId][senderId].answer;
-  } else {
-    const err = new Error(
-      "You can't send ice to this call. make sure you have send or recieved the offer"
-    );
-    err.status = "offerExists";
-  }
-
-  call.markModified("callObjects");
+  call.callObj.senderId = userId;
+  call.callObj.participantICE = candidate;
+  call.callObj.answer = null;
   await call.save();
+  return call;
+};
 
-  call.answerIshere = answerIshere;
-
+const removeUnwantedData = async (call) => {
+  call.callObj = undefined;
+  call.participants = undefined;
   return call;
 };
 
@@ -135,9 +78,10 @@ module.exports.endCall = async (userId, callId, status) => {
     (participant) => participant.userId.toString() !== userId
   );
 
-  if (call.participants.length <= 1) {
-    call.status = "ended";
-    call.endedAt = new Date();
+  if (call.participants.length === 0) {
+    call.status = status;
+    if (status === "ended") call.endedAt = new Date();
+    removeUnwantedData(call);
   }
   await call.save();
   return call;

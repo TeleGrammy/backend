@@ -2080,16 +2080,6 @@
             "description": "The ID of the member whose permissions will be retrieved."
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/groupPermissions"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Member permissions retrieved successfully.",

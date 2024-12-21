@@ -99,6 +99,7 @@ const handlePrivateChat = (chatObj, userId) => {
   const myUser = chatObj.participants.find(
     (participant) => participant.userId._id.toString() === userId
   );
+
   const chat = {
     id: chatObj._id,
     name: otherUser.userId.username,

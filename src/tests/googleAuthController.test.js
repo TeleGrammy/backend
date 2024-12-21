@@ -81,7 +81,6 @@ describe("Auth Controller - Google Authentication", () => {
         name: "Google User",
         email: "googleuser@example.com",
         id: "google-id",
-        isAdmin: true,
         accessToken: "access-token",
         refreshToken: "refresh-token",
         profilePicture: "profile-pic-url",
@@ -105,7 +104,7 @@ describe("Auth Controller - Google Authentication", () => {
       expect(res.status.calledWith(300)).to.be.true;
       expect(res.redirect.calledOnce).to.be.true;
       expect(res.redirect.firstCall.args[0]).to.deep.equal(
-        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token&isAdmin=${user.isAdmin}`
+        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token`
       );
     });
 
@@ -117,7 +116,6 @@ describe("Auth Controller - Google Authentication", () => {
         accessToken: "access-token",
         refreshToken: "refresh-token",
         profilePicture: "profile-pic-url",
-        isAdmin: false,
         save: sinon.stub().resolves(),
       };
 
@@ -142,7 +140,7 @@ describe("Auth Controller - Google Authentication", () => {
       expect(res.status.calledWith(300)).to.be.true;
       expect(res.redirect.calledOnce).to.be.true;
       expect(res.redirect.firstCall.args[0]).to.deep.equal(
-        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token&isAdmin=${user.isAdmin}`
+        `${process.env.FRONTEND_LOGIN_CALLBACK}?accessToken=new-access-token`
       );
     });
   });

@@ -20,11 +20,9 @@ const userPrivacyRouter = require("./routes/userPrivacy/userPrivacy");
 const storyRouter = require("./routes/userProfile/story");
 const mediaRouter = require("./routes/messaging/media");
 const chatRouter = require("./routes/chat/chat");
-const notificationRouter = require("./routes/notificaiton/notificaiton");
 const channelRouter = require("./routes/channel/channel");
 const groupRouter = require("./routes/group/groupRoutes");
-const searchRouter = require("./routes/searchRoutes");
-const adminRouter = require("./routes/admin/admin");
+const notificationRouter = require("./routes/notificaiton/notificaiton");
 
 const callRouter = require("./routes/call/call");
 const serversConfig = require("./config/serversConfig");
@@ -84,10 +82,6 @@ app.use("/api/v1/user/stories", storyRouter);
 
 app.use("/api/v1/messaging/upload", isAuthenticated, mediaRouter);
 app.use("/api/v1/privacy/settings", userPrivacyRouter);
-
-app.use("/api/v1/search", isAuthenticated, searchRouter);
-app.use("/api/v1/admins", isAuthenticated, adminRouter);
-
 app.use("/api/v1/chats", chatRouter);
 
 app.use("/api/v1/call", callRouter);

@@ -423,16 +423,6 @@ const removeChat = (filter) => {
   return Chat.deleteOne(filter);
 };
 
-const retrieveGroupChatData = async (chatId) => {
-  if (!mongoose.Types.ObjectId.isValid(chatId)) {
-    throw new AppError("Invalid chatId provided", 400);
-  }
-
-  return Chat.findById(chatId).populate({
-    path: "groupId",
-    select: "applyFilter",
-  });
-};
 const updateUserSeen = async (chatId, userId) => {
   const chat = await Chat.findById(chatId);
   chat.participants.forEach((part) => {
@@ -471,7 +461,6 @@ module.exports = {
   checkUserAdmin,
   checkChatChannel,
   removeChat,
-  retrieveGroupChatData,
   getBasicChatById,
   getFullUserChats,
   updateChatMute,

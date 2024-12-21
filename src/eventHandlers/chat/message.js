@@ -7,9 +7,6 @@ const channelService = require("../../services/channelService");
 const firebaseUtils = require("../../utils/firebaseMessaging");
 const groupMessageHandlers = require("../utils/groupMessageHandlers");
 
-const AIModelFactory = require("../../classes/AIModelFactory");
-const AIInferenceContext = require("../../classes/AIInferenceContext");
-
 const {
   logThenEmit,
   createMessageData,
@@ -22,42 +19,15 @@ module.exports.sendMessage = function ({io, socket}) {
       return;
     }
 
-    console.log("Sending message");
     try {
-      const currentGroupChat = await chatService.retrieveGroupChatData(
-        payload.chatId
+      const canSendMessage = await groupMessageHandlers.canSendMessage(
+        socket,
+        payload,
+        callback
       );
 
-      const obj = currentGroupChat._doc.groupId;
-      const newObj = {...obj};
-      const {applyFilter} = newObj._doc;
-      if (applyFilter) {
-        const factory = new AIModelFactory();
+      if (!canSendMessage) return;
 
-        let model_payload = {strategy: null, toBeClassified: null};
-        if (payload.messageType === "text") {
-          model_payload.strategy = factory.createStrategy("text");
-          model_payload.toBeClassified = payload.content;
-        } else if (payload.messageType === "image") {
-          model_payload.strategy = factory.createStrategy("image");
-          model_payload.toBeClassified = payload.mediaKey;
-        }
-
-        if (model_payload.strategy !== null) {
-          const context = new AIInferenceContext(model_payload.strategy);
-          const modelResult = await context.executeInference(
-            model_payload.toBeClassified
-          );
-
-          if (modelResult === 1) {
-            if (model_payload.toBeClassified === payload.content) {
-              payload.content = "******";
-            } else {
-              payload.mediaKey = "template/explicit";
-            }
-          }
-        }
-      }
       const messageData = await createMessageData(payload, socket.userId);
       if (messageData.replyOn) {
         await messageService.checkChatOfMessage(

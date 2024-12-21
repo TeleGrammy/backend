@@ -63,7 +63,7 @@ const getChannelChatWithThreads = async (channelId, page = 1, limit = 20) => {
     // Get the associated chat for the channel
     const chat = await ChatService.getChatOfChannel(channelId);
     if (!chat) {
-      throw new AppError("Channel Chat not found, Try again later", 404);
+      throw new AppError("Channel Chat not found, Try again later", 500);
     }
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -152,6 +152,7 @@ const checkUserParticipant = async (channelId, userId) => {
   if (!chat) {
     throw new AppError("Channel Chat not found, Try again later", 500);
   }
+  console.log(userId, chat);
   const currentUser = chat.participants.find(
     (participant) => participant.userId._id.toString() === userId.toString()
   );
@@ -170,19 +171,6 @@ const checkCommentEnable = async (channelId) => {
   return channel.comments;
 };
 
-const searchChannel = async (filter, select, skip, limit, populatedOptions) => {
-  const pipeline = [];
-  pipeline.push({$match: filter});
-
-  if (select) pipeline.push({$project: select});
-  if (populatedOptions) pipeline.push({$lookup: populatedOptions});
-  if (skip) pipeline.push({$skip: skip});
-  if (limit) pipeline.push({$limit: limit});
-
-  const query = Channel.aggregate(pipeline);
-  return query;
-};
-
 module.exports = {
   createChannel,
   deleteChannel,
@@ -192,5 +180,4 @@ module.exports = {
   checkUserParticipant,
   checkCommentEnable,
   updateChannelPrivacy,
-  searchChannel,
 };

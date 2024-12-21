@@ -22,9 +22,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-jest.config.js
 *.lcov
-.idea
 
 # nyc test coverage
 .nyc_output

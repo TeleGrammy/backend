@@ -16,19 +16,23 @@ const callSchema = new mongoose.Schema(
         },
       },
     ],
-    senderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    recieverId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    callObjects: {
-      type: Object,
-      default: {},
+    callObj: {
+      offer: {
+        type: Object,
+      },
+      senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      answer: {
+        type: Object,
+        default: null,
+      },
+      participantICE: {
+        type: Object,
+        default: null,
+      },
     },
     chatId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -58,22 +62,6 @@ const callSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-callSchema.methods.clearIceCandidates = function (senderId, recieverId) {
-  if (this.callObjects[senderId] && this.callObjects[senderId][recieverId]) {
-    this.callObjects[senderId][recieverId].offererIceCandidates = [];
-    this.callObjects[senderId][recieverId].answererIceCandidates = [];
-  } else if (
-    this.callObjects[recieverId] &&
-    this.callObjects[recieverId][senderId]
-  ) {
-    this.callObjects[recieverId][senderId].offererIceCandidates = [];
-    this.callObjects[recieverId][senderId].answererIceCandidates = [];
-  }
-
-  this.markModified("callObjects");
-  this.save();
-};
 
 callSchema.virtual("duration").get(function () {
   if (this.endedAt && this.startedAt) {

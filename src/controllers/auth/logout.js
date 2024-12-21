@@ -25,6 +25,12 @@ const logout = async (req, res, next) => {
       currentDeviceType
     );
 
+    await userService.findOneAndUpdate(
+      {email: req.user.email},
+      {status: "inactive"},
+      {new: true}
+    );
+
     res.clearCookie(process.env.COOKIE_ACCESS_NAME, {
       httpOnly: true,
       secure: true,

@@ -10,7 +10,7 @@ pipeline{
         stage('Paving environment...'){
             steps{
                 withCredentials([string(credentialsId:'testing-backend-env', variable:'DOWNLOAD_TESTENV_URL')]){
-                    sh('curl -o .env $DOWNLOAD_TESTENV_URL')
+                    sh "curl -o .env ${DOWNLOAD_TESTENV_URL}"
                 }
                 sh "npm install"
             }

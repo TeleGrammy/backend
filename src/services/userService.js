@@ -174,7 +174,6 @@ const createUser = (userData) => {
     isGoogleUser,
     isGitHubUser,
     publicKey,
-    isAdmin,
   } = userData;
   console.log(publicKey);
   return User.create({
@@ -187,7 +186,6 @@ const createUser = (userData) => {
     accessToken,
     refreshToken,
     publicKey,
-    isAdmin,
     ...(isGoogleUser ? {googleId: id} : {}),
     ...(isGitHubUser ? {gitHubId: id} : {}),
   });
@@ -460,22 +458,6 @@ const updateMany = async (filter, updateData, options) => {
   return User.updateMany(filter, updateData, options);
 };
 
-const pushUserChannel = async (userId, channelId) => {
-  console.log("PUSH channel");
-  return User.findByIdAndUpdate(
-    userId,
-    {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
-    {new: true} // Return the updated document
-  );
-};
-
-const searchUsers = async (filter, select, skip, limit) => {
-  let query = User.find(filter);
-  if (select) query = query.select(select);
-  if (skip) query = query.skip(skip);
-  if (limit) query = query.limit(limit);
-  return query.exec();
-};
 const joinFirebaseTopic = async (userId, token) => {
   const allChats = await Chat.find(
     {"participants.userId": userId}, // Match chats where participants array contains the userId
@@ -535,8 +517,6 @@ module.exports = {
   addContact,
   getUserContact,
   updateMany,
-  pushUserChannel,
-  searchUsers,
   joinFirebaseTopic,
   unjoinFirebaseTopic,
 };
