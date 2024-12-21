@@ -17,11 +17,7 @@ async function withLock(callId, task) {
   const previousPromise = callLocks.get(callId);
 
   const currentPromise = previousPromise.then(async () => {
-    try {
-      await task();
-    } catch (err) {
-      console.error(`Error in withLock for callId ${callId}:`, err);
-    }
+    await task();
   });
 
   // Update the lock with the new promise
@@ -64,6 +60,7 @@ module.exports.createCall = function ({socket, io}) {
       });
     } catch (err) {
       console.error(err);
+
       callBack({status: "error", message: err.message});
       handleSocketError(socket, err);
     }
@@ -97,13 +94,13 @@ module.exports.sendOffer = function ({socket, io}) {
           io.to(`${recieverId}`).emit("call:incomingOffer", call);
         }
         callBack({
-          status: "ok",
+          status: call.callBackStatus || "ok",
           call,
         });
       });
     } catch (err) {
+      console.log(err.status, " should be sent");
       callBack({status: err.status || "error", message: err.message});
-
       handleSocketError(socket, err);
     }
   };
@@ -183,10 +180,11 @@ module.exports.endCall = function ({socket, io}) {
           payload.status
         );
         call.senderId = socket.userId;
-
-        socket.broadcast
-          .to(`chat:${call.chatId._id}`)
-          .emit("call:endedCall", call);
+        if (call.status === "ended") {
+          socket.broadcast
+            .to(`chat:${call.chatId._id}`)
+            .emit("call:endedCall", call);
+        }
 
         callBack({status: "ok", call});
       });
@@ -227,8 +225,12 @@ module.exports.addIce = function ({socket, io}) {
           call.participantsWhoRejected.has(recieverId) === false
         ) {
           await appendIceCandidates(call, senderId);
+          call.senderId = recieverId;
+          call.recieverId = senderId;
           io.to(`${senderId}`).emit("call:addedICE", call);
           await appendIceCandidates(call, recieverId);
+          call.senderId = senderId;
+          call.recieverId = recieverId;
           io.to(`${recieverId}`).emit("call:addedICE", call);
           await call.clearIceCandidates(senderId, recieverId);
         }
