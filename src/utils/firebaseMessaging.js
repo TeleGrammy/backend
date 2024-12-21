@@ -15,9 +15,23 @@ const firebaseCredentials = {
 };
 
 // Initialize Firebase Admin SDK
-admin.initializeApp({
-  credential: admin.credential.cert(firebaseCredentials),
-});
+function initializeFirebase() {
+  try {
+    // Check if Firebase is already initialized
+    if (!admin.apps.length) {
+      // Load the service account key
+      // Initialize Firebase Admin SDK
+      admin.initializeApp({
+        credential: admin.credential.cert(firebaseCredentials),
+      });
+      console.log("Firebase initialized successfully.");
+    } else {
+      console.log("Firebase already initialized.");
+    }
+  } catch (error) {
+    console.error("Error initializing Firebase:", error);
+  }
+}
 /**
  * Sends a push notification to a specific topic.
  * @param {string} topic - The topic name (e.g., "chat_12345").
@@ -65,7 +79,6 @@ async function subscribeToTopic(token, topic) {
  * @param {string} topic - Topic name (e.g., "chat_12345").
  */
 async function unsubscribeFromTopic(token, topic) {
-  console.log(token);
   try {
     await admin.messaging().unsubscribeFromTopic(token, topic);
     console.log(`Token ${token} unsubscribed from topic: ${topic}`);
@@ -75,6 +88,7 @@ async function unsubscribeFromTopic(token, topic) {
 }
 
 module.exports = {
+  initializeFirebase,
   sendNotificationToTopic,
   subscribeToTopic,
   unsubscribeFromTopic,
