@@ -24,6 +24,7 @@ const participantSchema = new mongoose.Schema({
   unreadCount: {
     type: Number,
     default: 0,
+  },
   canDownload: {
     type: Boolean,
     default: true,
