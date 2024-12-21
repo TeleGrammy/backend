@@ -36,8 +36,8 @@ module.exports.sendMessage = function ({io, socket}) {
         );
       }
       const {name} = socket.user;
-      console.log(socket.user);
       await chatService.checkUserParticipant(messageData.chatId, socket.userId);
+
       const channelId = await chatService.checkChatChannel(messageData.chatId);
       if (channelId) {
         await checkChannelRules(socket.userId, channelId, messageData);
