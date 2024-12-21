@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 
 const memberSchema = new mongoose.Schema({
   memberId: {
@@ -303,12 +302,6 @@ const groupSchema = new mongoose.Schema({
   pinnedMessages: [{type: mongoose.Types.ObjectId, ref: "Message"}],
 });
 
-groupSchema.pre(/^find/, function (next) {
-  // Only include documents where deleted is false
-  this.where({deleted: false});
-  next();
-});
-applySoftDeleteMiddleWare(groupSchema);
 
 const Group = mongoose.model("Group", groupSchema);
 
