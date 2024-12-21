@@ -14,7 +14,7 @@
     "debug": "ndb src/index.js",
     "test": "jest",
     "coverage": "nyc --reporter=lcov --reporter=text npm run test-mocha",
-    "test-mocha": "mocha './src/tests/mocha/*.test.js'"
+    "test-mocha": "mocha './src/tests/*.test.js'"
   },
   "repository": {
     "type": "git",
