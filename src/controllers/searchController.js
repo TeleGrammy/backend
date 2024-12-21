@@ -158,6 +158,7 @@ const globalSearch = catchAsync(async (req, res, next) => {
   let result;
   if (type === "user") {
     result = await searchForUser(req, skip, limit);
+    console.log(result);
   } else if (type === "group") {
     result = await searchForGroup(req, skip, limit);
   } else if (type === "channel") {
@@ -200,5 +201,5 @@ module.exports = {
   searchForUser,
   searchForMessages,
   searchForGroup,
-  searchForGroup,
+  searchForChannel,
 };

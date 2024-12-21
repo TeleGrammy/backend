@@ -24,6 +24,7 @@ lib-cov
 coverage
 jest.config.js
 *.lcov
+.idea
 
 # nyc test coverage
 .nyc_output
