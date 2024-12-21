@@ -5,6 +5,8 @@ const AppError = require("../errors/appError");
 const User = require("../models/user");
 const Chat = require("../models/chat");
 
+const firebaseUtils = require("../utils/firebaseMessaging");
+
 /**
  * Service layer for user-related operations in the Express application.
  * @namespace Service.Users
@@ -456,14 +458,41 @@ const updateMany = async (filter, updateData, options) => {
   return User.updateMany(filter, updateData, options);
 };
 
-const pushUserChannel = async (userId, channelId) => {
-  console.log("PUSH channel");
-  return User.findByIdAndUpdate(
-    userId,
-    {$addToSet: {channels: channelId}}, // Use $push if duplicates are allowed
-    {new: true} // Return the updated document
+const joinFirebaseTopic = async (userId, token) => {
+  const allChats = await Chat.find(
+    {"participants.userId": userId}, // Match chats where participants array contains the userId
+    {participants: {$elemMatch: {userId}}} // Project only the matched element
   );
+  firebaseUtils.subscribeToTopic(token, `user-${userId}`);
+  firebaseUtils.subscribeToTopic(token, `call-${userId}`);
+  firebaseUtils.subscribeToTopic(token, `missed-${userId}`);
+  allChats.forEach((chat) => {
+    if (
+      chat._id &&
+      chat.participants &&
+      chat.participants.length > 0 &&
+      !chat.participants[0].isMute
+    ) {
+      firebaseUtils.subscribeToTopic(token, `chat-${chat._id.toString()}`);
+    }
+  });
 };
+
+const unjoinFirebaseTopic = async (userId, token) => {
+  const allChats = await Chat.find(
+    {"participants.userId": userId}, // Match chats where participants array contains the userId
+    {participants: {$elemMatch: {userId}}} // Project only the matched element
+  );
+  firebaseUtils.unsubscribeFromTopic(token, `user-${userId}`);
+  firebaseUtils.unsubscribeFromTopic(token, `call-${userId}`);
+  firebaseUtils.unsubscribeFromTopic(token, `missed-${userId}`);
+  allChats.forEach((chat) => {
+    if (chat._id) {
+      firebaseUtils.unsubscribeFromTopic(token, `chat-${chat._id}`);
+    }
+  });
+};
+
 module.exports = {
   getUserByUUID,
   getUserBasicInfoByUUID,
@@ -488,5 +517,6 @@ module.exports = {
   addContact,
   getUserContact,
   updateMany,
-  pushUserChannel,
+  joinFirebaseTopic,
+  unjoinFirebaseTopic,
 };

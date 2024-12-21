@@ -1,6 +1,7 @@
 const callService = require("../../services/callService");
+const firebaseUtils = require("../../utils/firebaseMessaging");
 
-module.exports.sendCall = function ({socket, io}) {
+module.exports.createCall = function ({socket, io}) {
   return async (payload, callBack) => {
     try {
       if (typeof callBack !== "function") return;
@@ -8,14 +9,38 @@ module.exports.sendCall = function ({socket, io}) {
       const call = await callService.createCall({
         callerId: socket.userId,
         chatId: payload.chatId,
+      });
+
+      callBack({
+        status: "ok",
+        call,
+      });
+    } catch (err) {
+      callBack({status: "error", message: err.message});
+    }
+  };
+};
+
+module.exports.sendCall = function ({socket, io}) {
+  return async (payload, callBack) => {
+    try {
+      if (typeof callBack !== "function") return;
+
+      const call = await callService.addOffer({
+        callerId: socket.userId,
+        callId: payload.callId,
         offer: payload.offer,
       });
 
-      // send out to all connected sockets
       socket.broadcast
-        .to(`chat:${call.chatId}`)
+        .to(`chat:${call.chatId._id}`)
         .emit("call:incomingCall", call);
 
+      firebaseUtils.sendNotificationToTopic(
+        `chat-${call.chatId._id}`,
+        "A new Call is Incomming",
+        ""
+      );
       callBack({
         status: "ok",
         call,
@@ -38,7 +63,7 @@ module.exports.answerCall = function ({socket, io}) {
       );
 
       socket.broadcast
-        .to(`chat:${call.chatId}`)
+        .to(`chat:${call.chatId._id}`)
         .emit("call:answeredCall", call);
       callBack({status: "ok", call});
     } catch (err) {
@@ -52,9 +77,12 @@ module.exports.rejectCall = function ({socket, io}) {
     try {
       if (typeof callBack !== "function") return;
 
-      const call = await callService.updateStatus(payload.callId, "rejected");
+      // const call = await callService.updateStatus(payload.callId, "rejected");
+      const call = await callService.rejectCall(payload.callId, socket.userId);
 
-      io.to(`chat:${call.chatId}`).emit("call:rejectedCall", call);
+      if (call.status === "rejected") {
+        io.to(`${call.participants[0].userId}`).emit("call:endedCall", call);
+      }
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -73,7 +101,9 @@ module.exports.endCall = function ({socket, io}) {
         payload.status
       );
 
-      io.to(`chat:${call.chatId}`).emit("call:endedCall", call);
+      socket.broadcast
+        .to(`chat:${call.chatId._id}`)
+        .emit("call:endedCall", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
@@ -91,7 +121,9 @@ module.exports.addIce = function ({socket, io}) {
         socket.userId,
         payload.IceCandidate
       );
-      socket.broadcast.to(`chat:${call.chatId}`).emit("call:addedICE", call);
+      socket.broadcast
+        .to(`chat:${call.chatId._id}`)
+        .emit("call:addedICE", call);
       callBack({status: "ok", call});
     } catch (err) {
       callBack({status: "error", message: err.message});
