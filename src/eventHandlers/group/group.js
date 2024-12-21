@@ -64,14 +64,16 @@ const addMember = (io, socket, connectedUsers) => {
       const group = await groupService.findGroupById(groupId);
       if (!group) throw new AppError("Group not found", 404);
 
-      let participantData = group.members.find((member) =>
-        member.memberId.equals(participantId)
+      let participantData = group.members.find(
+        (member) => member.memberId.toString() === participantId.toString()
       );
 
       const participantType = participantData ? "member" : "admin";
       participantData =
         participantData ??
-        group.admins.find((admin) => admin.adminId.equals(participantId));
+        group.admins.find(
+          (admin) => admin.adminId.toString() === participantId.toString()
+        );
 
       if (!participantData)
         throw new AppError(
@@ -104,13 +106,13 @@ const addMember = (io, socket, connectedUsers) => {
       const groupChat = await chatService.getChatById(group.chatId);
 
       userIds.forEach((userId) => {
-        let index = group.members.findIndex((member) =>
-          member.memberId.equals(userId)
+        let index = group.members.findIndex(
+          (member) => member.memberId.toString() === userId.toString()
         );
 
         if (index === -1) {
-          index = group.admins.findIndex((admin) =>
-            admin.adminId.equals(userId)
+          index = group.admins.findIndex(
+            (admin) => admin.adminId.toString() === userId.toString()
           );
           if (index !== -1)
             throw new AppError("The user is already an admin", 400);
@@ -120,8 +122,8 @@ const addMember = (io, socket, connectedUsers) => {
 
         const newMember = {memberId: userId};
 
-        index = group.leftMembers.findIndex((member) =>
-          member.memberId.equals(userId)
+        index = group.leftMembers.findIndex(
+          (member) => member.memberId.toString() === userId.toString()
         );
         if (index !== -1) {
           newMember.leftAt = group.leftMembers[index].leftAt;
@@ -189,14 +191,16 @@ const addMemberV2 = (io, socket, connectedUsers) => {
       const group = await groupService.findGroupById(groupId);
       if (!group) throw new AppError("Group not found", 404);
 
-      let participantData = group.members.find((member) =>
-        member.memberId.equals(participantId)
+      let participantData = group.members.find(
+        (member) => member.memberId.toString() === participantId.toString()
       );
 
       const participantType = participantData ? "member" : "admin";
       participantData =
         participantData ??
-        group.admins.find((admin) => admin.adminId.equals(participantId));
+        group.admins.find(
+          (admin) => admin.adminId.toString() === participantId.toString()
+        );
 
       if (!participantData)
         throw new AppError(
@@ -266,13 +270,13 @@ const addMemberV2 = (io, socket, connectedUsers) => {
 
           const userId = user._id;
 
-          let index = group.members.findIndex((member) =>
-            member.memberId.equals(userId)
+          let index = group.members.findIndex(
+            (member) => member.memberId.toString() === userId.toString()
           );
 
           if (index === -1) {
-            index = group.admins.findIndex((admin) =>
-              admin.adminId.equals(userId)
+            index = group.admins.findIndex(
+              (admin) => admin.adminId.toString() === userId.toString()
             );
             if (index !== -1) {
               messages.push(
@@ -306,8 +310,8 @@ const addMemberV2 = (io, socket, connectedUsers) => {
             newMember = {memberId: userId};
           }
 
-          index = group.leftMembers.findIndex((member) =>
-            member.memberId.equals(userId)
+          index = group.leftMembers.findIndex(
+            (member) => member.memberId.toString() === userId.toString()
           );
           if (index !== -1) {
             newMember.leftAt = group.leftMembers[index].leftAt;
@@ -389,12 +393,14 @@ const leaveGroup = (io, socket) => {
 
       if (!group) throw new AppError("Group not found.", 404);
 
-      let index = group.members.findIndex((member) =>
-        member.memberId.equals(userId)
+      let index = group.members.findIndex(
+        (member) => member.memberId.toString() === userId.toString()
       );
 
       if (index === -1) {
-        index = group.admins.findIndex((admin) => admin.adminId.equals(userId));
+        index = group.admins.findIndex(
+          (admin) => admin.adminId.toString() === userId.toString()
+        );
         if (index === -1)
           throw new AppError("You are not a member of the group.", 400);
         else group.admins.splice(index, 1);
@@ -462,7 +468,7 @@ const deleteGroup = (io, socket, connectedUsers) => {
 
       if (!group) throw new AppError("Group not found.", 404);
 
-      if (!group.ownerId.equals(userId))
+      if (!group.ownerId.toString() === userId.toString())
         throw new AppError(
           "The user doesn't have the permission to delete the group",
           403
@@ -518,8 +524,9 @@ const removeParticipant = (io, socket, connectedUsers) => {
       const group = await groupService.findGroupById(groupId);
       if (!group) throw new AppError("Group not found.", 404);
 
-      const admin = group.admins.find((administrator) =>
-        administrator.adminId.equals(participantId)
+      const admin = group.admins.find(
+        (administrator) =>
+          administrator.adminId.toString() === participantId.toString()
       );
 
       if (!admin || !admin.permissions.banUsers)
@@ -527,15 +534,15 @@ const removeParticipant = (io, socket, connectedUsers) => {
           "Unauthorized Access.The user does not have the permission to add new admin.",
           403
         );
-      let index = group.members.findIndex((member) =>
-        member.memberId.equals(userId)
+      let index = group.members.findIndex(
+        (member) => member.memberId.toString() === userId.toString()
       );
 
       const type = index === -1 ? "admin" : "member";
 
       if (index === -1) {
-        index = group.admins.findIndex((member) =>
-          member.adminId.equals(userId)
+        index = group.admins.findIndex(
+          (member) => member.adminId.toString() === userId.toString()
         );
         if (index === -1)
           throw new AppError("User not found in the group.", 404);
