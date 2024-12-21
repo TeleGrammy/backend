@@ -197,4 +197,8 @@ const searchForMatchedContents = catchAsync(async (req, res, next) => {
 module.exports = {
   globalSearch,
   searchForMatchedContents,
+  searchForUser,
+  searchForMessages,
+  searchForGroup,
+  searchForGroup,
 };
