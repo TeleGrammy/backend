@@ -8,6 +8,43 @@ const handleSocketError = require("../../errors/handleSocketError");
 const {logThenEmit} = require("../utils/utilsFunc");
 const {phoneRegex} = require("../../utils/regexFormat");
 
+const defaultMemberPermissions = {
+  sendMessages: true,
+  sendMedia: {
+    photos: true,
+    videos: true,
+    files: true,
+    music: true,
+    voiceMessages: true,
+    videoMessages: true,
+    stickers: true,
+    polls: true,
+    embedLinks: true,
+  },
+  addUsers: true,
+  pinMessages: true,
+  changeChatInfo: true,
+  downloadVideos: true,
+  downloadVoiceMessages: true,
+};
+
+const defaultOwnerPermissions = {
+  changeGroupInfo: true,
+  deleteMessages: true,
+  banUsers: true,
+  addUsers: true,
+  inviteUsersViaLink: true,
+  pinMessages: true,
+  manageStories: {
+    postStories: true,
+    editStories: true,
+    deleteStories: true,
+  },
+  manageLiveStreams: true,
+  addNewAdmins: true,
+  remainAnonymous: true,
+};
+
 const createGroup = (io, socket, connectedUsers) => {
   return async (payload) => {
     try {
@@ -26,7 +63,7 @@ const createGroup = (io, socket, connectedUsers) => {
           isGroup: true,
           groupId: groupData._id,
         });
-        console.log(groupChat);
+
         groupData.chatId = groupChat._id;
         await groupData.save();
       } catch (err) {
@@ -352,6 +389,18 @@ const addMemberV2 = (io, socket, connectedUsers) => {
 
           const memberName = newMember.screenName || newMember.username;
 
+          const memberData = {
+            id: newMember._id,
+            username: newMember.username,
+            screenName: newMember.screenName,
+            picture: newMember.picture,
+            lastSeen: newMember.lastSeen,
+          };
+
+          if (userId.toString() === group.ownerId.toString())
+            memberData.permissions = defaultOwnerPermissions;
+          else memberData.permissions = defaultMemberPermissions;
+
           const userSocket = connectedUsers.get(userId);
           if (userSocket) {
             if (userSocket.get("group"))
@@ -369,6 +418,7 @@ const addMemberV2 = (io, socket, connectedUsers) => {
               inviterId: participantId,
               memberName,
               inviterName,
+              newMemberData: memberData,
             },
             io.to(`group:${groupId}`)
           );
@@ -585,22 +635,21 @@ const removeParticipant = (io, socket, connectedUsers) => {
         }
         if (userSocket.get("chat"))
           userSocket.get("chat").leave(`chat:${group.chatId}`);
-
-        logThenEmit(
-          participantId,
-          "group:memberRemoved",
-          {
-            chatId: group.chatId,
-            groupId,
-            removerId: participantId,
-            memberId: userId,
-            removerName: ParticipantName.screenName || ParticipantName.username,
-            exMemberName:
-              removedMemberData.screenName || removedMemberData.username,
-          },
-          io.to(`group:${groupId}`)
-        );
       }
+      logThenEmit(
+        participantId,
+        "group:memberRemoved",
+        {
+          chatId: group.chatId,
+          groupId,
+          removerId: participantId,
+          memberId: userId,
+          removerName: ParticipantName.screenName || ParticipantName.username,
+          exMemberName:
+            removedMemberData.screenName || removedMemberData.username,
+        },
+        io.to(`group:${groupId}`)
+      );
     } catch (err) {
       handleSocketError(socket, err);
     }
