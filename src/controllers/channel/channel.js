@@ -541,6 +541,9 @@ const fetchChannelParticipants = catchAsync(async (req, res, next) => {
   const {channelId} = req.params;
 
   const chat = await chatService.getChatOfChannel(channelId);
+  if (!chat) {
+    throw new AppError("Channel Chat not found, Try again later", 500);
+  }
   await chatService.checkUserAdmin(chat.id, req.user.id);
 
   const transformedParticipants = chat.participants
