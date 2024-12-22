@@ -980,7 +980,7 @@
       }
     },
 
-    "/groups/groups/{groupId}/members/{memberId}/permissions": {
+    "/groups/{groupId}/members/{memberId}/permissions": {
       "patch": {
         "summary": "Update member permissions",
         "description": "Allows an admin to update a member's permissions within a group.",
@@ -1102,7 +1102,7 @@
         }
       }
     },
-    "/groups/groups/{groupId}/admins/{adminId}/permissions": {
+    "/groups/{groupId}/admins/{adminId}/permissions": {
       "patch": {
         "summary": "Update admin permissions",
         "description": "Allows a superAdmin or owner to update an admin's permissions within a group.",
@@ -1224,7 +1224,7 @@
         }
       }
     },
-    "/groups/groups/{groupId}/info": {
+    "/groups/{groupId}/info": {
       "patch": {
         "summary": "Update the group information",
         "description": "Allows member who have permission to update the group information.",
