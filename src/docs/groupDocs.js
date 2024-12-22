@@ -1213,6 +1213,12 @@
  *            type: string
  *          required: true
  *          description: The ID of the group in which the permissions will be updated.
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/groupPermissions'
  *      responses:
  *        '200':
  *          description: Group permissions updated successfully.
