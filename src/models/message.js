@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {generateSignedUrl} = require("../middlewares/AWS");
 const AppError = require("../errors/appError");
 
@@ -279,7 +278,6 @@ messageSchema.index({content: "text", mediaUrl: "text"});
 
 messageSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
 
-applySoftDeleteMiddleWare(messageSchema);
 
 const Message = mongoose.model("Message", messageSchema);
 

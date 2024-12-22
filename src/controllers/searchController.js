@@ -153,19 +153,21 @@ const globalSearch = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const skip = (page - 1) * limit;
 
-  if (type === undefined) return next(new AppError("Type is required", 400));
+  if (page < 1) throw new AppError("Invalid page number", 400);
+  if (limit < 1) throw new AppError("Invalid limit", 400);
+
+  if (type === undefined) throw new AppError("Type is required", 400);
 
   let result;
   if (type === "user") {
     result = await searchForUser(req, skip, limit);
-    console.log(result);
   } else if (type === "group") {
     result = await searchForGroup(req, skip, limit);
   } else if (type === "channel") {
     result = await searchForChannel(req, skip, limit);
   } else if (type === "message") {
     result = await searchForMessages(req, skip, limit);
-  } else return next(new AppError("Invalid type", 400));
+  } else throw new AppError("Invalid type", 400);
 
   return res.status(200).json({
     status: "success",

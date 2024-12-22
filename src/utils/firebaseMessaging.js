@@ -87,6 +87,11 @@ async function unsubscribeFromTopic(token, topic) {
   }
 }
 
+// subscribeToTopic(
+//   "fY7i_1H0RL-CNZ-jnHFQ8U:APA91bFEX4YDtUCoVS4dsF-xrRClzvl8mWahy8NCOBm8PVBA2CCIgjwTnFCDpnErGzKR7zECBOvSyp7Esl8hcKwbxd4apUuqKkLRBC5jlXOUYTE-ixVWpYQ",
+//   "komo-topic"
+// );
+
 module.exports = {
   initializeFirebase,
   sendNotificationToTopic,

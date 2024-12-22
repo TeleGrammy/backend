@@ -8,6 +8,43 @@ const handleSocketError = require("../../errors/handleSocketError");
 const {logThenEmit} = require("../utils/utilsFunc");
 const {phoneRegex} = require("../../utils/regexFormat");
 
+const defaultMemberPermissions = {
+  sendMessages: true,
+  sendMedia: {
+    photos: true,
+    videos: true,
+    files: true,
+    music: true,
+    voiceMessages: true,
+    videoMessages: true,
+    stickers: true,
+    polls: true,
+    embedLinks: true,
+  },
+  addUsers: true,
+  pinMessages: true,
+  changeChatInfo: true,
+  downloadVideos: true,
+  downloadVoiceMessages: true,
+};
+
+const defaultOwnerPermissions = {
+  changeGroupInfo: true,
+  deleteMessages: true,
+  banUsers: true,
+  addUsers: true,
+  inviteUsersViaLink: true,
+  pinMessages: true,
+  manageStories: {
+    postStories: true,
+    editStories: true,
+    deleteStories: true,
+  },
+  manageLiveStreams: true,
+  addNewAdmins: true,
+  remainAnonymous: true,
+};
+
 const createGroup = (io, socket, connectedUsers) => {
   return async (payload) => {
     try {
@@ -26,6 +63,7 @@ const createGroup = (io, socket, connectedUsers) => {
           isGroup: true,
           groupId: groupData._id,
         });
+
         groupData.chatId = groupChat._id;
         await groupData.save();
       } catch (err) {
@@ -64,14 +102,16 @@ const addMember = (io, socket, connectedUsers) => {
       const group = await groupService.findGroupById(groupId);
       if (!group) throw new AppError("Group not found", 404);
 
-      let participantData = group.members.find((member) =>
-        member.memberId.equals(participantId)
+      let participantData = group.members.find(
+        (member) => member.memberId.toString() === participantId.toString()
       );
 
       const participantType = participantData ? "member" : "admin";
       participantData =
         participantData ??
-        group.admins.find((admin) => admin.adminId.equals(participantId));
+        group.admins.find(
+          (admin) => admin.adminId.toString() === participantId.toString()
+        );
 
       if (!participantData)
         throw new AppError(
@@ -104,13 +144,13 @@ const addMember = (io, socket, connectedUsers) => {
       const groupChat = await chatService.getChatById(group.chatId);
 
       userIds.forEach((userId) => {
-        let index = group.members.findIndex((member) =>
-          member.memberId.equals(userId)
+        let index = group.members.findIndex(
+          (member) => member.memberId.toString() === userId.toString()
         );
 
         if (index === -1) {
-          index = group.admins.findIndex((admin) =>
-            admin.adminId.equals(userId)
+          index = group.admins.findIndex(
+            (admin) => admin.adminId.toString() === userId.toString()
           );
           if (index !== -1)
             throw new AppError("The user is already an admin", 400);
@@ -120,8 +160,8 @@ const addMember = (io, socket, connectedUsers) => {
 
         const newMember = {memberId: userId};
 
-        index = group.leftMembers.findIndex((member) =>
-          member.memberId.equals(userId)
+        index = group.leftMembers.findIndex(
+          (member) => member.memberId.toString() === userId.toString()
         );
         if (index !== -1) {
           newMember.leftAt = group.leftMembers[index].leftAt;
@@ -189,14 +229,16 @@ const addMemberV2 = (io, socket, connectedUsers) => {
       const group = await groupService.findGroupById(groupId);
       if (!group) throw new AppError("Group not found", 404);
 
-      let participantData = group.members.find((member) =>
-        member.memberId.equals(participantId)
+      let participantData = group.members.find(
+        (member) => member.memberId.toString() === participantId.toString()
       );
 
       const participantType = participantData ? "member" : "admin";
       participantData =
         participantData ??
-        group.admins.find((admin) => admin.adminId.equals(participantId));
+        group.admins.find(
+          (admin) => admin.adminId.toString() === participantId.toString()
+        );
 
       if (!participantData)
         throw new AppError(
@@ -266,13 +308,13 @@ const addMemberV2 = (io, socket, connectedUsers) => {
 
           const userId = user._id;
 
-          let index = group.members.findIndex((member) =>
-            member.memberId.equals(userId)
+          let index = group.members.findIndex(
+            (member) => member.memberId.toString() === userId.toString()
           );
 
           if (index === -1) {
-            index = group.admins.findIndex((admin) =>
-              admin.adminId.equals(userId)
+            index = group.admins.findIndex(
+              (admin) => admin.adminId.toString() === userId.toString()
             );
             if (index !== -1) {
               messages.push(
@@ -306,8 +348,8 @@ const addMemberV2 = (io, socket, connectedUsers) => {
             newMember = {memberId: userId};
           }
 
-          index = group.leftMembers.findIndex((member) =>
-            member.memberId.equals(userId)
+          index = group.leftMembers.findIndex(
+            (member) => member.memberId.toString() === userId.toString()
           );
           if (index !== -1) {
             newMember.leftAt = group.leftMembers[index].leftAt;
@@ -347,6 +389,18 @@ const addMemberV2 = (io, socket, connectedUsers) => {
 
           const memberName = newMember.screenName || newMember.username;
 
+          const memberData = {
+            id: newMember._id,
+            username: newMember.username,
+            screenName: newMember.screenName,
+            picture: newMember.picture,
+            lastSeen: newMember.lastSeen,
+          };
+
+          if (userId.toString() === group.ownerId.toString())
+            memberData.permissions = defaultOwnerPermissions;
+          else memberData.permissions = defaultMemberPermissions;
+
           const userSocket = connectedUsers.get(userId);
           if (userSocket) {
             if (userSocket.get("group"))
@@ -364,6 +418,7 @@ const addMemberV2 = (io, socket, connectedUsers) => {
               inviterId: participantId,
               memberName,
               inviterName,
+              newMemberData: memberData,
             },
             io.to(`group:${groupId}`)
           );
@@ -389,12 +444,14 @@ const leaveGroup = (io, socket) => {
 
       if (!group) throw new AppError("Group not found.", 404);
 
-      let index = group.members.findIndex((member) =>
-        member.memberId.equals(userId)
+      let index = group.members.findIndex(
+        (member) => member.memberId.toString() === userId.toString()
       );
 
       if (index === -1) {
-        index = group.admins.findIndex((admin) => admin.adminId.equals(userId));
+        index = group.admins.findIndex(
+          (admin) => admin.adminId.toString() === userId.toString()
+        );
         if (index === -1)
           throw new AppError("You are not a member of the group.", 400);
         else group.admins.splice(index, 1);
@@ -462,7 +519,7 @@ const deleteGroup = (io, socket, connectedUsers) => {
 
       if (!group) throw new AppError("Group not found.", 404);
 
-      if (!group.ownerId.equals(userId))
+      if (!group.ownerId.toString() === userId.toString())
         throw new AppError(
           "The user doesn't have the permission to delete the group",
           403
@@ -518,8 +575,9 @@ const removeParticipant = (io, socket, connectedUsers) => {
       const group = await groupService.findGroupById(groupId);
       if (!group) throw new AppError("Group not found.", 404);
 
-      const admin = group.admins.find((administrator) =>
-        administrator.adminId.equals(participantId)
+      const admin = group.admins.find(
+        (administrator) =>
+          administrator.adminId.toString() === participantId.toString()
       );
 
       if (!admin || !admin.permissions.banUsers)
@@ -527,15 +585,15 @@ const removeParticipant = (io, socket, connectedUsers) => {
           "Unauthorized Access.The user does not have the permission to add new admin.",
           403
         );
-      let index = group.members.findIndex((member) =>
-        member.memberId.equals(userId)
+      let index = group.members.findIndex(
+        (member) => member.memberId.toString() === userId.toString()
       );
 
       const type = index === -1 ? "admin" : "member";
 
       if (index === -1) {
-        index = group.admins.findIndex((member) =>
-          member.adminId.equals(userId)
+        index = group.admins.findIndex(
+          (member) => member.adminId.toString() === userId.toString()
         );
         if (index === -1)
           throw new AppError("User not found in the group.", 404);
@@ -577,22 +635,21 @@ const removeParticipant = (io, socket, connectedUsers) => {
         }
         if (userSocket.get("chat"))
           userSocket.get("chat").leave(`chat:${group.chatId}`);
-
-        logThenEmit(
-          participantId,
-          "group:memberRemoved",
-          {
-            chatId: group.chatId,
-            groupId,
-            removerId: participantId,
-            memberId: userId,
-            removerName: ParticipantName.screenName || ParticipantName.username,
-            exMemberName:
-              removedMemberData.screenName || removedMemberData.username,
-          },
-          io.to(`group:${groupId}`)
-        );
       }
+      logThenEmit(
+        participantId,
+        "group:memberRemoved",
+        {
+          chatId: group.chatId,
+          groupId,
+          removerId: participantId,
+          memberId: userId,
+          removerName: ParticipantName.screenName || ParticipantName.username,
+          exMemberName:
+            removedMemberData.screenName || removedMemberData.username,
+        },
+        io.to(`group:${groupId}`)
+      );
     } catch (err) {
       handleSocketError(socket, err);
     }
