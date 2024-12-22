@@ -14,17 +14,16 @@ const firebaseCredentials = {
   universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
 };
 
+// Initialize Firebase Admin SDK
 function initializeFirebase() {
   try {
     // Check if Firebase is already initialized
     if (!admin.apps.length) {
       // Load the service account key
-
       // Initialize Firebase Admin SDK
       admin.initializeApp({
         credential: admin.credential.cert(firebaseCredentials),
       });
-
       console.log("Firebase initialized successfully.");
     } else {
       console.log("Firebase already initialized.");

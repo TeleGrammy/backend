@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {generateSignedUrl} = require("../middlewares/AWS");
 
 const messageSchema = new mongoose.Schema({
@@ -137,6 +136,7 @@ messageSchema.methods.updateMessageViewer = async function (
   viewerId,
   numberOfMembersInChat
 ) {
+  if (!this.viewers) this.viewers = [];
   if (!this.viewers.includes(viewerId)) {
     this.viewers.push(viewerId);
   }
@@ -151,6 +151,7 @@ messageSchema.methods.updateMessageRecivers = async function (
   recieverId,
   numberOfMembersInChat
 ) {
+  if (!this.recievers) this.recievers = [];
   if (!this.recievers.includes(recieverId)) {
     this.recievers.push(recieverId);
   }
@@ -225,7 +226,6 @@ messageSchema.index({chatId: 1, timestamp: -1});
 
 messageSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
 
-applySoftDeleteMiddleWare(messageSchema);
 
 const Message = mongoose.model("Message", messageSchema);
 

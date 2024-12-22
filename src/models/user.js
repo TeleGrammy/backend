@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {phoneRegex} = require("../utils/regexFormat");
 const AppError = require("../errors/appError");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
@@ -385,7 +384,6 @@ userSchema.methods.deleteUserPicture = async function () {
   }
 };
 
-applySoftDeleteMiddleWare(userSchema);
 
 const User = mongoose.model("User", userSchema);
 

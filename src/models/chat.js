@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const userModel = require("./user");
 const channelMode = require("./channel");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 
 const participantSchema = new mongoose.Schema({
   userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
@@ -55,7 +54,6 @@ const chatSchema = new mongoose.Schema({
   deleted: {type: Boolean, default: false},
 });
 
-applySoftDeleteMiddleWare(chatSchema);
 
 chatSchema.index({lastMessageTimestamp: -1});
 
@@ -120,12 +118,6 @@ chatSchema.pre("findOneAndUpdate", async function (next) {
   }
   next();
 });
-// chatSchema.pre(/^find/, function (next) {
-//   // Only include documents where deleted is false
-
-//   // this.where({deleted: false});
-//   next();
-// });
 
 const Chat = mongoose.model("Chat", chatSchema);
 
