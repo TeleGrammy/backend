@@ -64,8 +64,9 @@ if (process.env.NODE_ENV === "test") {
         collectionName: "sessionsUsers",
       }),
       cookie: {
-        secure: false, // Set true in production with HTTPS
+        secure: true, // Set true in production with HTTPS
         maxAge: 1000 * 60 * 60 * 24, // 1 day
+        sameSite: "None",
       },
     })
   );
