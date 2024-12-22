@@ -181,6 +181,7 @@ const globalSearch = catchAsync(async (req, res, next) => {
 const searchForMatchedContents = catchAsync(async (req, res, next) => {
   const {searchText, mediaType, limit, skip} = req.body;
   const {chatId} = req.params;
+  const userId = req.user.id;
 
   try {
     const results = await Message.searchMessages({
@@ -191,7 +192,16 @@ const searchForMatchedContents = catchAsync(async (req, res, next) => {
       skip,
     });
 
-    res.status(200).json({status: "success", data: {message: results}});
+    const filteredResults = results.filter((message) => {
+      if (message.chat && Array.isArray(message.chat.participants)) {
+        return message.chat.participants.some(
+          (participant) => participant.userId.toString() === userId
+        );
+      }
+      return false;
+    });
+
+    res.status(200).json({status: "success", data: {message: filteredResults}});
   } catch (err) {
     next(err);
   }

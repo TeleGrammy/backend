@@ -44,6 +44,9 @@ describe("Search Controller Test Suites", () => {
       params: {
         chatId: "12345",
       },
+      user: {
+        id: "12345",
+      },
     };
     res = {
       status: jest.fn().mockReturnThis(),
@@ -572,7 +575,15 @@ describe("Search Controller Test Suites", () => {
 
   describe("searchForMatchedText", () => {
     it("should return a success response when searchMessages is successful", async () => {
-      const mockResults = [{id: 1, content: "test message"}];
+      const mockResults = [
+        {
+          id: 1,
+          content: "test message",
+          chat: {
+            participants: [{userId: "12345"}, {userId: "user456"}],
+          },
+        },
+      ];
       Message.searchMessages.mockResolvedValue(mockResults);
 
       await searchForMatchedContents(req, res, next);
