@@ -8,9 +8,9 @@ const logout = async (req, res, next) => {
   try {
     const currentDeviceType = req.headers["user-agent"];
 
-    if (req.body && req.user && req.user._id) {
+    if (req.body && req.user && req.user.id) {
       const {token} = req.body;
-      userService.unjoinFirebaseTopic(req.user._id.toString(), token);
+      userService.unjoinFirebaseTopic(req.user.id.toString(), token);
       userDeviceService.removeDeviceByToken(token);
     }
     if (!req.user.currentSession) {
@@ -23,12 +23,6 @@ const logout = async (req, res, next) => {
     await sessionService.deleteSession(
       req.user.currentSession._id,
       currentDeviceType
-    );
-
-    await userService.findOneAndUpdate(
-      {email: req.user.email},
-      {status: "inactive"},
-      {new: true}
     );
 
     res.clearCookie(process.env.COOKIE_ACCESS_NAME, {

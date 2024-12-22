@@ -6,12 +6,15 @@ const chatService = require("../../services/chatService");
 const channelService = require("../../services/channelService");
 const firebaseUtils = require("../../utils/firebaseMessaging");
 const groupMessageHandlers = require("../utils/groupMessageHandlers");
+const AIModelFactory = require("../../classes/AIModelFactory");
+const AIInferenceContext = require("../../classes/AIInferenceContext");
 
 const {
   logThenEmit,
   createMessageData,
   checkChannelRules,
 } = require("../utils/utilsFunc");
+const AppError = require("../../errors/appError");
 
 module.exports.sendMessage = function ({io, socket}) {
   return async (payload, callback) => {
@@ -27,6 +30,46 @@ module.exports.sendMessage = function ({io, socket}) {
       );
 
       if (!canSendMessage) return;
+      const currentGroupChat = await chatService.retrieveGroupChatData(
+        payload.chatId
+      );
+
+      if (currentGroupChat) {
+        const obj = currentGroupChat._doc.groupId;
+        const newObj = {...obj};
+        const {applyFilter} = newObj._doc;
+        if (applyFilter) {
+          const factory = new AIModelFactory();
+
+          let model_payload = {strategy: null, toBeClassified: null};
+          if (payload.messageType === "text") {
+            model_payload.strategy = factory.createStrategy("text");
+            model_payload.toBeClassified = payload.content;
+          } else if (payload.messageType === "image") {
+            model_payload.strategy = factory.createStrategy("image");
+            model_payload.toBeClassified = payload.mediaKey;
+          }
+
+          if (model_payload.strategy !== null) {
+            try {
+              const context = new AIInferenceContext(model_payload.strategy);
+              const modelResult = await context.executeInference(
+                model_payload.toBeClassified
+              );
+
+              if (modelResult === 1) {
+                if (model_payload.toBeClassified === payload.content) {
+                  payload.content = "******";
+                } else {
+                  payload.mediaKey = "template/explicit";
+                }
+              }
+            } catch (err) {
+              throw new AppError("AI Inference Error", 500);
+            }
+          }
+        }
+      }
 
       const messageData = await createMessageData(payload, socket.userId);
       if (messageData.replyOn) {

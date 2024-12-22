@@ -312,6 +312,7 @@ describe("User Service Test Suites", function () {
         picture: "profile.jpg",
         accessToken: "accessToken12345@",
         refreshToken: "refreshToken12345@",
+        isAdmin: true,
         publicKey: "123456",
       };
 

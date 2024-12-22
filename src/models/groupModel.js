@@ -283,6 +283,10 @@ const groupSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
+    applyFilter: {
+      type: Boolean,
+      default: false,
+    },
   },
   groupSizeLimit: {
     type: Number,
