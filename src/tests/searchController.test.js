@@ -9,7 +9,7 @@ const {
 
 const userService = require("../services/userService");
 const groupService = require("../services/groupService");
-const channelService = require("../services/channelService"); 
+const channelService = require("../services/channelService");
 const messageService = require("../services/messageService");
 
 const Message = require("../models/message");
