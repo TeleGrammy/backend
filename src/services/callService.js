@@ -195,7 +195,6 @@ module.exports.appendProfilesInfo = async (calls) => {
   );
   return calls;
 };
-
 module.exports.getCallsOfUser = async (userId) => {
   const calls = await User.aggregate([
     {
