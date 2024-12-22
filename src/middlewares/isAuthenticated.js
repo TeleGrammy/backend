@@ -129,8 +129,8 @@ module.exports = catchAsync(async (req, res, next) => {
     await sessionService.deleteSession(currentSession._id, currentDeviceType);
 
     res.clearCookie(process.env.COOKIE_ACCESS_NAME, {
-      httpOnly: true,
-      secure: true,
+      httpOnly: false,
+      secure: false,
     });
 
     return next(

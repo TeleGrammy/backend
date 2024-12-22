@@ -20,7 +20,8 @@ const addAuthCookie = (token, res, isAccessToken = true) => {
   const options = {
     expires: new Date(Date.now() + time),
     httpOnly: false,
-    SameSite: "Strict",
+    sameSite: "None",
+    secure: true,
   };
 
   const cookieName = isAccessToken

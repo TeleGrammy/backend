@@ -31,7 +31,7 @@ const channelConnection = async (socket, io, connectedUsers) => {
 
   socket.on("removingChannel", deleteChannel(io, socket, connectedUsers));
   socket.on(
-    "removingParticipant",
+    "removingChannelParticipant",
     removeParticipant(io, socket, connectedUsers)
   );
   socket.on("addingChannelSubscriper", addMember(io, socket, connectedUsers));

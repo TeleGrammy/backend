@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const {Schema} = mongoose;
 
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {generateSignedUrl} = require("../middlewares/AWS");
 
 // const AppError = require("../errors/appError");
@@ -90,7 +89,6 @@ channelSchema.pre(/^find/, function (next) {
   next();
 });
 
-applySoftDeleteMiddleWare(channelSchema);
 
 const Channel = mongoose.model("Channel", channelSchema);
 
