@@ -313,7 +313,6 @@ describe("User Service Test Suites", function () {
         accessToken: "accessToken12345@",
         refreshToken: "refreshToken12345@",
         publicKey: "123456",
-        isAdmin: undefined,
       };
 
       const createStub = sinon.stub(User, "create").resolves(userData);
