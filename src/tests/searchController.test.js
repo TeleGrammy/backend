@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const {
   searchForUser,
   searchForGroup,
@@ -409,103 +410,164 @@ describe("Search Controller Test Suites", () => {
   });
 
   describe("globalSearch Function", () => {
-    //     const searchController = require("../controllers/searchController");
-    //     beforeEach(() => {
-    //       jest.spyOn(searchController, "searchForUser").mockResolvedValue([]);
-    //       jest.spyOn(searchController, "searchForGroup").mockResolvedValue([]);
-    //       jest.spyOn(searchController, "searchForChannel").mockResolvedValue([]);
-    //       jest.spyOn(searchController, "searchForMessages").mockResolvedValue([]);
-    //     });
-    //     afterEach(() => {
-    //       jest.restoreAllMocks();
-    //     });
-    //     it("should throw an error if type is not provided", async () => {
-    //       await globalSearch(req, res, next);
-    //       expect(next).toHaveBeenCalledWith(new AppError("Type is required", 400));
-    //     });
-    //     it("should throw an error if type is invalid", async () => {
-    //       req.query.type = "invalidType";
-    //       await globalSearch(req, res, next);
-    //       expect(next).toHaveBeenCalledWith(new AppError("Invalid type", 400));
-    //     });
-    //     it('should return users if type is "user"', async () => {
-    //       req.query.type = "user";
-    //       req.query.page = "1";
-    //       req.query.limit = "10";
-    //       const mockUsers = [{id: 1, name: "User1"}];
-    //       searchController.searchForUser.mockResolvedValue(mockUsers);
-    //       console.log("hey:", req);
-    //       await globalSearch(req, res, next);
-    //       console.log("after");
-    //       expect(searchController.searchForUser).toHaveBeenCalledWith(req, 0, 10);
-    //       expect(res.status).toHaveBeenCalledWith(200);
-    //       expect(res.json).toHaveBeenCalledWith({
-    //         status: "success",
-    //         page: 1,
-    //         limit: 10,
-    //         totalDocs: mockUsers.length,
-    //         data: {user: mockUsers},
-    //       });
-    //     });
-    //     it('should return groups if type is "group"', async () => {
-    //       req.query.type = "group";
-    //       req.query.page = "2";
-    //       req.query.limit = "5";
-    //       const mockGroups = [{id: 1, name: "Group1"}];
-    //       searchController.searchForGroup.mockResolvedValue(mockGroups);
-    //       await globalSearch(req, res, next);
-    //       expect(searchController.searchForGroup).toHaveBeenCalledWith(req, 5, 5);
-    //       expect(res.status).toHaveBeenCalledWith(200);
-    //       expect(res.json).toHaveBeenCalledWith({
-    //         status: "success",
-    //         page: 2,
-    //         limit: 5,
-    //         totalDocs: mockGroups.length,
-    //         data: {group: mockGroups},
-    //       });
-    //     });
-    //     it('should return channels if type is "channel"', async () => {
-    //       req.query.type = "channel";
-    //       req.query.page = "1";
-    //       req.query.limit = "20";
-    //       const mockChannels = [{id: 1, name: "Channel1"}];
-    //       searchController.searchForChannel.mockResolvedValue(mockChannels);
-    //       await globalSearch(req, res, next);
-    //       expect(searchController.searchForChannel).toHaveBeenCalledWith(
-    //         req,
-    //         0,
-    //         20
-    //       );
-    //       expect(res.status).toHaveBeenCalledWith(200);
-    //       expect(res.json).toHaveBeenCalledWith({
-    //         status: "success",
-    //         page: 1,
-    //         limit: 20,
-    //         totalDocs: mockChannels.length,
-    //         data: {channel: mockChannels},
-    //       });
-    //     });
-    //     it('should return messages if type is "message"', async () => {
-    //       req.query.type = "message";
-    //       req.query.page = "3";
-    //       req.query.limit = "15";
-    //       const mockMessages = [{id: 1, content: "Message1"}];
-    //       searchController.searchForMessages.mockResolvedValue(mockMessages);
-    //       await globalSearch(req, res, next);
-    //       expect(searchController.searchForMessages).toHaveBeenCalledWith(
-    //         req,
-    //         30,
-    //         15
-    //       );
-    //       expect(res.status).toHaveBeenCalledWith(200);
-    //       expect(res.json).toHaveBeenCalledWith({
-    //         status: "success",
-    //         page: 3,
-    //         limit: 15,
-    //         totalDocs: mockMessages.length,
-    //         data: {message: mockMessages},
-    //       });
-    //     });
+    beforeEach(() => {
+      jest.clearAllMocks();
+      req = {
+        query: {},
+      };
+      res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      next = jest.fn();
+    });
+
+    test("should throw an error if type is not provided", async () => {
+      req.query.type = undefined;
+
+      await globalSearch(req, res, next);
+      expect(next).toHaveBeenCalledWith(new AppError("Type is required", 400));
+    });
+
+    test("should throw an error if page number is invalid", async () => {
+      req.query.page = -1;
+      req.query.type = "user";
+
+      await globalSearch(req, res, next);
+      expect(next).toHaveBeenCalledWith(
+        new AppError("Invalid page number", 400)
+      );
+    });
+
+    test("should throw an error if limit is invalid", async () => {
+      req.query.limit = -1;
+      req.query.type = "user";
+
+      await globalSearch(req, res, next);
+      expect(next).toHaveBeenCalledWith(new AppError("Invalid limit", 400));
+    });
+
+    test("should throw an error if type is invalid", async () => {
+      req.query.type = "invalidType";
+
+      await globalSearch(req, res, next);
+      expect(next).toHaveBeenCalledWith(new AppError("Invalid type", 400));
+    });
+
+    test('should return users if type is "user"', async () => {
+      req.query.type = "user";
+      req.query.page = "1";
+      req.query.limit = "10";
+      req.query.uuid = "1";
+
+      const mockUsers = [{id: 1, name: "User1"}];
+
+      userService.searchUsers.mockResolvedValue(mockUsers);
+
+      await globalSearch(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        status: "success",
+        page: 1,
+        limit: 10,
+        totalDocs: mockUsers.length,
+        data: {user: mockUsers},
+      });
+    });
+
+    test('should return groups if type is "group"', async () => {
+      req.query.type = "group";
+      req.query.page = "1";
+      req.query.limit = "10";
+      req.query.name = "1";
+
+      const mockUsers = [{id: 1, name: "User1"}];
+
+      groupService.searchGroup.mockResolvedValue(mockUsers);
+
+      await globalSearch(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        status: "success",
+        page: 1,
+        limit: 10,
+        totalDocs: mockUsers.length,
+        data: {group: mockUsers},
+      });
+    });
+
+    test('should return channels if type is "channel"', async () => {
+      req.query.type = "channel";
+      req.query.page = "1";
+      req.query.limit = "10";
+      req.query.name = "1";
+
+      const mockUsers = [{id: 1, name: "User1"}];
+
+      channelService.searchChannel.mockResolvedValue(mockUsers);
+
+      await globalSearch(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        status: "success",
+        page: 1,
+        limit: 10,
+        totalDocs: mockUsers.length,
+        data: {channel: mockUsers},
+      });
+    });
+
+    test('should return messages if type is "message"', async () => {
+      req.query.type = "message";
+      req.query.page = "1";
+      req.query.limit = "10";
+      req.query.message = "1";
+
+      const mockUsers = [
+        {
+          _id: "1",
+          chatId: {
+            groupId: {
+              groupType: "Public",
+            },
+          },
+        },
+        {
+          _id: "2",
+          chatId: {
+            channelId: {
+              privacy: true,
+            },
+          },
+        },
+      ];
+
+      const result = [
+        {
+          _id: "1",
+        },
+        {
+          _id: "2",
+        },
+      ];
+
+      messageService.searchMessages.mockResolvedValue(mockUsers);
+
+      await globalSearch(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        status: "success",
+        page: 1,
+        limit: 10,
+        totalDocs: result.length,
+        data: {message: result},
+      });
+    });
   });
 
   describe("searchForMatchedText", () => {
