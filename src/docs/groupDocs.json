@@ -980,7 +980,7 @@
       }
     },
 
-    "/groups/{groupId}/members/{memberId}/permissions": {
+    "/groups/groups/{groupId}/members/{memberId}/permissions": {
       "patch": {
         "summary": "Update member permissions",
         "description": "Allows an admin to update a member's permissions within a group.",
@@ -1102,7 +1102,7 @@
         }
       }
     },
-    "/groups/{groupId}/admins/{adminId}/permissions": {
+    "/groups/groups/{groupId}/admins/{adminId}/permissions": {
       "patch": {
         "summary": "Update admin permissions",
         "description": "Allows a superAdmin or owner to update an admin's permissions within a group.",
@@ -1224,7 +1224,7 @@
         }
       }
     },
-    "/groups/{groupId}/info": {
+    "/groups/groups/{groupId}/info": {
       "patch": {
         "summary": "Update the group information",
         "description": "Allows member who have permission to update the group information.",
@@ -1351,7 +1351,7 @@
         }
       }
     },
-    "/{groupId}/pin-message/{messageId}": {
+    "/groups/{groupId}/pin-message/{messageId}": {
       "patch": {
         "summary": "Pin a message",
         "description": "Allows an admin to pin a message in a group chat.",
@@ -1496,7 +1496,7 @@
         }
       }
     },
-    "/{groupId}/unpin-message/{messageId}": {
+    "/groups/{groupId}/unpin-message/{messageId}": {
       "patch": {
         "summary": "Unpin a message",
         "description": "Allows an admin to unpin a message in a group chat.",
@@ -1633,7 +1633,7 @@
         }
       }
     },
-    "/{groupId}/download-media/{messageId}": {
+    "/groups/{groupId}/download-media/{messageId}": {
       "get": {
         "summary": "Download media",
         "description": "check if the user has permission to download the media and then download the media",
@@ -1761,7 +1761,7 @@
         }
       }
     },
-    "/{groupId}/group-permissions": {
+    "/groups/{groupId}/group-permissions": {
       "patch": {
         "summary": "Update group permissions",
         "description": "Allows an admin to update the group permissions.",
@@ -1925,7 +1925,7 @@
         }
       }
     },
-    "/{groupId}/user-info": {
+    "/groups/{groupId}/user-info": {
       "get": {
         "summary": "Retrieve user information",
         "description": "Fetches the user information based on their role in the group (member or admin).",
@@ -2055,7 +2055,7 @@
         }
       }
     },
-    "/{groupId}/member-permissions/{memberId}": {
+    "/groups/{groupId}/member-permissions/{memberId}": {
       "get": {
         "summary": "Retrieve member permissions",
         "description": "Fetches the member permissions.",
@@ -2080,16 +2080,6 @@
             "description": "The ID of the member whose permissions will be retrieved."
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/groupPermissions"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Member permissions retrieved successfully.",

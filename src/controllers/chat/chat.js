@@ -167,10 +167,16 @@ exports.getAllChats = catchAsync(async (req, res, next) => {
 
   chats = chats.map((chat) => {
     if (chat.isGroup) {
-      return handleGroupChat(chat, userId);
+      if (chat.groupId) {
+        return handleGroupChat(chat, userId);
+      }
+      return null;
     }
     if (chat.isChannel) {
-      return handleChannelChat(chat, userId);
+      if (chat.channelId) {
+        return handleChannelChat(chat, userId);
+      }
+      return null;
     }
     if (chat.participants.length === 2) {
       return handlePrivateChat(chat, userId);

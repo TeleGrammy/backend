@@ -929,7 +929,7 @@
 
 /**
  * @swagger
- *  /{groupId}/pin-message/{messageId}:
+ *  /groups/{groupId}/pin-message/{messageId}:
  *    patch:
  *      summary: Pin a message
  *      description: Allows an admin to pin a message in a group chat.
@@ -1024,7 +1024,7 @@
 
 /**
  * @swagger
- *  /{groupId}/unpin-message/{messageId}:
+ *  /groups/{groupId}/unpin-message/{messageId}:
  *    patch:
  *      summary: Unpin a message
  *      description: Allows an admin to unpin a message in a group chat.
@@ -1116,7 +1116,7 @@
 
 /**
  * @swagger
- *  /{groupId}/download-media/{messageId}:
+ *  /groups/{groupId}/download-media/{messageId}:
  *    get:
  *      summary: Download media
  *      description: check if the user has permission to download the media and then download the media
@@ -1200,7 +1200,7 @@
  */
 /**
  * @swagger
- *  /{groupId}/group-permissions:
+ *  /groups/{groupId}/group-permissions:
  *     patch:
  *      summary: Update group permissions
  *      description: Allows an admin to update the group permissions.
@@ -1312,7 +1312,7 @@
 
 /**
  * @swagger
- *  /{groupId}/user-info:
+ *  /groups/{groupId}/user-info:
  *    get:
  *      summary: Retrieve user information
  *      description: Fetches the user information based on their role in the group (member or admin).
@@ -1405,7 +1405,7 @@
 
 /**
  * @swagger
- *  /{groupId}/member-permissions/{memberId}:
+ *  /groups/{groupId}/member-permissions/{memberId}:
  *    get:
  *      summary: Retrieve member permissions
  *      description: Fetches the member permissions.
