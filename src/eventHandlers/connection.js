@@ -73,9 +73,11 @@ const joinChannelChats = async (io, socket) => {
   await Promise.all(
     userData.channels.map(async (channelId) => {
       const chatData = await chatService.getChatOfChannel(channelId);
-      console.log(`Joining user:${socket.user.id} to chat:${chatData.id}`);
 
-      if (chatData) socket.join(`chat:${chatData.id}`);
+      if (chatData) {
+        console.log(`Joining user:${socket.user.id} to chat:${chatData.id}`);
+        socket.join(`chat:${chatData.id}`);
+      }
     })
   );
 };
