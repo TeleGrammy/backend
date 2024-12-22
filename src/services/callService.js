@@ -261,6 +261,29 @@ module.exports.getCallsOfUser = async (userId) => {
       },
     },
     {
+      $unwind: "$allCalls", // Unwind the allCalls array
+    },
+    {
+      $lookup: {
+        from: "chats", // Assuming the collection is named 'chats'
+        localField: "allCalls.chatId",
+        foreignField: "_id",
+        as: "allCalls.chatDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$allCalls.chatDetails",
+        preserveNullAndEmptyArrays: true,
+      }, // Unwind the chatDetails array
+    },
+    {
+      $group: {
+        _id: "$_id",
+        allCalls: {$push: "$allCalls"},
+      },
+    },
+    {
       $project: {allCalls: 1},
     },
     {
