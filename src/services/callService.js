@@ -290,6 +290,7 @@ module.exports.getCallsOfUser = async (userId) => {
       $sort: {"allCalls.startedAt": -1}, // Sort by `startedAt`
     },
   ]);
+  if (!calls.length) return [];
   return calls[0].allCalls;
 };
 
