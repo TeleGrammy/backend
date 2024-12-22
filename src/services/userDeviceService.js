@@ -54,6 +54,7 @@ const isDeviceTokenExists = async (deviceToken, userId) => {
     const tokens = await UserDevice.find({deviceToken});
     let exist = false;
     tokens.forEach((token) => {
+      console.log(token);
       if (token.userId.toString() === userId) {
         exist = true;
       }
