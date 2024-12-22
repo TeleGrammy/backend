@@ -139,6 +139,7 @@ messageSchema.methods.updateMessageViewer = async function (
   viewerId,
   numberOfMembersInChat
 ) {
+  if (!this.viewers) this.viewers = [];
   if (!this.viewers.includes(viewerId)) {
     this.viewers.push(viewerId);
   }
@@ -153,6 +154,7 @@ messageSchema.methods.updateMessageRecivers = async function (
   recieverId,
   numberOfMembersInChat
 ) {
+  if (!this.recievers) this.recievers = [];
   if (!this.recievers.includes(recieverId)) {
     this.recievers.push(recieverId);
   }

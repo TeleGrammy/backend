@@ -7,6 +7,9 @@ const channelConnection = require("./eventHandlers/channelNameSpace");
 const isAuth = require("./middlewares/isAuthenticatedSocket");
 
 const publsier = createClient({url: process.env.REDIS_URL});
+publsier.on("error", (err) => {
+  console.error("Redis error:", err);
+});
 const subscriber = publsier.duplicate();
 
 const connectPublsierAndSubscriber = async () => {
@@ -23,18 +26,13 @@ const createIoApp = (httpServer) => {
     },
   });
   const connectedUsers = new Map();
-  const groupIO = io.of("/group/");
-  const channelIO = io.of("/channel/");
+
   io.use(isAuth);
-  groupIO.use(isAuth);
-  channelIO.use(isAuth);
 
   io.on("connection", (socket) => onConnection(socket, io, connectedUsers));
-  groupIO.on("connection", (socket) =>
-    groupConnection(socket, groupIO, connectedUsers)
-  );
-  channelIO.on("connection", (socket) =>
-    channelConnection(socket, channelIO, connectedUsers)
+  io.on("connection", (socket) => groupConnection(socket, io, connectedUsers));
+  io.on("connection", (socket) =>
+    channelConnection(socket, io, connectedUsers)
   );
 };
 
