@@ -43,7 +43,7 @@ const login = catchAsync(async (req, res, next) => {
       user._id.toString()
     );
     if (!isExist) {
-      userDeviceService.saveDevice(user._id.toString(), token);
+      await userDeviceService.saveDevice(user._id.toString(), token);
     }
     userService.joinFirebaseTopic(user._id.toString(), token);
   }
