@@ -71,7 +71,7 @@ const pendingUserSchema = new mongoose.Schema({
   },
   publicKey: {
     type: String,
-    unique: true,
+    unique: false,
     required: false,
     validate: {
       validator: (value) => {
