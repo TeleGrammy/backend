@@ -89,7 +89,6 @@ channelSchema.pre(/^find/, function (next) {
   next();
 });
 
-
 const Channel = mongoose.model("Channel", channelSchema);
 
 module.exports = Channel;

@@ -54,7 +54,6 @@ const chatSchema = new mongoose.Schema({
   deleted: {type: Boolean, default: false},
 });
 
-
 chatSchema.index({lastMessageTimestamp: -1});
 
 chatSchema.pre("findOneAndUpdate", async function (next) {
