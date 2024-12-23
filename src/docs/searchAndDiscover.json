@@ -12,28 +12,56 @@
     }
   ],
   "paths": {
-    "/search/groups-channels": {
+    "/search/global-search": {
       "get": {
-        "summary": "Search for public groups or channels by name",
+        "summary": "Search for users, groups, channels, and messages",
         "tags": ["Search and Discover"],
         "parameters": [
           {
             "in": "query",
-            "name": "name",
-            "schema": {"type": "string"},
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": ["user", "group", "channel", "message"]
+            },
             "required": true,
-            "description": "The name of public group or channel"
+            "description": "Choose the type of the object you are searching for (user, group, channel, message)"
           },
           {
             "in": "query",
-            "name": "type",
+            "name": "uuid",
             "schema": {"type": "string"},
-            "description": "Choose if you need to retrieve groups or channels"
+            "description": "The uuid of the object you are searching for (username , screenName, email, phone)"
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {"type": "string"},
+            "description": "The name of group or channel you are searching for"
+          },
+          {
+            "in": "query",
+            "name": "message",
+            "schema": {"type": "string"},
+            "description": "The message you are searching for"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {"type": "number"},
+            "description": "The page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {"type": "number"},
+            "description": "The limit of the number of objects per page"
           }
         ],
+
         "responses": {
           "200": {
-            "description": "The public group and channels are retrieved successfully",
+            "description": "A list of objects match the given data",
             "content": {
               "application/json": {
                 "schema": {
@@ -42,31 +70,194 @@
                     "status": {
                       "type": "string"
                     },
+                    "page": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "totalDocs": {
+                      "type": "number"
+                    },
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string",
-                            "description": "The name of group"
-                          },
-                          "image": {
-                            "type": "string",
-                            "format": "binary",
-                            "description": "The group image"
-                          },
-                          "description": {
-                            "type": "string",
-                            "description": "The Description of the group"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": ["group", "channel"],
-                            "description": "Define the type of the object group or channel"
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "user": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "string",
+                                    "description": "The id of the user"
+                                  },
+                                  "username": {
+                                    "type": "string",
+                                    "description": "The username of the user"
+                                  },
+                                  "screenName": {
+                                    "type": "string",
+                                    "description": "The screen name of the user"
+                                  },
+                                  "email": {
+                                    "type": "string",
+                                    "description": "The email of the user"
+                                  },
+                                  "phone": {
+                                    "type": "string",
+                                    "description": "The phone of the user"
+                                  },
+                                  "picture": {
+                                    "type": "string",
+                                    "description": "The picture of the user"
+                                  },
+                                  "lastSeen": {
+                                    "type": "string",
+                                    "description": "The last seen of the user"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "group": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "string",
+                                    "description": "The id of the group"
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The name of group"
+                                  },
+                                  "image": {
+                                    "type": "string",
+                                    "description": "The group image"
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "description": "The Description of the group"
+                                  },
+                                  "chatId": {
+                                    "type": "string",
+                                    "description": "The chat id of the group"
+                                  },
+                                  "totalMembers": {
+                                    "type": "number",
+                                    "description": "The total members of the group"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "channel": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "string",
+                                    "description": "The id of the channel"
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The name of channel"
+                                  },
+                                  "imageUrl": {
+                                    "type": "string",
+                                    "description": "The channel image"
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "description": "The Description of the channel"
+                                  },
+                                  "chatId": {
+                                    "type": "string",
+                                    "description": "The chat id of the channel"
+                                  },
+                                  "membersCount": {
+                                    "type": "number",
+                                    "description": "The total members of the channel"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "string",
+                                    "description": "The id of the message"
+                                  },
+                                  "chatId": {
+                                    "type": "string",
+                                    "description": "The chat id of the message"
+                                  },
+                                  "groupId": {
+                                    "type": "string",
+                                    "description": "The group id of the message"
+                                  },
+                                  "channelId": {
+                                    "type": "string",
+                                    "description": "The channel id of the message"
+                                  },
+                                  "groupName": {
+                                    "type": "string",
+                                    "description": "The group name of the message"
+                                  },
+                                  "channelName": {
+                                    "type": "string",
+                                    "description": "The channel name of the message"
+                                  },
+                                  "groupImage": {
+                                    "type": "string",
+                                    "description": "The group image of the message"
+                                  },
+                                  "channelImage": {
+                                    "type": "string",
+                                    "description": "The channel image of the message"
+                                  },
+                                  "messageType": {
+                                    "type": "string",
+                                    "description": "The type of the message"
+                                  },
+                                  "content": {
+                                    "type": "string",
+                                    "description": "The content of the message"
+                                  },
+                                  "mediaUrl": {
+                                    "type": "string",
+                                    "description": "The media url of the message"
+                                  },
+                                  "timestamp": {
+                                    "type": "string",
+                                    "description": "The timestamp of the message"
+                                  }
+                                }
+                              }
+                            }
                           }
                         }
-                      }
+                      ]
                     },
                     "message": {
                       "type": "string"
@@ -77,184 +268,22 @@
             }
           },
           "400": {
-            "description": "Bad request"
-          },
-          "429": {
-            "description": "Too many requests"
-          }
-        }
-      }
-    },
-
-    "/search/users": {
-      "get": {
-        "summary": "Search for users by (username,screen name , email , phone)",
-        "tags": ["Search and Discover"],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "username",
-            "schema": {"type": "string"},
-            "description": "the username you are searching for"
-          },
-          {
-            "in": "query",
-            "name": "screenName",
-            "schema": {"type": "string"},
-            "description": "the screenName you are searching for"
-          },
-          {
-            "in": "query",
-            "name": "email",
-            "schema": {"type": "string"},
-            "description": "the email you are searching for"
-          },
-          {
-            "in": "query",
-            "name": "phone",
-            "schema": {"type": "string"},
-            "description": "the phone number you are searching for"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of users match the given data",
+            "description": "Bad Request",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {"type": "string"},
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string"},
-                          "username": {"type": "string"},
-                          "screenName": {"type": "string"},
-                          "email": {"type": "string"},
-                          "phone": {"type": "string"},
-                          "picture": {"type": "string"},
-                          "bio": {"type": "string"},
-                          "status": {"type": "string"},
-                          "isBanned": {"type": "boolean"}
-                        }
-                      }
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
                     }
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad request"
-          }
-        }
-      }
-    },
-
-    "/search/messages": {
-      "get": {
-        "summary": "Search for messages matching the given string in public groups or channels",
-        "tags": ["Search and Discover"],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "message",
-            "schema": {"type": "string"},
-            "description": "the message you are searching for in public groups"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of messages in the public groups which match the given data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {"type": "string"},
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string"},
-                          "content": {"type": "string"},
-                          "sentBy": {"type": "string"},
-                          "timestamp": {
-                            "type": "string",
-                            "format": "date-time"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          }
-        }
-      }
-    },
-
-    "/search/message/{chatId}": {
-      "get": {
-        "summary": "Search for messages in a certain chat",
-        "tags": ["Search and Discover"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "chatId",
-            "schema": {"type": "string"},
-            "required": true,
-            "description": "the chat id that the messages which match the given string belongs to "
-          },
-          {
-            "in": "query",
-            "name": "mediaType",
-            "schema": {
-              "type": "string",
-              "enum": ["text", "image", "video", "link"]
-            },
-            "description": "The media type of the message you are searching for"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of messages in the public groups which match the given data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {"type": "string"},
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string"},
-                          "content": {"type": "string"},
-                          "sentBy": {"type": "string"},
-                          "timestamp": {
-                            "type": "string",
-                            "format": "date-time"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
           }
         }
       }

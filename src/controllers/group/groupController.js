@@ -78,8 +78,8 @@ const addAdmin = catchAsync(async (req, res, next) => {
   const group = await groupService.findGroupById(groupId);
   if (!group) throw new AppError("Group not found", 404);
 
-  const adminData = group.admins.find((admin) =>
-    admin.adminId.equals(superAdminId)
+  const adminData = group.admins.find(
+    (admin) => admin.adminId.toString() === superAdminId.toString()
   );
 
   if (!adminData)
@@ -88,12 +88,14 @@ const addAdmin = catchAsync(async (req, res, next) => {
       403
     );
 
-  let index = group.members.findIndex((member) =>
-    member.memberId.equals(userId)
+  let index = group.members.findIndex(
+    (member) => member.memberId.toString() === userId.toString()
   );
 
   if (index === -1) {
-    index = group.admins.findIndex((admin) => admin.adminId.equals(userId));
+    index = group.admins.findIndex(
+      (admin) => admin.adminId.toString() === userId.toString()
+    );
     if (index === -1)
       throw new AppError(
         "User not found. The user is not member of the group.",
@@ -140,16 +142,16 @@ const removeAdmin = catchAsync(async (req, res, next) => {
   const group = await groupService.findGroupById(groupId);
   if (!group) throw new AppError("Group not found", 404);
 
-  const participantData = group.admins.find((participant) =>
-    participant.adminId.equals(participantId)
+  const participantData = group.admins.find(
+    (participant) => participant.adminId.toString() === participantId.toString()
   );
   if (!participantData)
     throw new AppError(
       "Unauthorized action. You do not have permission to demote an admin.",
       403
     );
-  const index = group.admins.findIndex((admin) =>
-    admin.adminId.equals(adminId)
+  const index = group.admins.findIndex(
+    (admin) => admin.adminId.toString() === adminId.toString()
   );
 
   if (index === -1) throw new AppError("User not found in admin list", 404);
@@ -260,8 +262,12 @@ const membersList = catchAsync(async (req, res, next) => {
   if (!group) throw new AppError("Group not found", 404);
 
   const participantData =
-    group.admins.find((admin) => admin.adminId.equals(participantId)) ||
-    group.members.find((member) => member.memberId.equals(participantId));
+    group.admins.find(
+      (admin) => admin.adminId._id.toString() === participantId.toString()
+    ) ||
+    group.members.find(
+      (member) => member.memberId._id.toString() === participantId.toString()
+    );
 
   if (!participantData)
     throw new AppError(
@@ -291,8 +297,12 @@ const adminsList = catchAsync(async (req, res, next) => {
   if (!group) throw new AppError("Group not found", 404);
 
   const participantData =
-    group.admins.find((admin) => admin.adminId.equals(participantId)) ||
-    group.members.find((member) => member.memberId.equals(participantId));
+    group.admins.find(
+      (admin) => admin.adminId._id.toString() === participantId.toString()
+    ) ||
+    group.members.find(
+      (member) => member.memberId._id.toString() === participantId.toString()
+    );
 
   if (!participantData)
     throw new AppError(
@@ -489,7 +499,7 @@ const pinMessage = catchAsync(async (req, res, next) => {
   if (!userData.permissions.pinMessages)
     throw new AppError("You don't have permission to pin a message", 403);
 
-  const message = messageService.findMessage({
+  const message = await messageService.findMessage({
     _id: messageId,
     chatId: group.chatId,
   });
@@ -574,16 +584,16 @@ const downloadMedia = catchAsync(async (req, res, next) => {
 
   const {messageType} = message;
 
-  let userData;
   if (userType === "admin")
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       data: {
         mediaUrl: message.mediaUrl,
       },
       message: `You can download ${messageType} media`,
     });
-  else userData = group.members[userIndex];
+
+  const userData = group.members[userIndex];
 
   const conditions = {
     video:
@@ -592,8 +602,8 @@ const downloadMedia = catchAsync(async (req, res, next) => {
         !userData.permissions.downloadVideos),
 
     audio:
-      !group.groupPermissions.downloadMedia ||
-      (group.groupPermissions.downloadMedia &&
+      !group.groupPermissions.downloadVoiceMessages ||
+      (group.groupPermissions.downloadVoiceMessages &&
         !userData.permissions.downloadVoiceMessages),
   };
 
@@ -603,7 +613,7 @@ const downloadMedia = catchAsync(async (req, res, next) => {
       403
     );
 
-  res.status(200).json({
+  return res.status(200).json({
     status: "success",
     mediaUrl: message.mediaUrl,
     message: `You can download ${messageType} media`,
@@ -616,7 +626,10 @@ const updateGroupPermission = catchAsync(async (req, res, next) => {
   const {userType} = req;
   const {body} = req;
 
-  if (userType === undefined && userIndex === undefined) {
+  if (
+    (userType === undefined && userIndex === undefined) ||
+    userType !== "admin"
+  ) {
     throw new AppError(
       "Forbidden access. You do not have permission to change the group's permissions.",
       403
@@ -653,7 +666,9 @@ const getUserInfo = catchAsync(async (req, res, next) => {
   userData.adminAt = undefined;
   userData.superAdminId = undefined;
 
-  userData._doc.role = userType;
+  if (userData._doc) {
+    userData._doc.role = userType;
+  }
 
   res.status(200).json({
     status: "success",
@@ -687,7 +702,10 @@ const getMemberPermission = catchAsync(async (req, res, next) => {
   const {userIndex} = req;
   const {userType} = req;
 
-  if (userType === undefined && userIndex === undefined)
+  if (
+    (userType === undefined && userIndex === undefined) ||
+    userType !== "admin"
+  )
     throw new AppError("You are not admin of the group", 404);
 
   const memberId = req.params.userId;

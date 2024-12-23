@@ -283,6 +283,10 @@ const groupSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
+    applyFilter: {
+      type: Boolean,
+      default: false,
+    },
   },
   groupSizeLimit: {
     type: Number,
@@ -301,7 +305,6 @@ const groupSchema = new mongoose.Schema({
   },
   pinnedMessages: [{type: mongoose.Types.ObjectId, ref: "Message"}],
 });
-
 
 const Group = mongoose.model("Group", groupSchema);
 

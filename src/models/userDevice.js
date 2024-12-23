@@ -10,10 +10,12 @@ const userDeviceSchema = new mongoose.Schema(
     deviceToken: {
       type: String,
       required: true,
+      index: false,
     },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
+    autoIndex: false,
   }
 );
 

@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-const applySoftDeleteMiddleWare = require("../middlewares/applySoftDelete");
 const {phoneRegex} = require("../utils/regexFormat");
 const AppError = require("../errors/appError");
 const {generateSignedUrl, deleteFile} = require("../middlewares/AWS");
@@ -38,7 +37,7 @@ const contactSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   publicKey: {
     type: String,
-    unique: true,
+    unique: false,
     required: false,
     validate: {
       validator: (value) => {
@@ -134,7 +133,7 @@ const userSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["active", "inactive", "banned"],
-    default: "inactive",
+    default: "active",
   },
   lastSeen: {
     type: Date,
@@ -241,6 +240,10 @@ const userSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Channel",
     default: [],
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -384,8 +387,6 @@ userSchema.methods.deleteUserPicture = async function () {
     await this.save();
   }
 };
-
-applySoftDeleteMiddleWare(userSchema);
 
 const User = mongoose.model("User", userSchema);
 

@@ -25,11 +25,22 @@ module.exports.createMessage = async (messageData) => {
  * @returns {Promise<Message|null>} - A promise that resolves to the message document if found, otherwise null.
  */
 module.exports.getMessageById = async (messageId) => {
-  const message = await Message.findById(messageId).populate(
-    "senderId chatId mentions"
-  );
+  const message = await Message.findById(messageId);
 
   return message;
+};
+
+/**
+ * Retrieves all messages for a specific chat.
+ * @memberof Service.Message
+ * @method getMessagesByChatId
+ * @async
+ * @param {String} chatId - The ID of the chat whose messages to retrieve.
+ * @returns {Promise<Array<Message>|null>} - A promise that resolves to an array of messages if found, otherwise null.
+ */
+module.exports.getMessagesByChatId = async (chatId) => {
+  const messages = await Message.find({chatId});
+  return messages;
 };
 
 module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
@@ -37,12 +48,7 @@ module.exports.fetchChatMessages = (chatId, filter, skip, limit) => {
   return Message.find(filter)
     .sort({timestamp: -1}) // Sort messages by latest first
     .skip(skip)
-    .limit(limit)
-    .select(
-      "content senderId messageType timestamp mediaUrl status mentions isEdited isForwarded replyOn mediaKey isPinned"
-    ) // Only fetch relevant fields
-    .populate("senderId mentions", "username") // Populate sender details (only username)
-    .populate("replyOn");
+    .limit(limit);
 };
 
 module.exports.countChatMessages = (chatId) => {
@@ -165,7 +171,7 @@ module.exports.deleteMessage = async (messageId, senderId) => {
 
 module.exports.checkChatOfMessage = async (id, chatId) => {
   const message = await Message.findById(id);
-  if (message.chatId.toString() !== chatId) {
+  if (message.chatId._id.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
 };
@@ -216,7 +222,7 @@ module.exports.markMessageAsPinned = async (chatId, messageId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-  if (message.chatId.toString() !== chatId) {
+  if (message.chatId._id.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
   await message.pin();
@@ -228,7 +234,7 @@ module.exports.markMessageAsUnpinned = async (chatId, messageId) => {
   if (!message) {
     throw new AppError("Message not found", 404);
   }
-  if (message.chatId.toString() !== chatId) {
+  if (message.chatId._id.toString() !== chatId) {
     throw new AppError("Message is not part of the provided chat", 400);
   }
   await message.unpin();
@@ -246,4 +252,20 @@ module.exports.findMessage = async (filter, populateOptions) => {
 
 module.exports.deleteGroupMessage = async (filter) => {
   return Message.deleteOne(filter);
+};
+
+module.exports.searchMessages = async (
+  filter,
+  select,
+  skip,
+  limit,
+  populatedOptions
+) => {
+  let query = Message.find(filter);
+  if (select) query = query.select(select);
+  if (populatedOptions) query = query.populate(populatedOptions);
+  if (skip) query = query.skip(skip);
+  if (limit) query = query.limit(limit);
+
+  return query;
 };

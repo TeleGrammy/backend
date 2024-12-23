@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const {createServer} = require("node:http");
 const app = require("./expressApp");
+const firebaseMessaging = require("./utils/firebaseMessaging");
 
 const httpServer = createServer(app); // app is passed here
 require("./ioApp")(httpServer);
@@ -13,6 +14,7 @@ mongoose
       process.env.PORT || 3000,
       process.env.HOST_NAME || "localhost",
       () => {
+        firebaseMessaging.initializeFirebase();
         console.log(
           `Server is running on http://${process.env.HOST_NAME || "localhost"}:${process.env.PORT || 3000}`
         );
