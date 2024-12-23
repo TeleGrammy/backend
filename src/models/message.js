@@ -278,7 +278,6 @@ messageSchema.index({content: "text", mediaUrl: "text"});
 
 messageSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
 
-
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;
