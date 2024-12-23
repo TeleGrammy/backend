@@ -1,7 +1,7 @@
 const catchAsync = require("../../utils/catchAsync");
 const callService = require("../../services/callService");
 const AppError = require("../../errors/appError");
-const {ioServer} = require("../../ioApp");
+const ioApp = require("../../ioApp");
 
 module.exports.getCalls = catchAsync(async (req, res, next) => {
   const calls = await callService.getCallsOfUser(req.user.id);
@@ -13,15 +13,16 @@ module.exports.getCalls = catchAsync(async (req, res, next) => {
 
 module.exports.getCallsOfChat = catchAsync(async (req, res, next) => {
   const {chatId} = req.params;
-  const calls = await callService.getOnGoingCallOfChat(chatId, req.user.id);
+  const call = await callService.getOnGoingCallOfChat(chatId, req.user.id);
   res.status(200).json({
     status: "success",
-    calls,
+    call,
   });
 });
 
 module.exports.joinCall = catchAsync(async (req, res, next) => {
   const {callId} = req.params;
+
   if (callId === "undefined")
     return next(new AppError("Call ID is required", 400));
 
@@ -34,7 +35,7 @@ module.exports.joinCall = catchAsync(async (req, res, next) => {
   }
   if (call.status === "ongoing") {
     status = "call joining";
-    ioServer.to(`${req.user.id}`).emit("call:incomingCall", call);
+    ioApp.ioServer.to(`${req.user.id}`).emit("call:incomingCall", call);
   }
 
   res.status(200).json({

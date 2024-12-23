@@ -147,7 +147,6 @@ module.exports.endCall = async (userId, callId, status) => {
 
 module.exports.getCallById = async (callId) => {
   const call = await Call.findById(callId);
-
   if (!call) throw new Error("Call not found");
   return call;
 };
@@ -335,9 +334,10 @@ module.exports.getCallsOfUser = async (userId) => {
 
 module.exports.getOnGoingCallOfChat = async (chatId, userId) => {
   await chatService.checkUserParticipant(chatId, userId);
-  const call = await Call.findOne({chatId, status: "ongoing"}).select(
+  let call = await Call.findOne({chatId, status: "ongoing"}).select(
     "_id status"
   );
   if (!call) call = {};
+
   return call;
 };

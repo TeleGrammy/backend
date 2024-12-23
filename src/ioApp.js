@@ -27,6 +27,7 @@ const createIoApp = (httpServer) => {
   });
   const connectedUsers = new Map();
   module.exports.ioServer = io;
+
   io.use(isAuth);
 
   io.on("connection", (socket) => onConnection(socket, io, connectedUsers));
