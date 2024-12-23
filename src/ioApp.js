@@ -6,21 +6,21 @@ const groupConnection = require("./eventHandlers/groupNameSpace");
 const channelConnection = require("./eventHandlers/channelNameSpace");
 const isAuth = require("./middlewares/isAuthenticatedSocket");
 
-const publsier = createClient({url: process.env.REDIS_URL});
-publsier.on("error", (err) => {
+const publshier = createClient({url: process.env.REDIS_URL});
+publshier.on("error", (err) => {
   console.error("Redis error:", err);
 });
-const subscriber = publsier.duplicate();
+const subscriber = publshier.duplicate();
 
 const connectPublsierAndSubscriber = async () => {
-  await Promise.all([publsier.connect(), subscriber.connect()]);
+  await Promise.all([publshier.connect(), subscriber.connect()]);
 };
 connectPublsierAndSubscriber();
 
 const createIoApp = (httpServer) => {
   console.log("Setup Socket.IO");
   const io = new Server(httpServer, {
-    adapter: createAdapter(publsier, subscriber),
+    adapter: createAdapter(publshier, subscriber),
     cors: {
       origin: "*", // Allow any origin for testing. Restrict this in production.
     },
@@ -35,6 +35,10 @@ const createIoApp = (httpServer) => {
   io.on("connection", (socket) =>
     channelConnection(socket, io, connectedUsers)
   );
+};
+
+module.exports.disconnectPublsierAndSubscriber = async () => {
+  await Promise.all([publshier.disconnect(), subscriber.disconnect()]);
 };
 
 module.exports.createIoApp = createIoApp;

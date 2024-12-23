@@ -10,6 +10,7 @@ const AppError = require("../errors/appError");
 const manageSessionForUser = require("../utils/sessionManagement");
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
+const {disconnectPublsierAndSubscriber} = require("../ioApp"); // Adjust path as needed
 
 jest.mock("jsonwebtoken");
 jest.mock("../services/userService");
@@ -458,5 +459,12 @@ describe("POST /api/v1/auth/logout-from-all-devices", () => {
       status: "fail",
       message: "Not authenticated",
     });
+  });
+  afterAll(async () => {
+    // Only disconnect if running in test environment
+    if (process.env.NODE_ENV === "test") {
+      console.log("Disconnecting Redis in test environment...");
+      await disconnectPublsierAndSubscriber();
+    }
   });
 });
