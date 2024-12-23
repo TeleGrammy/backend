@@ -2,6 +2,9 @@ const catchAsync = require("../../utils/catchAsync");
 const callService = require("../../services/callService");
 const AppError = require("../../errors/appError");
 const ioApp = require("../../ioApp");
+const {
+  selectRequiredCallObject,
+} = require("../../eventHandlers/utils/utilsFunc");
 
 module.exports.getCalls = catchAsync(async (req, res, next) => {
   const calls = await callService.getCallsOfUser(req.user.id);
@@ -40,6 +43,16 @@ module.exports.joinCall = catchAsync(async (req, res, next) => {
           console.log("User Is Ready to receive following events");
         }
       });
+    for (const [key, value] of call.callObjects.entries()) {
+      if (value[req.user.id]) {
+        call.senderId = key;
+        call.recieverId = req.user.id;
+        await selectRequiredCallObject(call);
+        if (!call.participantsWhoRejected.has(call.recieverId)) {
+          ioApp.ioServer.to(`${req.user.id}`).emit("call:incomingOffer", call);
+        }
+      }
+    }
   } else {
     status = "call ended";
   }
