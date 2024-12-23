@@ -4,7 +4,7 @@ const app = require("./expressApp");
 const firebaseMessaging = require("./utils/firebaseMessaging");
 
 const httpServer = createServer(app); // app is passed here
-require("./ioApp")(httpServer);
+require("./ioApp").createIoApp(httpServer);
 
 mongoose
   .connect(process.env.DB_HOST)
