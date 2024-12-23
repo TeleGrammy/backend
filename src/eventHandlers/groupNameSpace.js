@@ -10,10 +10,11 @@ const {
 
 const joinGroups = async (io, socket) => {
   const userData = await userService.getUserById(socket.user.id);
-
-  userData.groups.forEach((group) => {
-    socket.join(`group:${group}`);
-  });
+  if (userData && userData.groups) {
+    userData.groups.forEach((group) => {
+      socket.join(`group:${group}`);
+    });
+  }
 };
 
 const groupConnection = async (socket, io, connectedUsers) => {
