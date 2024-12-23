@@ -30,12 +30,18 @@ module.exports.joinCall = catchAsync(async (req, res, next) => {
   if (!call) return next(new AppError("call not found", 404));
 
   let status;
-  if (call.status === "ended") {
-    status = "call ended";
-  }
+
   if (call.status === "ongoing") {
     status = "call joining";
-    ioApp.ioServer.to(`${req.user.id}`).emit("call:incomingCall", call);
+    ioApp.ioServer
+      .to(`${req.user.id}`)
+      .emit("call:incomingCall", call, (data) => {
+        if (data.status === "ready") {
+          console.log("User Is Ready to receive following events");
+        }
+      });
+  } else {
+    status = "call ended";
   }
 
   res.status(200).json({
