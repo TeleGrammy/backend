@@ -37,7 +37,7 @@ const contactSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   publicKey: {
     type: String,
-    unique: true,
+    unique: false,
     required: false,
     validate: {
       validator: (value) => {
@@ -387,7 +387,6 @@ userSchema.methods.deleteUserPicture = async function () {
     await this.save();
   }
 };
-
 
 const User = mongoose.model("User", userSchema);
 
