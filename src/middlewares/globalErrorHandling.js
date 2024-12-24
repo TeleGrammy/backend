@@ -2,7 +2,7 @@ const errors = require("../errors/errors");
 
 const globalErrorHandler = (err, req, res, next) => {
   const error = errors(err);
-  // console.log("ERROR:", err);
+  console.log("ERROR:", err);
   if (error.isOperational) {
     res.status(error.statusCode).json({
       status: error.status,

@@ -3,8 +3,9 @@ const callService = require("../../services/callService");
 const AppError = require("../../errors/appError");
 const ioApp = require("../../ioApp");
 const {
-  selectRequiredCallObject,
-} = require("../../eventHandlers/utils/utilsFunc");
+  sendIncomingCallForUser,
+  sendOfferForUser,
+} = require("../../eventHandlers/calls/calls");
 
 module.exports.getCalls = catchAsync(async (req, res, next) => {
   const calls = await callService.getCallsOfUser(req.user.id);
@@ -36,20 +37,16 @@ module.exports.joinCall = catchAsync(async (req, res, next) => {
 
   if (call.status === "ongoing") {
     status = "call joining";
-    ioApp.ioServer
-      .to(`${req.user.id}`)
-      .emit("call:incomingCall", call, (data) => {
-        if (data.status === "ready") {
-          console.log("User Is Ready to receive following events");
-        }
-      });
-    for (const [key, value] of call.callObjects.entries()) {
-      if (value[req.user.id]) {
-        call.senderId = key;
-        call.recieverId = req.user.id;
-        await selectRequiredCallObject(call);
-        if (!call.participantsWhoRejected.has(call.recieverId)) {
-          ioApp.ioServer.to(`${req.user.id}`).emit("call:incomingOffer", call);
+
+    await sendIncomingCallForUser(ioApp.ioServer, call, req.user.id);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    for (const [outerKey, innerObject] of Object.entries(call.callObjects)) {
+      for (const [innerKey, data] of Object.entries(innerObject)) {
+        console.log(outerKey, innerKey);
+        if (req.user.id === innerKey) {
+          await sendOfferForUser(ioApp.ioServer, call, outerKey, innerKey);
         }
       }
     }
