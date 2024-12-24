@@ -117,7 +117,8 @@ module.exports.sendMessage = function ({io, socket}) {
       firebaseUtils.sendNotificationToTopic(
         `chat-${messageData.chatId}`,
         title,
-        body
+        body,
+        {chatId: payload.chatId, senderId: socket.userId}
       );
       logThenEmit(
         socket.userId,
@@ -134,7 +135,8 @@ module.exports.sendMessage = function ({io, socket}) {
         firebaseUtils.sendNotificationToTopic(
           `user-${mention._id}`,
           newTitle,
-          body
+          body,
+          {chatId: payload.chatId, senderId: socket.userId}
         );
         io.to(`${mention._id}`).emit("message:mention", message);
       });

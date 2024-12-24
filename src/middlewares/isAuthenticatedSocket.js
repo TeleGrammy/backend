@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const AppError = require("../errors/appError");
 
 const isAuthenticatedSocket = async (socket, next) => {
   let token =
@@ -11,7 +12,9 @@ const isAuthenticatedSocket = async (socket, next) => {
     decodedAccessToken = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = decodedAccessToken;
   } catch (error) {
-    return next(new Error("Invalid refresh token, please log in again", 401));
+    return next(
+      new AppError("Invalid refresh token, please log in again", 401)
+    );
   }
   return next();
 };
