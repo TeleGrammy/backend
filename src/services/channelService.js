@@ -22,11 +22,7 @@ const getChannelInformation = async (channelId) => {
 };
 
 const deleteChannel = async (channelId) => {
-  return Channel.findOneAndUpdate(
-    {_id: channelId},
-    {deleted: true},
-    {new: true}
-  );
+  return Channel.findByIdAndDelete(channelId);
 };
 
 const updateChannelPrivacy = async (id, userId, updateData) => {

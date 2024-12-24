@@ -183,11 +183,7 @@ const removeParticipant = async (chatId, userId) => {
  */
 const softDeleteChat = async (chatId) => {
   try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {deleted: true},
-      {new: true}
-    );
+    const chat = await Chat.findByIdAndDelete(chatId);
     if (!chat) throw new Error("Chat not found");
     return chat;
   } catch (error) {
@@ -267,7 +263,6 @@ const getChatOfChannel = async (channelId) => {
   const chat = await Chat.findOne({
     channelId,
     isChannel: true,
-    deleted: {$ne: true},
   })
     .populate("lastMessage")
     .populate("participants.userId");

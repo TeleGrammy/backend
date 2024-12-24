@@ -37,7 +37,6 @@ const chatSchema = new mongoose.Schema({
   deleted: {type: Boolean, default: false},
 });
 
-applySoftDeleteMiddleWare(chatSchema);
 
 chatSchema.index({lastMessageTimestamp: -1});
 
