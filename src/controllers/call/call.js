@@ -40,7 +40,7 @@ module.exports.joinCall = catchAsync(async (req, res, next) => {
 
     await sendIncomingCallForUser(ioApp.ioServer, call, req.user.id);
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     for (const [outerKey, innerObject] of Object.entries(call.callObjects)) {
       for (const [innerKey, data] of Object.entries(innerObject)) {
