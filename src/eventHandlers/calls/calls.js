@@ -249,3 +249,30 @@ module.exports.addIce = function ({socket, io}) {
     }
   };
 };
+
+module.exports.sendIncomingCallForUser = async (io, call, senderId) => {
+  callId = call._id.toString();
+  await withLock(callId, async () => {
+    console.log("sendIncomingCallForUser have the lock", callId);
+    io.to(`${senderId}`).emit("call:incomingCall", call, (data) => {
+      if (data.status === "ready") {
+        console.log("User Is Ready to receive following events");
+      }
+      console.log("sendIncomingCallForUser LEAVE the lock");
+    });
+  });
+};
+
+module.exports.sendOfferForUser = async (io, call, senderId, recieverId) => {
+  callId = call._id.toString();
+  await withLock(callId, async () => {
+    console.log("sending have the lock", callId);
+    call.senderId = senderId;
+    call.recieverId = recieverId;
+    await selectRequiredCallObject(call);
+    if (!call.participantsWhoRejected.has(call.recieverId)) {
+      io.to(`${recieverId}`).emit("call:incomingOffer", call);
+    }
+    console.log("sending LEAVE  the lock");
+  });
+};

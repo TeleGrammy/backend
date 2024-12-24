@@ -5,11 +5,9 @@ const https = require("https");
 const app = require("./expressApp");
 const firebaseMessaging = require("./utils/firebaseMessaging");
 
-// Determine if we are in production or development
 let server;
 
 if (process.env.NODE_ENV === "production") {
-  // Production: Use HTTPS
   const options = {
     key: fs.readFileSync("/etc/ssl/certs/tls.key"),
     cert: fs.readFileSync("/etc/ssl/certs/tls.crt"),
@@ -17,13 +15,11 @@ if (process.env.NODE_ENV === "production") {
   server = https.createServer(options, app);
   console.log(":lock: HTTPS enabled for production");
 } else {
-  // Development: Use HTTP
   server = http.createServer(app);
   console.log(":tools: HTTP enabled for development");
 }
 
-// Initiallize the socket server to be compatible with the HTTP/HTTPS initialized servers
-require("./ioApp")(server);
+require("./ioApp").createIoApp(server);
 
 mongoose
   .connect(process.env.DB_HOST)

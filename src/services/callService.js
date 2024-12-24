@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 
 const Call = require("../models/call");
+const Group = require("../models/groupModel");
+
 const User = require("../models/user");
 const chatService = require("./chatService");
 const {hasProperty} = require("../utils/utilitiesFunc");
@@ -145,7 +147,6 @@ module.exports.endCall = async (userId, callId, status) => {
 
 module.exports.getCallById = async (callId) => {
   const call = await Call.findById(callId);
-
   if (!call) throw new Error("Call not found");
   return call;
 };
@@ -168,6 +169,31 @@ module.exports.rejectCall = async (callId, userId) => {
   return call;
 };
 
+module.exports.appendProfilesInfo = async (calls) => {
+  await Promise.all(
+    calls.map(async (call) => {
+      if (call.chatDetails.isGroup) {
+        call.chatDetails.groupId = await Group.findById(
+          call.chatDetails.groupId
+        ).select("name image _id");
+      }
+      call.chatDetails.participants = await Promise.all(
+        call.chatDetails.participants.map(async (participant) => {
+          const user = await User.findById(participant.userId);
+          if (user) {
+            participant.profile = {
+              _id: user._id,
+              username: user.username,
+              picture: user.picture,
+            };
+          }
+          return participant;
+        })
+      );
+    })
+  );
+  return calls;
+};
 module.exports.getCallsOfUser = async (userId) => {
   const calls = await User.aggregate([
     {
@@ -220,9 +246,20 @@ module.exports.getCallsOfUser = async (userId) => {
     },
     {
       $lookup: {
-        // get the calls of the user.groups.chatId from the calls table and name it as groupCalls
+        from: "groups", // Assuming the collection is named 'groups'
+        localField: "groups",
+        foreignField: "_id",
+        as: "groupDetails",
+      },
+    },
+    {
+      $unwind: {path: "$groupDetails", preserveNullAndEmptyArrays: true},
+    },
+    {
+      $lookup: {
+        // get the calls of the groupDetails.chatId from the calls table and name it as groupCalls
         from: "calls",
-        let: {chatId: "$groups.chatId"},
+        let: {chatId: "$groupDetails.chatId"},
         pipeline: [
           {$match: {$expr: {$eq: ["$chatId", "$$chatId"]}}},
           {
@@ -261,19 +298,46 @@ module.exports.getCallsOfUser = async (userId) => {
       },
     },
     {
+      $unwind: "$allCalls", // Unwind the allCalls array
+    },
+    {
+      $lookup: {
+        from: "chats", // Assuming the collection is named 'chats'
+        localField: "allCalls.chatId",
+        foreignField: "_id",
+        as: "allCalls.chatDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$allCalls.chatDetails",
+        preserveNullAndEmptyArrays: true,
+      }, // Unwind the chatDetails array
+    },
+    {
+      $group: {
+        _id: "$_id",
+        allCalls: {$push: "$allCalls"},
+      },
+    },
+    {
       $project: {allCalls: 1},
     },
     {
       $sort: {"allCalls.startedAt": -1}, // Sort by `startedAt`
     },
   ]);
-  return calls[0].allCalls;
+
+  if (!calls.length) return [];
+  return this.appendProfilesInfo(calls[0].allCalls);
 };
 
-module.exports.getCallsOfChat = async (chatId, userId) => {
+module.exports.getOnGoingCallOfChat = async (chatId, userId) => {
   await chatService.checkUserParticipant(chatId, userId);
-  const calls = await Call.find({chatId}).select(
-    "duration startedAt endedAt status chatId groupId"
+  let call = await Call.findOne({chatId, status: "ongoing"}).select(
+    "_id status"
   );
-  return calls;
+  if (!call) call = {};
+
+  return call;
 };

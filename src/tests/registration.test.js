@@ -6,6 +6,7 @@ const PendingUser = require("../models/pending-user");
 const userService = require("../services/userService");
 const {generateConfirmationCode} = require("../utils/codeGenerator");
 const {sendConfirmationEmail} = require("../utils/mailingServcies");
+const {disconnectPublsierAndSubscriber} = require("../ioApp"); // Adjust path as needed
 
 // Mock dependencies
 jest.mock("../models/pending-user");
@@ -154,5 +155,12 @@ describe("User Registration and Verification Controller", () => {
       expect(res.status).toBe(404);
       expect(res.body.message).toBe("User not found or already verified");
     });
+  });
+  afterAll(async () => {
+    // Only disconnect if running in test environment
+    if (process.env.NODE_ENV === "test") {
+      console.log("Disconnecting Redis in test environment...");
+      await disconnectPublsierAndSubscriber();
+    }
   });
 });
