@@ -33,11 +33,16 @@ module.exports.sendMessage = function ({io, socket}) {
       const currentGroupChat = await chatService.retrieveGroupChatData(
         payload.chatId
       );
+      console.log(currentGroupChat);
 
       if (currentGroupChat) {
+        console.log("F1:", currentGroupChat.groupId.groupPermissions);
         const obj = currentGroupChat._doc.groupId;
+        console.log("group id", obj);
         const newObj = {...obj};
-        const {applyFilter} = newObj._doc;
+        console.log("newObj", newObj);
+        const {applyFilter} = newObj._doc.groupPermissions;
+        console.log("here", applyFilter);
         if (applyFilter) {
           const factory = new AIModelFactory();
 
