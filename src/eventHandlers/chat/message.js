@@ -23,6 +23,39 @@ module.exports.sendMessage = function ({io, socket}) {
     }
 
     try {
+      const currentUser = await userService.getUserById(socket.userId);
+      const chat = await chatService.getBasicChatById(payload.chatId);
+      
+      if (!chat.isGroup && !chat.isChannel) {
+        const otherParticipant = chat.participants.find(
+          (p) => p.userId.toString() !== socket.userId
+        );
+        
+        if (otherParticipant) {
+          const otherUser = await userService.getUserById(otherParticipant.userId);
+          
+          const currentUserBlocked = currentUser.contacts.find(
+            (contact) => 
+              contact.contactId.toString() === otherParticipant.userId.toString() && 
+              contact.blockDetails.status === "blocked"
+          );
+          
+          const otherUserBlocked = otherUser.contacts.find(
+            (contact) => 
+              contact.contactId.toString() === socket.userId.toString() && 
+              contact.blockDetails.status === "blocked"
+          );
+          
+          if (currentUserBlocked || otherUserBlocked) {
+            callback({
+              status: "error",
+              message: "Cannot send message. User is blocked."
+            });
+            return;
+          }
+        }
+      }
+
       const canSendMessage = await groupMessageHandlers.canSendMessage(
         socket,
         payload,
@@ -96,7 +129,6 @@ module.exports.sendMessage = function ({io, socket}) {
       }
 
       chatService.updateLastMessageCount(messageData.chatId, socket.userId);
-      const chat = await chatService.getBasicChatById(messageData.chatId);
       let title = `A new Message from ${name}`;
       let body = "";
       let chatName = "";
